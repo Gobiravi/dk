@@ -72,6 +72,7 @@ class MyOrdersListModelOrders {
   dynamic orderId;
   dynamic itemId;
   String? orderCurrency;
+  String? template;
   dynamic price;
   bool? requirementForm;
 
@@ -85,6 +86,7 @@ class MyOrdersListModelOrders {
       this.itemId,
       this.orderCurrency,
       this.price,
+      this.template,
       this.requirementForm});
 
   MyOrdersListModelOrders.fromJson(Map<String, dynamic> json) {
@@ -96,6 +98,7 @@ class MyOrdersListModelOrders {
     orderId = json['order_id'];
     itemId = json['item_id'];
     orderCurrency = json['order_currency'];
+    template = json['template'];
     price = json['price'];
     requirementForm = json['requirement_form'];
   }
@@ -111,6 +114,7 @@ class MyOrdersListModelOrders {
     data['item_id'] = itemId;
     data['order_currency'] = orderCurrency;
     data['price'] = price;
+    data['template'] = template;
     data['requirement_form'] = requirementForm;
     return data;
   }
@@ -140,4 +144,12 @@ class MyOrdersListModelPagination {
     data['total_items'] = totalItems;
     return data;
   }
+}
+
+class RequirementFormParam {
+  String template;
+  String id;
+  String name;
+  RequirementFormParam(
+      {required this.id, required this.template, required this.name});
 }

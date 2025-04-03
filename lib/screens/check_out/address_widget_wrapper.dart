@@ -75,6 +75,22 @@ class AddressWidgetWrapper extends HookConsumerWidget {
                           // ref
                           //     .read(stepProvider.notifier)
                           //     .updateStep(currentStep + 1);
+                          ref
+                              .read(currentDefaultAddressProvider.notifier)
+                              .state = GetShippingAddressModelData(
+                            address1: onValue.data?.address1 ?? "",
+                            address2: onValue.data?.address2 ?? "",
+                            city: onValue.data?.city ?? "",
+                            company: onValue.data?.company ?? "",
+                            country: onValue.data?.country ?? "",
+                            firstName: onValue.data?.firstName ?? "",
+                            id: onValue.data?.id ?? 0,
+                            isDefault: onValue.data?.isDefault ?? true,
+                            lastName: onValue.data?.lastName ?? "",
+                            phone: onValue.data?.phone ?? "",
+                            postcode: onValue.data?.postcode ?? "",
+                            state: onValue.data?.state ?? "",
+                          );
                           resetFields(ref);
                           if (context.mounted) {
                             ConstantMethods.showSnackbar(
@@ -138,15 +154,28 @@ class AddressWidgetWrapper extends HookConsumerWidget {
 
   resetFields(WidgetRef ref) {
     ref.read(firstNameProviderAddress.notifier).state = "";
+    ref.read(firstNameValidProviderAddress.notifier).state = false;
     ref.read(lastNameProviderAddress.notifier).state = "";
+    ref.read(lastNameValidProviderAddress.notifier).state = false;
     ref.read(emailProviderAddress.notifier).state = "";
+    ref.read(emailValidProviderAddress.notifier).state = false;
     ref.read(phoneProviderAddress.notifier).state = "";
+    ref.read(phoneValidProviderAddress.notifier).state = false;
     //Shipping
     ref.read(countryRegionProvider.notifier).state = "";
+    ref.read(countryRegionValidProvider.notifier).state = false;
     ref.read(streetAddressProvider.notifier).state = "";
+    ref.read(streetAddressValidProvider.notifier).state = false;
     ref.read(appartmentProvider.notifier).state = "";
+    ref.read(appartmentValidProvider.notifier).state = false;
     ref.read(postalCodeProvider.notifier).state = "";
+    ref.read(postalCodeValidProvider.notifier).state = false;
     ref.read(townCityProvider.notifier).state = "";
+    ref.read(townCityValidProvider.notifier).state = false;
     ref.read(shippingPhoneProvider.notifier).state = "";
+    ref.read(shippingPhoneValidProvider.notifier).state = false;
+
+    ref.context.pop();
+    return ref.refresh(getShippingAddressApiProvider);
   }
 }

@@ -16,6 +16,7 @@ import 'package:dikla_spirit/model/cart_list_model.dart';
 import 'package:dikla_spirit/model/check_out/add_ship_addr_model.dart';
 import 'package:dikla_spirit/model/check_out/order_summary_model.dart';
 import 'package:dikla_spirit/model/check_out/shipping_address_list_model.dart';
+import 'package:dikla_spirit/model/dashboard_model.dart';
 import 'package:dikla_spirit/model/help/faq_model.dart';
 import 'package:dikla_spirit/model/locale_model.dart';
 import 'package:dikla_spirit/model/orders/my_orders_model.dart';
@@ -174,6 +175,34 @@ FutureProvider<WishlistModel> wishListApiProvider =
   return WishlistModel.fromJson(data);
 });
 // ==============================================================
+
+// // ================= Add to Wish List Api Provider ======================
+// final addTowishListApiProvider =
+//     FutureProvider.family<DashboardModelFastResult, String>(
+//         (ref, productId) async {
+//   final encodedParam = json.encode({
+//     "product_id": productId,
+//   });
+//   final data = await ApiUtils.makeRequest(
+//       Constants.baseUrl + Constants.addToWishList,
+//       method: "POST",
+//       jsonParams: encodedParam,
+//       isRaw: true,
+//       useAuth: true);
+//   // final productDetail = DashboardModelFastResult.fromJson(data["data"]);
+//   if (data["status_code"] == 402) {
+//     await ApiUtils.refreshToken();
+//     final data = await ApiUtils.makeRequest(
+//         Constants.baseUrl + Constants.addToWishList,
+//         useAuth: true,
+//         method: "POST",
+//         jsonParams: encodedParam,
+//         isRaw: true);
+//     return DashboardModelFastResult.fromJson(data["data"]);
+//   }
+//   return DashboardModelFastResult.fromJson(data["data"]);
+// });
+// // ==============================================================
 
 // ================= Wish List Api Provider ======================
 FutureProvider<CartListModel> myCartApiProvider =
@@ -343,6 +372,51 @@ final removeFromCartApiProvider =
       useAuth: true);
   return AddToCartModel.fromJson(data);
 });
+
+// ==============================================================
+
+// ================= Update Profile Api Provider ======================
+final updateProfileApiProvider =
+    FutureProvider.family<AddToCartModel, UpdateProfileParams>(
+        (ref, params) async {
+  var encodedParam = json.encode({
+    "first_name": params.firstName,
+    "last_name": params.lastName,
+    "phone_number": params.phone,
+    "gender": params.gender,
+    "date_of_birth": params.gender,
+    "zodiac": params.zodiac
+  });
+  final data = await ApiUtils.makeRequest(
+      Constants.baseUrl + Constants.updateProfileUrl,
+      method: "POST",
+      jsonParams: encodedParam,
+      isRaw: true,
+      useAuth: true);
+  return AddToCartModel.fromJson(data);
+});
+
+class UpdateProfileParams {
+  String firstName;
+  String lastName;
+  String phone;
+  String gender;
+  String dob;
+  String zodiac;
+  String countryName;
+  String countryCode;
+  String dialCode;
+  UpdateProfileParams(
+      {required this.firstName,
+      required this.lastName,
+      required this.phone,
+      required this.gender,
+      required this.dob,
+      required this.zodiac,
+      required this.countryCode,
+      required this.countryName,
+      required this.dialCode});
+}
 
 // ==============================================================
 
@@ -567,6 +641,15 @@ final indexOfPageViewInHomeReview = StateProvider<int>((ref) {
 
 // ==============================================================
 
+// ================= Current Default Address Provider ======================
+
+final currentDefaultAddressProvider =
+    StateProvider<GetShippingAddressModelData>((ref) {
+  return GetShippingAddressModelData();
+});
+
+// ==============================================================
+
 // ================= Home's scaffold key Provider ======================
 
 final scaffoldKeyProvider = Provider<GlobalKey<ScaffoldState>>((ref) {
@@ -642,3 +725,15 @@ final lastNameProviderProfile = StateProvider<String>((ref) => '');
 final emailProviderProfile = StateProvider<String>((ref) => '');
 final phoneProviderProfile = StateProvider<String>((ref) => '');
 final phoneValidProviderProfile = StateProvider<bool>((ref) => false);
+
+//Requirement Form
+final fullNameProviderForm = StateProvider<String>((ref) => "");
+final fullNameProviderFormIndividual = StateProvider<String>((ref) => "");
+final currentSituationProviderForm = StateProvider<String>((ref) => "");
+final currentSituationProviderFormIndividual =
+    StateProvider<String>((ref) => "");
+final questionProviderFormIndividual = StateProvider<String>((ref) => "");
+
+//product details
+final suggestedPriceProvider = StateProvider<String>((ref) => "");
+final suggestedPriceProviderValid = StateProvider<bool>((ref) => false);

@@ -1,4 +1,6 @@
+import 'package:dikla_spirit/custom/secure_storage.dart';
 import 'package:dikla_spirit/model/auth/forgot_password_model.dart';
+import 'package:dikla_spirit/model/orders/my_orders_model.dart';
 import 'package:dikla_spirit/screens/auth/app_settings.dart';
 import 'package:dikla_spirit/screens/auth/forgot_password_screen.dart';
 import 'package:dikla_spirit/screens/auth/login_options_screen.dart';
@@ -16,6 +18,7 @@ import 'package:dikla_spirit/screens/my_cart_screen.dart';
 import 'package:dikla_spirit/screens/onboarding/onboarding_screen.dart';
 import 'package:dikla_spirit/screens/orders/my_orders_screen.dart';
 import 'package:dikla_spirit/screens/orders/order_details_screen.dart';
+import 'package:dikla_spirit/screens/orders/requirement_form_screen.dart';
 import 'package:dikla_spirit/screens/product/product_cat_list_screen.dart';
 import 'package:dikla_spirit/screens/product/product_details_screen.dart';
 import 'package:dikla_spirit/screens/onboarding/splash_screen.dart';
@@ -25,12 +28,24 @@ import 'package:dikla_spirit/screens/reviews/our_reviews_screen.dart';
 import 'package:dikla_spirit/screens/wishlist/wish_list_screen.dart';
 import 'package:dikla_spirit/widgets/product_details_widget.dart';
 import 'package:dikla_spirit/widgets/search_widget/search_widget.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 class CustomRouter {
+  static final GlobalKey<NavigatorState> shellNavigatorKey =
+      GlobalKey<NavigatorState>();
   static final GoRouter router = GoRouter(
+    // redirect: (context, state) async {
+    // final id = await SecureStorage.get('user_id');
+    // if (id != null && id.isNotEmpty) {
+    //   return "/dashboard";
+    // } else {
+    //   return "/login";
+    // }
+    // },
     routes: [
       ShellRoute(
+        navigatorKey: CustomRouter.shellNavigatorKey,
         routes: [
           GoRoute(
             name: "dashboard",
@@ -55,7 +70,7 @@ class CustomRouter {
             },
           ),
           GoRoute(
-            name: "product_Detail",
+            name: "product_detail",
             path: '/product_detail',
             builder: (context, state) {
               final data = state.extra as Map<String, dynamic>;
@@ -82,6 +97,16 @@ class CustomRouter {
             builder: (context, state) {
               final data = state.extra as String;
               return OrderDetailsScreen(data);
+            },
+          ),
+          GoRoute(
+            name: "requirement_form",
+            path: '/requirement_form',
+            builder: (context, state) {
+              final data = state.extra as RequirementFormParam;
+              return RequirementFormScreen(
+                param: data,
+              );
             },
           ),
         ],
@@ -121,7 +146,12 @@ class CustomRouter {
       GoRoute(
         name: "forgotPassword",
         path: '/forgotPassword',
-        builder: (context, state) => ForgotPasswordScreen(),
+        builder: (context, state) {
+          final data = state.extra as bool;
+          return ForgotPasswordScreen(
+            isForgot: data,
+          );
+        },
       ),
       GoRoute(
         name: "resetPassword",

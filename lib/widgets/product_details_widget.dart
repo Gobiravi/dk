@@ -26,8 +26,8 @@ class ProductDetailsWidgetQA extends HookConsumerWidget {
 // ================= Moon Jewellery Carousel UI ======================
 
 class ProductDetailsJewelleryWidget extends StatefulHookConsumerWidget {
-  Variation variations;
-  ProductDetailsJewelleryWidget(this.variations, {super.key});
+  final Variation variations;
+  const ProductDetailsJewelleryWidget(this.variations, {super.key});
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() =>
@@ -176,8 +176,8 @@ class _ProductDetailsJewelleryWidgetState
 // ================= Moon Jewellery Carousel UI ======================
 
 class ProductDetailsJewelleryWidgetSimple extends StatefulHookConsumerWidget {
-  ProductDetail productDetail;
-  ProductDetailsJewelleryWidgetSimple(this.productDetail, {super.key});
+  final ProductDetail productDetail;
+  const ProductDetailsJewelleryWidgetSimple(this.productDetail, {super.key});
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() =>
@@ -254,7 +254,7 @@ class _ProductDetailsJewelleryWidgetSimpleState
 
 // ================= Variation UI ======================================
 class ProductDetailsVariationWidget extends HookConsumerWidget {
-  ProductDetailsModelData productDetailsModelData;
+  final ProductDetailsModelData productDetailsModelData;
   ProductDetailsVariationWidget(this.productDetailsModelData, {super.key});
   var indexOfVariation = 0;
   @override

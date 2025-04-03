@@ -104,6 +104,8 @@ class ShippingAddressParam {
   String? country;
   String? phone;
   String? email;
+  String? countryCode;
+  String? dialCode;
   String? id;
   bool? isDefault;
   ShippingAddressParam(
@@ -119,5 +121,7 @@ class ShippingAddressParam {
       this.country,
       this.phone,
       this.id,
+      this.countryCode,
+      this.dialCode,
       this.isDefault});
 }

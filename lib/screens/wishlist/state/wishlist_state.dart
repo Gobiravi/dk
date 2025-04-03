@@ -14,6 +14,7 @@ class WishlistState {
   final List<DashboardModelFastResult> productCatList;
   final List<DashboardModelFastResult> wishlist;
   final List<DashboardModelFastResult> searchRecentPurchase;
+  final List<DashboardModelFastResult> shopBestSellingWishlist;
   final ProductDetail productDetails;
 
   WishlistState(
@@ -26,6 +27,7 @@ class WishlistState {
       required this.productDetailYouMayLikeThis,
       required this.productCatList,
       required this.wishlist,
+      required this.shopBestSellingWishlist,
       required this.productDetails,
       required this.searchRecentPurchase});
 
@@ -40,6 +42,7 @@ class WishlistState {
     List<DashboardModelFastResult>? productCatList,
     List<DashboardModelFastResult>? wishlist,
     List<DashboardModelFastResult>? searchRecentPurchase,
+    List<DashboardModelFastResult>? shopBestSellingWishlist,
     ProductDetail? productDetails,
   }) {
     return WishlistState(
@@ -56,6 +59,8 @@ class WishlistState {
             productDetailYouMayLikeThis ?? this.productDetailYouMayLikeThis,
         wishlist: wishlist ?? this.wishlist,
         productCatList: productCatList ?? this.productCatList,
+        shopBestSellingWishlist:
+            shopBestSellingWishlist ?? this.shopBestSellingWishlist,
         productDetails: productDetails ?? this.productDetails,
         searchRecentPurchase:
             searchRecentPurchase ?? this.searchRecentPurchase);
@@ -75,6 +80,7 @@ class WishlistNotifier extends StateNotifier<WishlistState> {
             productCatList: [],
             wishlist: [],
             searchRecentPurchase: [],
+            shopBestSellingWishlist: [],
             productDetails: ProductDetail()));
 
   void initializeFastResults(List<DashboardModelFastResult> fastResults) {
@@ -128,6 +134,11 @@ class WishlistNotifier extends StateNotifier<WishlistState> {
     state = state.copyWith(searchRecentPurchase: searchRecent);
   }
 
+  void initializeShopBestSellingWishlist(
+      List<DashboardModelFastResult> shopBestSellingWishlist) {
+    state = state.copyWith(shopBestSellingWishlist: shopBestSellingWishlist);
+  }
+
   void toggleWishlist(WishListType listType, {int? index}) {
     if (listType == WishListType.quick) {
       final updatedQuickSolutions =
@@ -174,7 +185,8 @@ class WishlistNotifier extends StateNotifier<WishlistState> {
               isWishlist:
                   !updatedproductDetailYouMayLikeThiss[index].isWishlist!);
     } else if (listType == WishListType.productDetail) {
-      var updatedProductDetails = ProductDetail().copyWith();
+      var updatedProductDetails = state.productDetails.copyWith();
+
       updatedProductDetails = updatedProductDetails.copyWith(
           descriptionQa: updatedProductDetails.descriptionQa,
           price: updatedProductDetails.price,
@@ -207,6 +219,12 @@ class WishlistNotifier extends StateNotifier<WishlistState> {
       searchRecentPurchase[index!] = searchRecentPurchase[index]
           .copyWith(isWishlist: !searchRecentPurchase[index].isWishlist!);
       state = state.copyWith(searchRecentPurchase: searchRecentPurchase);
+    } else if (listType == WishListType.shopBestSellingWishlist) {
+      final shopBestSellingWishlist =
+          List<DashboardModelFastResult>.from(state.shopBestSellingWishlist);
+      shopBestSellingWishlist[index!] = shopBestSellingWishlist[index]
+          .copyWith(isWishlist: !shopBestSellingWishlist[index].isWishlist!);
+      state = state.copyWith(shopBestSellingWishlist: shopBestSellingWishlist);
     }
   }
 
@@ -218,7 +236,7 @@ class WishlistNotifier extends StateNotifier<WishlistState> {
 
   void updateItem(
     WishListType listType,
-    dynamic updatedItem, {
+    DashboardModelFastResult updatedItem, {
     int? index,
   }) {
     if (listType == WishListType.quick) {
@@ -265,25 +283,20 @@ class WishlistNotifier extends StateNotifier<WishlistState> {
       state = state.copyWith(
           productDetailYouMayLikeThis: updatedProductDetailYouMayLikeThis);
     } else if (listType == WishListType.productDetail) {
-      var updatedProductDetails = ProductDetail().copyWith(
-          descriptionQa: state.productDetails.descriptionQa,
-          productImage: state.productDetails.productImage,
-          shortDescription: state.productDetails.shortDescription,
-          sizeToFit: state.productDetails.sizeToFit,
-          stockQuantity: state.productDetails.stockQuantity,
-          stockStatus: state.productDetails.stockStatus,
-          template: state.productDetails.template,
-          type: state.productDetails.type,
-          variations: state.productDetails.variations,
-          isWishlist: state.productDetails.isWishlist,
-          price: state.productDetails.price,
-          rating: state.productDetails.rating,
-          ratingCount: state.productDetails.ratingCount,
-          title: state.productDetails.title);
-      updatedProductDetails = updatedProductDetails.copyWith(
-          isWishlist: !updatedProductDetails.isWishlist!);
-      updatedProductDetails = updatedItem;
+      // Ensure `state.productDetails` is not null before copying
+      var updatedProductDetails =
+          (state.productDetails ?? ProductDetail()).copyWith(
+        isWishlist: !(state.productDetails.isWishlist ?? false),
+      );
 
+// Convert `updatedItem` (DashboardModelFastResult) into `ProductDetail`
+      updatedProductDetails = updatedProductDetails.copyWith(
+        title: updatedItem.title,
+        price: updatedItem.price,
+        rating: updatedItem.rating,
+        ratingCount: updatedItem.ratingCount,
+        isWishlist: updatedItem.isWishlist,
+      );
       state = state.copyWith(productDetails: updatedProductDetails);
     } else if (listType == WishListType.productCatList) {
       final productCatList =
@@ -295,6 +308,11 @@ class WishlistNotifier extends StateNotifier<WishlistState> {
           List<DashboardModelFastResult>.from(state.searchRecentPurchase);
       searchRecentPurchase[index!] = updatedItem;
       state = state.copyWith(searchRecentPurchase: searchRecentPurchase);
+    } else if (listType == WishListType.shopBestSellingWishlist) {
+      final shopBestSellingWishlist =
+          List<DashboardModelFastResult>.from(state.shopBestSellingWishlist);
+      shopBestSellingWishlist[index!] = updatedItem;
+      state = state.copyWith(shopBestSellingWishlist: shopBestSellingWishlist);
     }
   }
 }

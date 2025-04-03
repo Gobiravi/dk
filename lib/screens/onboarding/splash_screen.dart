@@ -20,12 +20,17 @@ class _SplashScreen extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    print(Platform.localeName.substring(0, 2));
+    // print(Platform.localeName.substring(0, 2));
     Future.delayed(const Duration(seconds: 3)).then((onValue) async {
       String? isOnboardDone = await SecureStorage.get("isOnboardDone");
       if (mounted) {
         if (isOnboardDone != null && isOnboardDone.toLowerCase() == "true") {
-          context.goNamed("login_options");
+          final id = await SecureStorage.get('user_id');
+          if (id != null && id.isNotEmpty) {
+            context.goNamed("dashboard");
+          } else {
+            context.goNamed("login_options");
+          }
         } else {
           context.goNamed("onboarding");
         }

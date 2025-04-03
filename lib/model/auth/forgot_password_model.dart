@@ -30,6 +30,7 @@ class ForgotPasswordModel {
 class ForgotPasswordModelData {
   String? resetKey;
   String? userLogin;
+  bool? isForgot;
 
   ForgotPasswordModelData({this.resetKey, this.userLogin});
 

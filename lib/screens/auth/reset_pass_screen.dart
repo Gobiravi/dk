@@ -327,72 +327,88 @@ class ResetPassScreen extends HookConsumerWidget {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    ConstantMethods.customDivider(),
-                    SizedBox(
-                      height: 24.sp,
-                    ),
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 16.sp),
-                      child: Text.rich(
-                        TextSpan(
-                          children: [
-                            TextSpan(
-                              text: 'Already have an account?',
-                              style: AppTheme.lightTheme.textTheme.bodyLarge
-                                  ?.copyWith(
-                                      fontWeight: FontWeight.w500,
-                                      fontSize: 14.sp,
-                                      color: AppTheme.subTextColor),
-                            ),
-                            TextSpan(
-                              text: ' ',
-                              style: AppTheme.lightTheme.textTheme.bodyLarge
-                                  ?.copyWith(
-                                      fontWeight: FontWeight.w500,
-                                      fontSize: 14.sp,
-                                      color: AppTheme.subTextColor),
-                            ),
-                            TextSpan(
-                                text: 'Log In',
-                                style: AppTheme.lightTheme.textTheme.bodyLarge
-                                    ?.copyWith(
-                                  fontWeight: FontWeight.w500,
-                                  fontSize: 14.sp,
+                    data.isForgot!
+                        ? Column(
+                            children: [
+                              ConstantMethods.customDivider(),
+                              SizedBox(
+                                height: 24.sp,
+                              ),
+                              Padding(
+                                padding:
+                                    EdgeInsets.symmetric(horizontal: 16.sp),
+                                child: Text.rich(
+                                  TextSpan(
+                                    children: [
+                                      TextSpan(
+                                        text: 'Already have an account?',
+                                        style: AppTheme
+                                            .lightTheme.textTheme.bodyLarge
+                                            ?.copyWith(
+                                                fontWeight: FontWeight.w500,
+                                                fontSize: 14.sp,
+                                                color: AppTheme.subTextColor),
+                                      ),
+                                      TextSpan(
+                                        text: ' ',
+                                        style: AppTheme
+                                            .lightTheme.textTheme.bodyLarge
+                                            ?.copyWith(
+                                                fontWeight: FontWeight.w500,
+                                                fontSize: 14.sp,
+                                                color: AppTheme.subTextColor),
+                                      ),
+                                      TextSpan(
+                                          text: 'Log In',
+                                          style: AppTheme
+                                              .lightTheme.textTheme.bodyLarge
+                                              ?.copyWith(
+                                            fontWeight: FontWeight.w500,
+                                            fontSize: 14.sp,
+                                          ),
+                                          recognizer: TapGestureRecognizer()
+                                            ..onTap = () {
+                                              ref
+                                                  .read(resetPasswordProvider
+                                                      .notifier)
+                                                  .state = "";
+                                              ref
+                                                  .read(resetCPassProvider
+                                                      .notifier)
+                                                  .state = "";
+                                              ref
+                                                  .read(
+                                                      resetPasswordValidProvider
+                                                          .notifier)
+                                                  .state = false;
+                                              ref
+                                                  .read(
+                                                      resetPasswordVisibilityProvider
+                                                          .notifier)
+                                                  .state = true;
+                                              ref
+                                                  .read(
+                                                      resetCPasswordValidProvider
+                                                          .notifier)
+                                                  .state = false;
+                                              ref
+                                                  .read(
+                                                      resetCPasswordVisibilityProvider
+                                                          .notifier)
+                                                  .state = true;
+                                              context.go("/login");
+                                            }),
+                                    ],
+                                  ),
+                                  textAlign: TextAlign.center,
                                 ),
-                                recognizer: TapGestureRecognizer()
-                                  ..onTap = () {
-                                    ref
-                                        .read(resetPasswordProvider.notifier)
-                                        .state = "";
-                                    ref
-                                        .read(resetCPassProvider.notifier)
-                                        .state = "";
-                                    ref
-                                        .read(
-                                            resetPasswordValidProvider.notifier)
-                                        .state = false;
-                                    ref
-                                        .read(resetPasswordVisibilityProvider
-                                            .notifier)
-                                        .state = true;
-                                    ref
-                                        .read(resetCPasswordValidProvider
-                                            .notifier)
-                                        .state = false;
-                                    ref
-                                        .read(resetCPasswordVisibilityProvider
-                                            .notifier)
-                                        .state = true;
-                                    context.go("/login");
-                                  }),
-                          ],
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                    SizedBox(
-                      height: 24.sp,
-                    ),
+                              ),
+                              SizedBox(
+                                height: 24.sp,
+                              ),
+                            ],
+                          )
+                        : SizedBox.shrink(),
                     Container(
                       width: ScreenUtil().screenWidth,
                       height: 67.sp,
@@ -442,7 +458,13 @@ class ResetPassScreen extends HookConsumerWidget {
                                         isLoading: true);
                                     Future.delayed(Duration(seconds: 3)).then(
                                       (value) {
-                                        context.go("/login");
+                                        if (context.mounted) {
+                                          if (data.isForgot!) {
+                                            context.go("/login");
+                                          } else {
+                                            context.pop();
+                                          }
+                                        }
                                       },
                                     );
                                   } else {

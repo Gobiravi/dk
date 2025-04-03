@@ -171,7 +171,7 @@ class WishListScreen extends HookConsumerWidget {
                                     EdgeInsets.symmetric(horizontal: 16.sp),
                                 child: SizedBox(
                                   // height: ScreenUtil().setHeight(350),
-                                  height: data.data!.wishlist!.length * 205.sp,
+                                  // height: data.data!.wishlist!.length * 205.sp,
                                   child: GridView.builder(
                                     physics: NeverScrollableScrollPhysics(),
                                     shrinkWrap: true,
@@ -492,7 +492,7 @@ class WishListScreen extends HookConsumerWidget {
                                 ),
                               ),
                         SizedBox(
-                          height: 20.sp,
+                          height: 39.sp,
                         ),
                         Padding(
                           padding: EdgeInsets.only(left: 16.0.sp),

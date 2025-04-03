@@ -78,6 +78,7 @@ class CartListModelDataCart {
   String? name;
   int? template;
   dynamic price;
+  int? quantity;
   String? cartItemKey;
 
   CartListModelDataCart(
@@ -87,6 +88,7 @@ class CartListModelDataCart {
       this.name,
       this.price,
       this.template,
+      this.quantity,
       this.cartItemKey});
 
   CartListModelDataCart.fromJson(Map<String, dynamic> json) {
@@ -96,6 +98,7 @@ class CartListModelDataCart {
     template = json['template'];
     name = json['name'];
     price = json['price'];
+    quantity = json['quantity'];
     cartItemKey = json['cart_item_key'];
   }
 
@@ -107,6 +110,7 @@ class CartListModelDataCart {
     data['template'] = template;
     data['name'] = name;
     data['price'] = price;
+    data['quantity'] = quantity;
     data['cart_item_key'] = cartItemKey;
     return data;
   }

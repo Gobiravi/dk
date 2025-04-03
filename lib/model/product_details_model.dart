@@ -123,6 +123,7 @@ class ProductDetail {
       this.stockStatus,
       this.isWishlist,
       this.sizeToFit,
+      this.suggestedPrice,
       this.template});
 
   final String? title;
@@ -139,6 +140,7 @@ class ProductDetail {
   final String? productImage;
   final String? productLink;
   final String? sizeToFit;
+  final dynamic suggestedPrice;
   final bool? isWishlist;
   final List<Variation>? variations;
 
@@ -153,6 +155,7 @@ class ProductDetail {
       ratingCount: json["rating_count"],
       type: json["type"],
       isWishlist: json["is_wishlist"],
+      suggestedPrice: json["suggested_price"],
       descriptionQa: json["description_qa"] == null
           ? []
           : List<DescriptionQa>.from(
@@ -181,7 +184,7 @@ class ProductDetail {
         "description_qa": descriptionQa?.map((x) => x.toJson()).toList(),
         "price": price,
         "product_image": productImage,
-        "product_image": productImage,
+        "suggested_price": suggestedPrice,
         "producis_wishlist_image": isWishlist,
         "variations": variations?.map((x) => x.toJson()).toList(),
       };
@@ -200,6 +203,7 @@ class ProductDetail {
       int? stockQuantity,
       String? productImage,
       String? sizeToFit,
+      dynamic suggestedPrice,
       bool? isWishlist,
       List<Variation>? variations}) {
     return ProductDetail(
@@ -217,12 +221,13 @@ class ProductDetail {
         stockStatus: stockStatus ?? this.stockStatus,
         isWishlist: isWishlist ?? this.isWishlist,
         sizeToFit: sizeToFit ?? this.sizeToFit,
+        suggestedPrice: suggestedPrice ?? this.suggestedPrice,
         template: template ?? this.template);
   }
 
   @override
   String toString() {
-    return "$title, $shortDescription, $rating, $ratingCount, $type, $descriptionQa, $price, $variations, $sizeToFit, $template, $isWishlist $id, ";
+    return "$title, $shortDescription, $rating, $ratingCount, $type, $descriptionQa, $price, $variations, $sizeToFit, $template, $isWishlist $id, $suggestedPrice, ";
   }
 }
 

@@ -3,6 +3,7 @@ import 'package:dikla_spirit/custom/api.dart';
 import 'package:dikla_spirit/custom/app_theme.dart';
 import 'package:dikla_spirit/custom/constants.dart';
 import 'package:dikla_spirit/l10n/app_localizations.dart';
+import 'package:dikla_spirit/model/orders/my_orders_model.dart';
 import 'package:dikla_spirit/model/providers.dart';
 import 'package:dikla_spirit/widgets/no_net_widget.dart';
 import 'package:flutter/material.dart';
@@ -236,31 +237,54 @@ class MyOrdersScreen extends HookConsumerWidget {
                                               ),
                                             ],
                                           ),
-                                          Container(
-                                            // width: 96.w,
-                                            padding: EdgeInsets.symmetric(
-                                                horizontal: 15.sp),
-                                            height: 32.h,
-                                            decoration: ShapeDecoration(
-                                              shape: RoundedRectangleBorder(
-                                                side: BorderSide(
-                                                    width: 1,
-                                                    color:
-                                                        AppTheme.subTextColor),
-                                                borderRadius:
-                                                    BorderRadius.circular(8.sp),
+                                          InkWell(
+                                            onTap: () {
+                                              if (datum[index]
+                                                          .requirementForm !=
+                                                      null &&
+                                                  !datum[index]
+                                                      .requirementForm!) {
+                                                context.pushNamed(
+                                                    "requirement_form",
+                                                    extra: RequirementFormParam(
+                                                        id: datum[index]
+                                                            .orderId
+                                                            .toString(),
+                                                        template: datum[index]
+                                                                .template ??
+                                                            "",
+                                                        name:
+                                                            datum[index].name ??
+                                                                ""));
+                                              }
+                                            },
+                                            child: Container(
+                                              // width: 96.w,
+                                              padding: EdgeInsets.symmetric(
+                                                  horizontal: 15.sp),
+                                              height: 32.h,
+                                              decoration: ShapeDecoration(
+                                                shape: RoundedRectangleBorder(
+                                                  side: BorderSide(
+                                                      width: 1,
+                                                      color: AppTheme
+                                                          .subTextColor),
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          8.sp),
+                                                ),
                                               ),
-                                            ),
-                                            child: Center(
-                                              child: Text(
-                                                datum[index].requirementForm !=
-                                                            null &&
-                                                        datum[index]
-                                                            .requirementForm!
-                                                    ? 'Order Again'
-                                                    : "Complete Your Order",
-                                                style: AppTheme.lightTheme
-                                                    .textTheme.bodySmall,
+                                              child: Center(
+                                                child: Text(
+                                                  datum[index].requirementForm !=
+                                                              null &&
+                                                          datum[index]
+                                                              .requirementForm!
+                                                      ? 'Order Again'
+                                                      : "Complete Your Order",
+                                                  style: AppTheme.lightTheme
+                                                      .textTheme.bodySmall,
+                                                ),
                                               ),
                                             ),
                                           )
@@ -499,45 +523,9 @@ class MyOrdersScreen extends HookConsumerWidget {
               if (data.statusCode == 402) {
                 refreshApi(ref);
               }
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.error,
-                    size: 80.sp,
-                    color: AppTheme.primaryColor,
-                  ),
-                  SizedBox(height: 16.h),
-                  Text(
-                    'Something went wrong',
-                    style: AppTheme.lightTheme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: AppTheme.textColor,
-                    ),
-                  ),
-                  SizedBox(height: 14.h),
-                  ElevatedButton(
-                    onPressed: () {
-                      ref.refresh(getMyOrdersApiProvider);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.primaryColor,
-                      padding: EdgeInsets.symmetric(
-                          horizontal: 24.w, vertical: 12.h),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8.r),
-                      ),
-                    ),
-                    child: Text(
-                      'Retry',
-                      style:
-                          AppTheme.lightTheme.textTheme.labelMedium?.copyWith(
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ],
+              return ConstantMethods.buildErrorUI(
+                ref,
+                onPressed: () => ref.refresh(getMyOrdersApiProvider),
               );
             default:
               return SizedBox();
@@ -548,58 +536,13 @@ class MyOrdersScreen extends HookConsumerWidget {
             // Show No Internet Widget
             return NoInternetWidget(
               onRetry: () {
-                ref.refresh(getMyOrdersApiProvider);
+                return ref.refresh(getMyOrdersApiProvider);
               },
             );
           }
-          return Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  width: 121.w,
-                  height: 121.92.h,
-                  decoration: ShapeDecoration(
-                    color: AppTheme.appBarAndBottomBarColor,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8.sp)),
-                  ),
-                  child: SvgPicture.asset(
-                    "${Constants.imagePath}warning.svg",
-                    height: 40.sp,
-                  ),
-                ),
-                SizedBox(height: 16.h),
-                Text(
-                  'Something went wrong',
-                  style: AppTheme.lightTheme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: AppTheme.textColor,
-                  ),
-                ),
-                SizedBox(height: 14.h),
-                ElevatedButton(
-                  onPressed: () {
-                    ref.refresh(getMyOrdersApiProvider);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primaryColor,
-                    padding:
-                        EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8.r),
-                    ),
-                  ),
-                  child: Text(
-                    'Retry',
-                    style: AppTheme.lightTheme.textTheme.labelMedium?.copyWith(
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ],
-            ),
+          return ConstantMethods.buildErrorUI(
+            ref,
+            onPressed: () => ref.refresh(getMyOrdersApiProvider),
           );
         },
         loading: () => _buildShimmerLoading(context),
@@ -609,7 +552,7 @@ class MyOrdersScreen extends HookConsumerWidget {
 
   refreshApi(WidgetRef ref) async {
     await ApiUtils.refreshToken();
-    ref.refresh(getMyOrdersApiProvider);
+    return ref.refresh(getMyOrdersApiProvider);
   }
 
   Widget _buildShimmerLoading(BuildContext context) {

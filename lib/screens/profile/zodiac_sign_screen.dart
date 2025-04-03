@@ -7,8 +7,15 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-class ZodiacSignScreen extends ConsumerWidget {
-  ZodiacSignScreen({super.key});
+class ZodiacSignScreen extends ConsumerStatefulWidget {
+  const ZodiacSignScreen({super.key});
+
+  @override
+  ConsumerState<ZodiacSignScreen> createState() => _ZodiacSignScreenState();
+}
+
+class _ZodiacSignScreenState extends ConsumerState<ZodiacSignScreen> {
+  ZodiacSignModel? tempSelectedZodiac; // Temporary selection
 
   final List<ZodiacSignModel> zodiacSigns = [
     ZodiacSignModel(
@@ -62,16 +69,23 @@ class ZodiacSignScreen extends ConsumerWidget {
   ];
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  void initState() {
+    super.initState();
+    // Set tempSelectedZodiac to the currently saved selection
+    tempSelectedZodiac = ref.read(selectedZodiacProvider);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final localization = AppLocalizations.of(context);
     final selectedZodiac = ref.watch(selectedZodiacProvider);
+
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-            onPressed: () {
-              context.pop();
-            },
-            icon: SvgPicture.asset("${Constants.imagePathAppBar}back.svg")),
+          onPressed: () => context.pop(),
+          icon: SvgPicture.asset("${Constants.imagePathAppBar}back.svg"),
+        ),
         title: Text(
           localization.zodiac_sign,
           style: AppTheme.lightTheme.textTheme.bodyLarge?.copyWith(
@@ -86,71 +100,135 @@ class ZodiacSignScreen extends ConsumerWidget {
       body: SizedBox(
         height: ScreenUtil().screenHeight,
         width: ScreenUtil().screenWidth,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            SizedBox(
-              height: 21.h,
-            ),
-            Text(localization.select_your_zodiac_sign,
-                style: AppTheme.lightTheme.textTheme.bodyLarge),
-            SizedBox(
-              height: 30.h,
-            ),
-            Expanded(
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16.0.w),
-                child: GridView.builder(
-                  itemCount: zodiacSigns.length,
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 4,
-                    crossAxisSpacing: 10,
-                    mainAxisSpacing: 10,
-                  ),
-                  itemBuilder: (context, index) {
-                    final zodiac = zodiacSigns[index];
-                    final isSelected = zodiac == selectedZodiac;
+        child: SafeArea(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              SizedBox(height: 21.h),
+              Text(localization.select_your_zodiac_sign,
+                  style: AppTheme.lightTheme.textTheme.bodyLarge),
+              SizedBox(height: 30.h),
+              Expanded(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16.0.w),
+                  child: GridView.builder(
+                    itemCount: zodiacSigns.length,
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 4,
+                      crossAxisSpacing: 10,
+                      mainAxisSpacing: 10,
+                      childAspectRatio: 0.56,
+                    ),
+                    itemBuilder: (context, index) {
+                      final zodiac = zodiacSigns[index];
+                      final isSelected =
+                          tempSelectedZodiac?.name.toLowerCase() ==
+                              zodiac.name.toLowerCase();
 
-                    return GestureDetector(
-                      onTap: () {
-                        ref.read(selectedZodiacProvider.notifier).state =
-                            zodiac;
-                      },
-                      child: Column(
-                        children: [
-                          Container(
-                            decoration: BoxDecoration(
-                              color:
-                                  isSelected ? Colors.pink[100] : Colors.white,
-                              borderRadius: BorderRadius.circular(12),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey.withOpacity(0.2),
-                                  blurRadius: 4,
-                                  spreadRadius: 1,
+                      return GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            tempSelectedZodiac = zodiac;
+                          });
+                        },
+                        child: Column(
+                          children: [
+                            Container(
+                              height: 92.h,
+                              width: 92.h,
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? Colors.pink[100]
+                                    : Colors.white,
+                                borderRadius: BorderRadius.circular(12),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.grey.withOpacity(0.2),
+                                    blurRadius: 4,
+                                    spreadRadius: 1,
+                                  ),
+                                ],
+                              ),
+                              child: Center(
+                                child: SvgPicture.asset(
+                                  zodiac.imagePath,
+                                  height: 65.h,
+                                  width: 65.h,
+                                  colorFilter: ColorFilter.mode(
+                                    isSelected
+                                        ? AppTheme.textColor
+                                        : AppTheme.strokeColor,
+                                    BlendMode.modulate,
+                                  ),
                                 ),
-                              ],
+                              ),
                             ),
-                            child:
-                                SvgPicture.asset(zodiac.imagePath, height: 40),
-                          ),
-                          SizedBox(height: 5),
-                          Text(
-                            zodiac.name,
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          Text(
-                            zodiac.dateRange,
-                            style: TextStyle(fontSize: 12, color: Colors.grey),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
+                            SizedBox(height: 5),
+                            Text(
+                              zodiac.name,
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            Text(
+                              zodiac.dateRange,
+                              style:
+                                  TextStyle(fontSize: 12, color: Colors.grey),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
                 ),
               ),
-            ),
-          ],
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: InkWell(
+                  onTap: () {
+                    ref.read(selectedZodiacProvider.notifier).state =
+                        tempSelectedZodiac;
+                    context.pop();
+                  },
+                  child: Container(
+                    height: 60.sp,
+                    decoration: const ShapeDecoration(
+                      color: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(12),
+                          topRight: Radius.circular(12),
+                        ),
+                      ),
+                    ),
+                    child: Center(
+                      child: Container(
+                        width: ScreenUtil().screenWidth * 0.9,
+                        height: 36.sp,
+                        decoration: ShapeDecoration(
+                          color: AppTheme.subTextColor,
+                          shape: RoundedRectangleBorder(
+                            side: BorderSide(
+                                width: 1, color: AppTheme.subTextColor),
+                            borderRadius: BorderRadius.circular(8.sp),
+                          ),
+                        ),
+                        child: Center(
+                          child: Text(
+                            localization.save_changes,
+                            style: AppTheme.lightTheme.textTheme.bodySmall
+                                ?.copyWith(
+                              color: AppTheme.appBarAndBottomBarColor,
+                              fontSize: 14.sp,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

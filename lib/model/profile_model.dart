@@ -35,6 +35,9 @@ class ProfileModelData {
   String? gender;
   String? zodiacSign;
   String? todayHoroscope;
+  String? dialCode;
+  String? countryCode;
+  String? countryName;
 
   ProfileModelData(
       {this.firstName,
@@ -44,7 +47,10 @@ class ProfileModelData {
       this.dateOfBirth,
       this.gender,
       this.zodiacSign,
-      this.todayHoroscope});
+      this.todayHoroscope,
+      this.countryCode,
+      this.countryName,
+      this.dialCode});
 
   ProfileModelData.fromJson(Map<String, dynamic> json) {
     firstName = json['first_name'];
@@ -55,6 +61,9 @@ class ProfileModelData {
     gender = json['gender'];
     zodiacSign = json['zodiac_sign'];
     todayHoroscope = json['today_horoscope'];
+    dialCode = json['dial_code'];
+    countryCode = json['country_code'];
+    countryName = json['country_name'];
   }
 
   Map<String, dynamic> toJson() {
@@ -67,6 +76,9 @@ class ProfileModelData {
     data['gender'] = gender;
     data['zodiac_sign'] = zodiacSign;
     data['today_horoscope'] = todayHoroscope;
+    data['country_name'] = countryName;
+    data['country_code'] = countryCode;
+    data['dial_code'] = dialCode;
     return data;
   }
 }

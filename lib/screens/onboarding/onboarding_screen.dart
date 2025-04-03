@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:dikla_spirit/custom/app_theme.dart';
+import 'package:dikla_spirit/custom/constants.dart';
 import 'package:dikla_spirit/custom/secure_storage.dart';
 import 'package:dikla_spirit/l10n/app_localizations.dart';
 import 'package:dikla_spirit/model/providers.dart';
@@ -203,47 +204,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             );
           },
           error: (error, stackTrace) {
-            return Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.error,
-                    size: 80.sp,
-                    color: AppTheme.primaryColor,
-                  ),
-                  SizedBox(height: 16.h),
-                  Text(
-                    'Something went wrong',
-                    style: AppTheme.lightTheme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: AppTheme.textColor,
-                    ),
-                  ),
-                  SizedBox(height: 14.h),
-                  ElevatedButton(
-                    onPressed: () async {
-                      ref.refresh(getOnboardingApiProvider);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.primaryColor,
-                      padding: EdgeInsets.symmetric(
-                          horizontal: 24.w, vertical: 12.h),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8.r),
-                      ),
-                    ),
-                    child: Text(
-                      'Retry',
-                      style:
-                          AppTheme.lightTheme.textTheme.labelMedium?.copyWith(
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+            return ConstantMethods.buildErrorUI(
+              ref,
+              onPressed: () => ref.refresh(getOnboardingApiProvider),
             );
           },
           loading: () {

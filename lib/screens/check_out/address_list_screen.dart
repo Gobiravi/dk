@@ -23,12 +23,11 @@ class AddressListScreen extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final addresList = ref.watch(getShippingAddressApiProvider);
-    final selectedObject = ref.watch(selectedAddresObject);
+    // final selectedObject = ref.watch(selectedAddresObject);
     final selectedId = ref.watch(selectedAddresId);
 
     return Scaffold(
         appBar: AppBar(
-          centerTitle: true,
           title: Text(
             "Select Address",
             style: AppTheme.lightTheme.textTheme.titleMedium
@@ -48,6 +47,20 @@ class AddressListScreen extends HookConsumerWidget {
               switch (data.status!) {
                 case true:
                   if (datum.isNotEmpty) {
+                    Future.microtask(
+                      () {
+                        ref.read(selectedAddresId.notifier).state = datum
+                                .firstWhere(
+                                  (element) => element.isDefault == true,
+                                )
+                                .id ??
+                            0;
+                        ref.read(currentDefaultAddressProvider.notifier).state =
+                            datum.firstWhere(
+                          (element) => element.isDefault == true,
+                        );
+                      },
+                    );
                     return SizedBox(
                       width: ScreenUtil().screenWidth,
                       child: Stack(
@@ -199,17 +212,23 @@ class AddressListScreen extends HookConsumerWidget {
                                                           groupValue:
                                                               selectedId,
                                                           onChanged: (value) {
-                                                            ref
-                                                                .read(selectedAddresObject
-                                                                    .notifier)
-                                                                .state = datum[index];
+                                                            print(value);
                                                             ref
                                                                 .read(selectedAddresId
                                                                     .notifier)
-                                                                .state = datum[
-                                                                        index]
-                                                                    .id ??
-                                                                0;
+                                                                .state = value ?? 0;
+                                                            ref
+                                                                .read(selectedAddresObject
+                                                                    .notifier)
+                                                                .update((_) =>
+                                                                    datum[
+                                                                        index]);
+                                                            ref
+                                                                .read(currentDefaultAddressProvider
+                                                                    .notifier)
+                                                                .update((_) =>
+                                                                    datum[
+                                                                        index]);
                                                           },
                                                         ),
                                                       )
@@ -279,25 +298,34 @@ class AddressListScreen extends HookConsumerWidget {
                           ),
                           Align(
                             alignment: Alignment.bottomCenter,
-                            child:
-                                _buildSaveButton(ref, selectedObject, context),
+                            child: _buildSaveButton(ref, datum, context),
                           ),
                         ],
                       ),
                     );
                   } else {
-                    return _buildSaveButton(ref, selectedObject, context);
+                    return _buildSaveButton(ref, datum, context);
                   }
                 case false:
                   if (data.statusCode == 402) {
                     refreshApi(ref);
                   }
-                  return _buildErrorUI(ref);
+                  return ConstantMethods.buildErrorUI(
+                    ref,
+                    onPressed: () {
+                      return ref.refresh(getShippingAddressApiProvider);
+                    },
+                  );
                 default:
                   return SizedBox();
               }
             },
-            error: (error, stackTrace) => _buildErrorUI(ref),
+            error: (error, stackTrace) => ConstantMethods.buildErrorUI(
+              ref,
+              onPressed: () {
+                return ref.refresh(getShippingAddressApiProvider);
+              },
+            ),
             loading: () {
               return _buildShimmerLoading(context);
             },
@@ -318,7 +346,7 @@ class AddressListScreen extends HookConsumerWidget {
         child: ListView.builder(
           itemCount: 6,
           itemBuilder: (context, index) => Container(
-            margin: const EdgeInsets.symmetric(horizontal: 10.0),
+            margin: EdgeInsets.symmetric(horizontal: 10.0.sp),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
               color: AppTheme
@@ -345,22 +373,30 @@ class AddressListScreen extends HookConsumerWidget {
     );
   }
 
-  Widget _buildSaveButton(
-      WidgetRef ref, GetShippingAddressModelData data, BuildContext context) {
+  Widget _buildSaveButton(WidgetRef ref, List<GetShippingAddressModelData> data,
+      BuildContext context) {
     return InkWell(
       onTap: () {
+        final selectedAddress = data.firstWhere(
+          (element) => element.id == ref.read(selectedAddresId),
+          orElse: () => GetShippingAddressModelData(),
+        );
+
         ref
             .read(putShippingAddressApiProvider(ShippingAddressParam(
-                    firstName: data.firstName ?? "",
-                    lastName: data.lastName ?? "",
+                    firstName: selectedAddress.firstName ?? "",
+                    lastName: selectedAddress.lastName ?? "",
                     email: "",
                     isDefault: true,
-                    phone: data.phone ?? "",
-                    country: data.country ?? "",
-                    id: data.id.toString()))
+                    phone: selectedAddress.phone ?? "",
+                    country: selectedAddress.country ?? "",
+                    id: selectedAddress.id.toString()))
                 .future)
             .then((onValue) {
           if (onValue.status!) {
+            ref.read(selectedAddresObject.notifier).state = selectedAddress;
+            print("Selected Address ID: ${ref.read(selectedAddresId)}");
+            print("Saved Address Object: ${ref.read(selectedAddresObject)}");
           } else {
             if (context.mounted) {
               ConstantMethods.showSnackbar(context, onValue.message ?? "");
@@ -401,42 +437,6 @@ class AddressListScreen extends HookConsumerWidget {
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildErrorUI(WidgetRef ref) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Icon(Icons.error, size: 80.sp, color: AppTheme.primaryColor),
-        SizedBox(height: 16.h),
-        Text(
-          'Something went wrong',
-          style: AppTheme.lightTheme.textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w700,
-            color: AppTheme.textColor,
-          ),
-        ),
-        SizedBox(height: 14.h),
-        ElevatedButton(
-          onPressed: () {
-            return ref.refresh(getShippingAddressApiProvider);
-          },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppTheme.primaryColor,
-            padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8.r),
-            ),
-          ),
-          child: Text(
-            'Retry',
-            style: AppTheme.lightTheme.textTheme.labelMedium
-                ?.copyWith(color: Colors.white),
-          ),
-        ),
-      ],
     );
   }
 }

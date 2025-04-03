@@ -49,7 +49,7 @@ class LoginOptionsScreen extends HookConsumerWidget {
               height: 26.sp,
             ),
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.0),
+              padding: EdgeInsets.symmetric(horizontal: 50.0.w),
               child: SizedBox(
                 height: 44.sp,
                 child: ElevatedButton(
@@ -90,7 +90,7 @@ class LoginOptionsScreen extends HookConsumerWidget {
             ),
             Platform.isAndroid
                 ? Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16.0),
+                    padding: EdgeInsets.symmetric(horizontal: 50.0.w),
                     child: SizedBox(
                       height: 44.sp,
                       child: ElevatedButton(
@@ -126,7 +126,7 @@ class LoginOptionsScreen extends HookConsumerWidget {
                     ),
                   )
                 : Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16.0),
+                    padding: EdgeInsets.symmetric(horizontal: 50.0.w),
                     child: SizedBox(
                       height: 44.sp,
                       child: ElevatedButton(
@@ -165,7 +165,7 @@ class LoginOptionsScreen extends HookConsumerWidget {
               height: 16.sp,
             ),
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.0),
+              padding: EdgeInsets.symmetric(horizontal: 50.0.w),
               child: SizedBox(
                 height: 44.sp,
                 child: ElevatedButton(
@@ -204,7 +204,7 @@ class LoginOptionsScreen extends HookConsumerWidget {
               height: 32.sp,
             ),
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 50.0.sp),
+              padding: EdgeInsets.symmetric(horizontal: 75.0.sp),
               child: Text.rich(
                 textAlign: TextAlign.center,
                 TextSpan(

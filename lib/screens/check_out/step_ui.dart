@@ -10,6 +10,7 @@ import 'package:dio/dio.dart';
 import 'package:fl_country_code_picker/fl_country_code_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
@@ -26,6 +27,7 @@ class StepProgressScreen extends ConsumerWidget {
     final currentStep = ref.watch(stepProvider);
     final checkoutTotalValue =
         ref.watch(checkoutTotal.select((value) => value));
+    final currency = ref.watch(currentCurrencySymbolProvider);
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
@@ -66,7 +68,7 @@ class StepProgressScreen extends ConsumerWidget {
                       SizedBox(height: 26),
                       Visibility(
                           visible: currentStep == 1,
-                          child: AddressWidget(isJewel)),
+                          child: AddressWidget(true)),
                       Visibility(
                           visible: currentStep == 2,
                           child: OrderSummaryWidget(isJewel)),
@@ -103,6 +105,24 @@ class StepProgressScreen extends ConsumerWidget {
                           )).future)
                               .then((onValue) {
                             if (onValue.status!) {
+                              resetFields(ref);
+
+                              ref
+                                  .read(currentDefaultAddressProvider.notifier)
+                                  .state = GetShippingAddressModelData(
+                                address1: onValue.data?.address1 ?? "",
+                                address2: onValue.data?.address2 ?? "",
+                                city: onValue.data?.city ?? "",
+                                company: onValue.data?.company ?? "",
+                                country: onValue.data?.country ?? "",
+                                firstName: onValue.data?.firstName ?? "",
+                                id: onValue.data?.id ?? 0,
+                                isDefault: onValue.data?.isDefault,
+                                lastName: onValue.data?.lastName ?? "",
+                                phone: onValue.data?.phone ?? "",
+                                postcode: onValue.data?.postcode ?? "",
+                                state: onValue.data?.state ?? "",
+                              );
                               ref
                                   .read(stepProvider.notifier)
                                   .updateStep(currentStep + 1);
@@ -258,7 +278,13 @@ class StepProgressScreen extends ConsumerWidget {
                             ),
                             InkWell(
                               onTap: () {
-                                makePayment(context, ref);
+                                final value =
+                                    CurrencySymbol.fromSymbol(currency);
+                                makePayment(
+                                    context,
+                                    ref,
+                                    checkoutTotalValue.split(" ").last,
+                                    value.name.toUpperCase());
                               },
                               child: Container(
                                 width: ScreenUtil().screenWidth * 0.9,
@@ -365,10 +391,11 @@ class StepProgressScreen extends ConsumerWidget {
     }
   }
 
-  Future<void> makePayment(BuildContext context, WidgetRef ref) async {
+  Future<void> makePayment(BuildContext context, WidgetRef ref, String total,
+      String currency) async {
     try {
       // Create payment intent data
-      paymentIntent = await createPaymentIntent('100.0', 'INR');
+      paymentIntent = await createPaymentIntent(total, currency);
       // initialise the payment sheet setup
       await Stripe.instance.initPaymentSheet(
         paymentSheetParameters: SetupPaymentSheetParameters(
@@ -410,11 +437,12 @@ class StepProgressScreen extends ConsumerWidget {
       await Stripe.instance.presentPaymentSheet();
       // Show when payment is done
       // Displaying snackbar for it
+      await fetchPaymentDetails(paymentIntent?["id"]);
       if (context.mounted) {
         ConstantMethods.showSnackbar(context, "Paid Successfully");
-        if (currentStep < 3) {
-          ref.read(stepProvider.notifier).updateStep(currentStep + 1);
-        }
+        // if (currentStep < 3) {
+        //   ref.read(stepProvider.notifier).updateStep(currentStep + 1);
+        // }
       }
       paymentIntent = null;
     } on StripeException catch (e) {
@@ -428,6 +456,33 @@ class StepProgressScreen extends ConsumerWidget {
         print('Error: $e');
         ConstantMethods.showSnackbar(context, e.toString(), isFalse: true);
       }
+    }
+  }
+
+  Future<void> fetchPaymentDetails(String paymentIntentId) async {
+    final dio = Dio();
+
+    try {
+      final response = await dio.get(
+        "https://your-backend.com/payment-intent/$paymentIntentId",
+        options: Options(
+          headers: {
+            "Authorization":
+                "Bearer sk_test_51PsAs8FUDgzMNUwF1rhct1HowoyR3LlRoHOnuVPxtcMHW2uyjVD2rrbNDJjRT3wmXlvwoF1slgsFp7BcmWqbfXhg00Mla8itUu",
+          },
+        ),
+      );
+
+      if (response.statusCode == 200) {
+        final data = response.data;
+        print("Payment Status: ${data['status']}");
+        print("Payment Method: ${data['payment_method']}");
+        print("Transaction ID: ${data['transaction_id']}");
+      } else {
+        print("Failed to fetch payment details: ${response.statusMessage}");
+      }
+    } catch (e) {
+      print("Error fetching payment details: $e");
     }
   }
 
@@ -551,14 +606,8 @@ class OrderSummaryWidget extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final currency = ref.watch(currentCurrencySymbolProvider);
     final orderSummary = ref.watch(getOrderSummaryApiProvider);
-    final fName = ref.watch(firstNameProviderAddress);
-    final lName = ref.watch(lastNameProviderAddress);
-    final phone = ref.watch(phoneProviderAddress);
-    final country = ref.watch(countryProviderAddress);
-    final appartment = ref.watch(appartmentProvider);
-    final city = ref.watch(townCityProvider);
-    final street = ref.watch(streetAddressProvider);
-    final zipCode = ref.watch(postalCodeProvider);
+    final currentAddress = ref.watch(currentDefaultAddressProvider);
+
     return orderSummary.when(
       data: (data) {
         switch (data.status) {
@@ -568,7 +617,7 @@ class OrderSummaryWidget extends HookConsumerWidget {
             SchedulerBinding.instance.addPostFrameCallback(
               (timeStamp) {
                 ref.read(checkoutTotal.notifier).state =
-                    double.parse(datum.total.toString()).toStringAsFixed(2);
+                    "$currency ${double.parse(datum.total.toString()).toStringAsFixed(2)}";
               },
             );
 
@@ -597,9 +646,22 @@ class OrderSummaryWidget extends HookConsumerWidget {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                isJewel
-                                    ? "$appartment,$street,$city,$zipCode"
-                                    : country.name,
+                                // isJewel
+                                //     ?
+                                currentAddress.address1!.isNotEmpty
+                                    ? "${currentAddress.address1},"
+                                    : currentAddress.address2!.isNotEmpty
+                                        ? "${currentAddress.address2},"
+                                        : currentAddress.city!.isNotEmpty
+                                            ? "${currentAddress.city},"
+                                            : currentAddress.state!.isNotEmpty
+                                                ? "${currentAddress.state},"
+                                                : currentAddress
+                                                        .postcode!.isNotEmpty
+                                                    ? "${currentAddress.postcode}"
+                                                    : currentAddress.country ??
+                                                        "",
+                                // : currentAddress.country ?? "",
                                 style: AppTheme.lightTheme.textTheme.bodySmall
                                     ?.copyWith(
                                         fontSize: 14.sp,
@@ -623,7 +685,7 @@ class OrderSummaryWidget extends HookConsumerWidget {
                           Row(
                             children: [
                               Text(
-                                fName + lName,
+                                "${datum.user?.firstName ?? ""} ${datum.user?.lastName}",
                                 style: AppTheme.lightTheme.textTheme.bodySmall
                                     ?.copyWith(
                                         fontSize: 14.sp,
@@ -633,7 +695,7 @@ class OrderSummaryWidget extends HookConsumerWidget {
                                 width: 12.sp,
                               ),
                               Text(
-                                "${country.dialCode} $phone",
+                                datum.user?.phone ?? "",
                                 style: AppTheme.lightTheme.textTheme.bodySmall
                                     ?.copyWith(
                                         fontSize: 14.sp,
@@ -656,42 +718,42 @@ class OrderSummaryWidget extends HookConsumerWidget {
                     height: 27.sp,
                   ),
                   summaryWidget(currency: currency, datum: datum),
-                  SizedBox(
-                    height: 24.sp,
-                  ),
-                  Container(
-                    width: ScreenUtil().screenWidth,
-                    height: 110.sp,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 15, vertical: 14),
-                    decoration: ShapeDecoration(
-                      color: AppTheme.appBarAndBottomBarColor,
-                      shape: RoundedRectangleBorder(
-                        side: BorderSide(width: 1, color: AppTheme.strokeColor),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    child: SizedBox(
-                      child: TextField(
-                        style: AppTheme.lightTheme.textTheme.bodySmall
-                            ?.copyWith(
-                                fontWeight: FontWeight.w400,
-                                color: AppTheme.teritiaryTextColor),
-                        keyboardType: TextInputType.multiline,
-                        textInputAction: TextInputAction.newline,
-                        decoration: InputDecoration(
-                            border: InputBorder.none,
-                            hintText: "Special notes on order..",
-                            hintStyle: AppTheme.lightTheme.textTheme.bodySmall
-                                ?.copyWith(
-                                    fontSize: 14.sp,
-                                    fontWeight: FontWeight.w100,
-                                    color: AppTheme.teritiaryTextColor)),
-                        maxLines: 3,
-                        onChanged: (value) {},
-                      ),
-                    ),
-                  ),
+                  // SizedBox(
+                  //   height: 24.sp,
+                  // ),
+                  // Container(
+                  //   width: ScreenUtil().screenWidth,
+                  //   height: 110.sp,
+                  //   padding: const EdgeInsets.symmetric(
+                  //       horizontal: 15, vertical: 14),
+                  //   decoration: ShapeDecoration(
+                  //     color: AppTheme.appBarAndBottomBarColor,
+                  //     shape: RoundedRectangleBorder(
+                  //       side: BorderSide(width: 1, color: AppTheme.strokeColor),
+                  //       borderRadius: BorderRadius.circular(10),
+                  //     ),
+                  //   ),
+                  //   child: SizedBox(
+                  //     child: TextField(
+                  //       style: AppTheme.lightTheme.textTheme.bodySmall
+                  //           ?.copyWith(
+                  //               fontWeight: FontWeight.w400,
+                  //               color: AppTheme.teritiaryTextColor),
+                  //       keyboardType: TextInputType.multiline,
+                  //       textInputAction: TextInputAction.newline,
+                  //       decoration: InputDecoration(
+                  //           border: InputBorder.none,
+                  //           hintText: "Special notes on order..",
+                  //           hintStyle: AppTheme.lightTheme.textTheme.bodySmall
+                  //               ?.copyWith(
+                  //                   fontSize: 14.sp,
+                  //                   fontWeight: FontWeight.w100,
+                  //                   color: AppTheme.teritiaryTextColor)),
+                  //       maxLines: 3,
+                  //       onChanged: (value) {},
+                  //     ),
+                  //   ),
+                  // ),
                   SizedBox(
                     height: 24.sp,
                   ),
@@ -769,47 +831,11 @@ class OrderSummaryWidget extends HookConsumerWidget {
             if (data.statusCode == 402) {
               refreshApi(ref);
             }
-            return Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.error,
-                    size: 80.sp,
-                    color: AppTheme.primaryColor,
-                  ),
-                  SizedBox(height: 16.h),
-                  Text(
-                    'Something went wrong',
-                    style: AppTheme.lightTheme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: AppTheme.textColor,
-                    ),
-                  ),
-                  SizedBox(height: 14.h),
-                  ElevatedButton(
-                    onPressed: () {
-                      return ref.refresh(getOrderSummaryApiProvider);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.primaryColor,
-                      padding: EdgeInsets.symmetric(
-                          horizontal: 24.w, vertical: 12.h),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8.r),
-                      ),
-                    ),
-                    child: Text(
-                      'Retry',
-                      style:
-                          AppTheme.lightTheme.textTheme.labelMedium?.copyWith(
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+            return ConstantMethods.buildErrorUI(
+              ref,
+              onPressed: () {
+                return ref.refresh(getOrderSummaryApiProvider);
+              },
             );
           default:
             return SizedBox();
@@ -896,10 +922,13 @@ Widget orderDetailsWidget(
           height: 18.sp,
         ),
         SizedBox(
-          height: 170.sp,
+          // height: ScreenUtil().setHeight(190),
+          height: product!.length * 100.sp,
           child: ListView.builder(
+            physics: NeverScrollableScrollPhysics(),
+            shrinkWrap: true,
             scrollDirection: Axis.vertical,
-            itemCount: product?.length, //cart.length ?? 0,
+            itemCount: product.length ?? 0,
             itemBuilder: (context, index) {
               return Column(
                 children: [
@@ -916,43 +945,116 @@ Widget orderDetailsWidget(
                             ClipRRect(
                               borderRadius: BorderRadius.circular(6.sp),
                               child: CachedNetworkImage(
-                                imageUrl: product?[index].image ?? "",
+                                imageUrl: product[index].image ?? "",
                                 height: 72.sp,
                                 width: 72.sp,
                               ),
                             ),
                             SizedBox(
-                              width: 26.sp,
+                              width: 12.sp,
                             ),
                             SizedBox(
-                              width: 160.sp,
-                              child: Text(
-                                product?[index].name ?? "",
-                                style: AppTheme.lightTheme.textTheme.bodySmall
-                                    ?.copyWith(fontSize: 14.sp),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
+                              width: ScreenUtil().setWidth(200),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    product[index].name ?? "",
+                                    style: AppTheme
+                                        .lightTheme.textTheme.bodySmall
+                                        ?.copyWith(fontSize: 14.sp),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  Text(
+                                    "$currency ${product[index].price.toString()}",
+                                    style: AppTheme
+                                        .lightTheme.textTheme.labelMedium
+                                        ?.copyWith(fontSize: 16.sp),
+                                  ),
+                                ],
                               ),
                             ),
                           ],
                         ),
-                        Text(
-                          "$currency ${product?[index].price.toString()}",
-                          style: AppTheme.lightTheme.textTheme.labelMedium
-                              ?.copyWith(fontSize: 14.sp),
-                        ),
                       ],
                     ),
                   ),
-                  SizedBox(
-                    height: 12.sp,
-                  ),
-                  ConstantMethods.customDivider(width: 0.40)
+                  Visibility(
+                    visible: product.length > 1,
+                    child: Column(
+                      children: [
+                        SizedBox(
+                          height: 12.sp,
+                        ),
+                        ConstantMethods.customDivider(width: 0.40),
+                      ],
+                    ),
+                  )
                 ],
               );
             },
           ),
         ),
+        // SizedBox(
+        //   height: 170.sp,
+        //   child: ListView.builder(
+        //     scrollDirection: Axis.vertical,
+        //     itemCount: product?.length, //cart.length ?? 0,
+        //     itemBuilder: (context, index) {
+        //       return Column(
+        //         children: [
+        //           Padding(
+        //             padding: EdgeInsets.only(
+        //                 left: 12.0.sp, right: 12.sp, top: 12.sp),
+        //             child: Row(
+        //               crossAxisAlignment: CrossAxisAlignment.start,
+        //               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        //               children: [
+        //                 Row(
+        //                   crossAxisAlignment: CrossAxisAlignment.start,
+        //                   children: [
+        //                     ClipRRect(
+        //                       borderRadius: BorderRadius.circular(6.sp),
+        //                       child: CachedNetworkImage(
+        //                         imageUrl: product?[index].image ?? "",
+        //                         height: 72.sp,
+        //                         width: 72.sp,
+        //                       ),
+        //                     ),
+        //                     SizedBox(
+        //                       width: 26.sp,
+        //                     ),
+        //                     SizedBox(
+        //                       width: 160.sp,
+        //                       child: Text(
+        //                         product?[index].name ?? "",
+        //                         style: AppTheme.lightTheme.textTheme.bodySmall
+        //                             ?.copyWith(fontSize: 14.sp),
+        //                         maxLines: 2,
+        //                         overflow: TextOverflow.ellipsis,
+        //                       ),
+        //                     ),
+        //                   ],
+        //                 ),
+        //                 Text(
+        //                   "$currency ${product?[index].price.toString()}",
+        //                   style: AppTheme.lightTheme.textTheme.labelMedium
+        //                       ?.copyWith(fontSize: 14.sp),
+        //                 ),
+        //               ],
+        //             ),
+        //           ),
+        //           SizedBox(
+        //             height: 12.sp,
+        //           ),
+        //           ConstantMethods.customDivider(width: 0.40)
+        //         ],
+        //       );
+        //     },
+        //   ),
+        // ),
       ],
     ),
   );
@@ -1071,6 +1173,7 @@ class AddressWidget extends HookConsumerWidget {
     final phoneProviderValid = ref.watch(phoneValidProviderAddress);
     // final phoneProvider = ref.watch(phoneProviderAddress);
     final shippingAddressList = ref.watch(getShippingAddressApiProvider);
+
     return shippingAddressList.when(
       data: (data) {
         if (data.data != null && data.data!.isNotEmpty) {
@@ -1102,6 +1205,8 @@ class AddressWidget extends HookConsumerWidget {
                   ref.read(shippingPhoneProvider.notifier).state =
                       defaultValue.phone ?? "";
                 }
+                ref.read(currentDefaultAddressProvider.notifier).state =
+                    defaultValue;
                 ref.read(stepProvider.notifier).updateStep(2);
               }
             },
@@ -1126,7 +1231,6 @@ class AddressWidget extends HookConsumerWidget {
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: 16.0.sp),
                     child: Form(
-                      autovalidateMode: AutovalidateMode.onUserInteraction,
                       key: formKey,
                       onChanged: () {
                         // final isValid = formKey.currentState?.validate() ?? false;
@@ -1139,6 +1243,8 @@ class AddressWidget extends HookConsumerWidget {
                             cursorColor: AppTheme.cursorColor,
                             cursorWidth: 1.0,
                             cursorHeight: 18.h,
+                            autovalidateMode:
+                                AutovalidateMode.onUserInteraction,
                             style: AppTheme.lightTheme.textTheme.labelSmall
                                 ?.copyWith(
                                     fontSize: 14.sp,
@@ -1234,6 +1340,8 @@ class AddressWidget extends HookConsumerWidget {
                             cursorColor: AppTheme.cursorColor,
                             cursorWidth: 1.0,
                             cursorHeight: 18.h,
+                            autovalidateMode:
+                                AutovalidateMode.onUserInteraction,
                             style: AppTheme.lightTheme.textTheme.labelSmall
                                 ?.copyWith(
                                     fontSize: 14.sp,
@@ -1321,6 +1429,8 @@ class AddressWidget extends HookConsumerWidget {
                             cursorColor: AppTheme.cursorColor,
                             cursorWidth: 1.0,
                             cursorHeight: 18.h,
+                            autovalidateMode:
+                                AutovalidateMode.onUserInteraction,
                             style: AppTheme.lightTheme.textTheme.labelSmall
                                 ?.copyWith(
                                     fontSize: 14.sp,
@@ -1479,6 +1589,8 @@ class AddressWidget extends HookConsumerWidget {
                                   cursorColor: AppTheme.cursorColor,
                                   cursorWidth: 1.0,
                                   cursorHeight: 18.h,
+                                  autovalidateMode:
+                                      AutovalidateMode.onUserInteraction,
                                   style: AppTheme
                                       .lightTheme.textTheme.labelSmall
                                       ?.copyWith(
@@ -1591,93 +1703,22 @@ class AddressWidget extends HookConsumerWidget {
             if (data.statusCode == 402) {
               refreshApi(ref);
             }
-            return Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.error,
-                    size: 80.sp,
-                    color: AppTheme.primaryColor,
-                  ),
-                  SizedBox(height: 16.h),
-                  Text(
-                    'Something went wrong',
-                    style: AppTheme.lightTheme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: AppTheme.textColor,
-                    ),
-                  ),
-                  SizedBox(height: 14.h),
-                  ElevatedButton(
-                    onPressed: () {
-                      refreshApi(ref);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.primaryColor,
-                      padding: EdgeInsets.symmetric(
-                          horizontal: 24.w, vertical: 12.h),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8.r),
-                      ),
-                    ),
-                    child: Text(
-                      'Retry',
-                      style:
-                          AppTheme.lightTheme.textTheme.labelMedium?.copyWith(
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+            return ConstantMethods.buildErrorUI(
+              ref,
+              onPressed: () {
+                refreshApi(ref);
+              },
             );
           default:
             return SizedBox();
         }
       },
       error: (error, stackTrace) {
-        return Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.error,
-                size: 80.sp,
-                color: AppTheme.primaryColor,
-              ),
-              SizedBox(height: 16.h),
-              Text(
-                'Something went wrong',
-                style: AppTheme.lightTheme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: AppTheme.textColor,
-                ),
-              ),
-              SizedBox(height: 14.h),
-              ElevatedButton(
-                onPressed: () {
-                  refreshApi(ref);
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primaryColor,
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8.r),
-                  ),
-                ),
-                child: Text(
-                  'Retry',
-                  style: AppTheme.lightTheme.textTheme.labelMedium?.copyWith(
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ],
-          ),
+        return ConstantMethods.buildErrorUI(
+          ref,
+          onPressed: () {
+            refreshApi(ref);
+          },
         );
       },
       loading: () {
@@ -1696,24 +1737,553 @@ class AddressWidget extends HookConsumerWidget {
   }
 }
 
+// class ShippingAddressWidget extends HookConsumerWidget {
+//   const ShippingAddressWidget({super.key});
+
+//   @override
+//   Widget build(BuildContext context, WidgetRef ref) {
+//     final countryRegionController = useTextEditingController();
+//     final streetController = useTextEditingController();
+//     final appartmentController = useTextEditingController();
+//     final postalController = useTextEditingController();
+//     final townController = useTextEditingController();
+//     // final phoneProviderValidShipping = ref.watch(shippingPhoneValidProvider);
+//     final isDefaultChecked = ref.watch(isDefaultCheckedProvider);
+
+//     ///Use Hooks to update validation
+//     final isCountryFilledNotifier = useState(false);
+//     final isStreetFilledNotifier = useState(false);
+//     final isAppartmentFilledNotifier = useState(false);
+//     final isPostalFilledNotifier = useState(false);
+//     final isTownFilledNotifier = useState(false);
+
+//     final key = GlobalKey<FormState>();
+//     return Form(
+//       key: key,
+//       child: Column(
+//         crossAxisAlignment: CrossAxisAlignment.start,
+//         children: [
+//           Text(
+//             'Shipping Details',
+//             style: AppTheme.lightTheme.textTheme.bodyLarge,
+//           ),
+//           SizedBox(
+//             height: 16.sp,
+//           ),
+//           TextFormField(
+//             cursorColor: AppTheme.cursorColor,
+//             cursorWidth: 1.0,
+//             cursorHeight: 18.h,
+//             style: AppTheme.lightTheme.textTheme.labelSmall
+//                 ?.copyWith(fontSize: 14.sp, fontWeight: FontWeight.w400),
+//             controller: countryRegionController,
+//             decoration: InputDecoration(
+//                 label: RichText(
+//                   text: TextSpan(
+//                     text: 'Country/Region',
+//                     style: AppTheme.lightTheme.textTheme.bodySmall?.copyWith(
+//                         fontWeight: FontWeight.w400,
+//                         color: AppTheme.teritiaryTextColor),
+//                     children: [
+//                       TextSpan(
+//                         text: '*',
+//                         style: AppTheme.lightTheme.textTheme.bodyLarge
+//                             ?.copyWith(
+//                                 fontSize: 11.sp, color: AppTheme.errorBorder),
+//                       ),
+//                     ],
+//                   ),
+//                 ),
+//                 suffixIcon: isCountryFilledNotifier.value
+//                     ? Icon(Icons.check, color: AppTheme.primaryColor)
+//                     : SizedBox(),
+//                 border: OutlineInputBorder(
+//                     borderSide:
+//                         BorderSide(color: AppTheme.strokeColor, width: 1.0),
+//                     borderRadius: BorderRadius.circular(8.sp)),
+//                 filled: true,
+//                 focusedBorder: OutlineInputBorder(
+//                     borderSide:
+//                         BorderSide(color: AppTheme.primaryColor, width: 1.0),
+//                     borderRadius: BorderRadius.circular(8.sp)),
+//                 enabledBorder: OutlineInputBorder(
+//                     borderSide: BorderSide(
+//                         color: isCountryFilledNotifier.value
+//                             ? AppTheme.primaryColor
+//                             : AppTheme.strokeColor,
+//                         width: 1.0),
+//                     borderRadius: BorderRadius.circular(8.sp)),
+//                 disabledBorder: OutlineInputBorder(
+//                     borderSide:
+//                         BorderSide(color: AppTheme.strokeColor, width: 1.0),
+//                     borderRadius: BorderRadius.circular(8.sp)),
+//                 errorBorder: OutlineInputBorder(
+//                     borderSide:
+//                         BorderSide(color: AppTheme.errorBorder, width: 1.0)),
+//                 focusedErrorBorder: OutlineInputBorder(
+//                     borderSide:
+//                         BorderSide(color: AppTheme.errorBorder, width: 1.0)),
+//                 errorStyle: AppTheme.lightTheme.textTheme.bodyLarge
+//                     ?.copyWith(color: AppTheme.errorBorder, fontSize: 11.sp),
+//                 fillColor: AppTheme.appBarAndBottomBarColor),
+//             onChanged: (value) {
+//               ref.read(countryRegionProvider.notifier).state = value;
+//               // Update validation state dynamically
+//               ref.read(countryRegionValidProvider.notifier).state =
+//                   value.trim().isNotEmpty;
+//               isCountryFilledNotifier.value = value.trim().isNotEmpty;
+//             },
+//             validator: (value) {
+//               if (value == null || value.trim().isEmpty) {
+//                 return 'Country/Region is required';
+//               }
+//               return null;
+//             },
+//           ),
+//           SizedBox(
+//             height: 10.sp,
+//           ),
+//           TextFormField(
+//             cursorColor: AppTheme.cursorColor,
+//             cursorWidth: 1.0,
+//             cursorHeight: 18.h,
+//             style: AppTheme.lightTheme.textTheme.labelSmall
+//                 ?.copyWith(fontSize: 14.sp, fontWeight: FontWeight.w400),
+//             controller: streetController,
+//             decoration: InputDecoration(
+//                 label: RichText(
+//                   text: TextSpan(
+//                     text: 'Street Address',
+//                     style: AppTheme.lightTheme.textTheme.bodySmall?.copyWith(
+//                         fontWeight: FontWeight.w400,
+//                         color: AppTheme.teritiaryTextColor),
+//                     children: [
+//                       TextSpan(
+//                         text: '*',
+//                         style: AppTheme.lightTheme.textTheme.bodyLarge
+//                             ?.copyWith(
+//                                 fontSize: 11.sp, color: AppTheme.errorBorder),
+//                       ),
+//                     ],
+//                   ),
+//                 ),
+//                 suffixIcon: isStreetFilledNotifier.value
+//                     ? Icon(Icons.check, color: AppTheme.primaryColor)
+//                     : SizedBox(),
+//                 border: OutlineInputBorder(
+//                     borderSide:
+//                         BorderSide(color: AppTheme.strokeColor, width: 1.0),
+//                     borderRadius: BorderRadius.circular(8.sp)),
+//                 filled: true,
+//                 focusedBorder: OutlineInputBorder(
+//                     borderSide:
+//                         BorderSide(color: AppTheme.primaryColor, width: 1.0),
+//                     borderRadius: BorderRadius.circular(8.sp)),
+//                 enabledBorder: OutlineInputBorder(
+//                     borderSide: BorderSide(
+//                         color: isStreetFilledNotifier.value
+//                             ? AppTheme.primaryColor
+//                             : AppTheme.strokeColor,
+//                         width: 1.0),
+//                     borderRadius: BorderRadius.circular(8.sp)),
+//                 disabledBorder: OutlineInputBorder(
+//                     borderSide:
+//                         BorderSide(color: AppTheme.strokeColor, width: 1.0),
+//                     borderRadius: BorderRadius.circular(8.sp)),
+//                 errorBorder: OutlineInputBorder(
+//                     borderSide:
+//                         BorderSide(color: AppTheme.errorBorder, width: 1.0)),
+//                 focusedErrorBorder: OutlineInputBorder(
+//                     borderSide:
+//                         BorderSide(color: AppTheme.errorBorder, width: 1.0)),
+//                 errorStyle: AppTheme.lightTheme.textTheme.bodyLarge
+//                     ?.copyWith(color: AppTheme.errorBorder, fontSize: 11.sp),
+//                 fillColor: AppTheme.appBarAndBottomBarColor),
+//             onChanged: (value) {
+//               ref.read(streetAddressProvider.notifier).state = value;
+//               // Update validation state dynamically
+//               ref.read(streetAddressValidProvider.notifier).state =
+//                   value.trim().isNotEmpty;
+//               isStreetFilledNotifier.value = value.trim().isNotEmpty;
+//             },
+//             validator: (value) {
+//               if (value == null || value.trim().isEmpty) {
+//                 return 'Street Address is required';
+//               }
+//               return null;
+//             },
+//           ),
+//           SizedBox(
+//             height: 10.sp,
+//           ),
+//           TextFormField(
+//             cursorColor: AppTheme.cursorColor,
+//             cursorWidth: 1.0,
+//             cursorHeight: 18.h,
+//             style: AppTheme.lightTheme.textTheme.labelSmall
+//                 ?.copyWith(fontSize: 14.sp, fontWeight: FontWeight.w400),
+//             controller: appartmentController,
+//             decoration: InputDecoration(
+//                 label: RichText(
+//                   text: TextSpan(
+//                     text: 'Appartment',
+//                     style: AppTheme.lightTheme.textTheme.bodySmall?.copyWith(
+//                         fontWeight: FontWeight.w400,
+//                         color: AppTheme.teritiaryTextColor),
+//                     children: [
+//                       TextSpan(
+//                         text: '*',
+//                         style: AppTheme.lightTheme.textTheme.bodyLarge
+//                             ?.copyWith(
+//                                 fontSize: 11.sp, color: AppTheme.errorBorder),
+//                       ),
+//                     ],
+//                   ),
+//                 ),
+//                 suffixIcon: isAppartmentFilledNotifier.value
+//                     ? Icon(Icons.check, color: AppTheme.primaryColor)
+//                     : SizedBox(),
+//                 border: OutlineInputBorder(
+//                     borderSide:
+//                         BorderSide(color: AppTheme.strokeColor, width: 1.0),
+//                     borderRadius: BorderRadius.circular(8.sp)),
+//                 filled: true,
+//                 focusedBorder: OutlineInputBorder(
+//                     borderSide:
+//                         BorderSide(color: AppTheme.primaryColor, width: 1.0),
+//                     borderRadius: BorderRadius.circular(8.sp)),
+//                 enabledBorder: OutlineInputBorder(
+//                     borderSide: BorderSide(
+//                         color: isAppartmentFilledNotifier.value
+//                             ? AppTheme.primaryColor
+//                             : AppTheme.strokeColor,
+//                         width: 1.0),
+//                     borderRadius: BorderRadius.circular(8.sp)),
+//                 disabledBorder: OutlineInputBorder(
+//                     borderSide:
+//                         BorderSide(color: AppTheme.strokeColor, width: 1.0),
+//                     borderRadius: BorderRadius.circular(8.sp)),
+//                 errorBorder: OutlineInputBorder(
+//                     borderSide:
+//                         BorderSide(color: AppTheme.errorBorder, width: 1.0)),
+//                 focusedErrorBorder: OutlineInputBorder(
+//                     borderSide:
+//                         BorderSide(color: AppTheme.errorBorder, width: 1.0)),
+//                 errorStyle: AppTheme.lightTheme.textTheme.bodyLarge
+//                     ?.copyWith(color: AppTheme.errorBorder, fontSize: 11.sp),
+//                 fillColor: AppTheme.appBarAndBottomBarColor),
+//             onChanged: (value) {
+//               ref.read(appartmentProvider.notifier).state = value;
+//               // Update validation state dynamically
+//               ref.read(appartmentValidProvider.notifier).state =
+//                   value.trim().isNotEmpty;
+//               isAppartmentFilledNotifier.value = value.trim().isNotEmpty;
+//             },
+//             validator: (value) {
+//               if (value == null || value.trim().isEmpty) {
+//                 return 'Street Address is required';
+//               }
+//               return null;
+//             },
+//           ),
+//           SizedBox(
+//             height: 10.sp,
+//           ),
+//           TextFormField(
+//             cursorColor: AppTheme.cursorColor,
+//             cursorWidth: 1.0,
+//             cursorHeight: 18.h,
+//             style: AppTheme.lightTheme.textTheme.labelSmall
+//                 ?.copyWith(fontSize: 14.sp, fontWeight: FontWeight.w400),
+//             controller: postalController,
+//             decoration: InputDecoration(
+//                 label: RichText(
+//                   text: TextSpan(
+//                     text: 'Postcode/ZIP',
+//                     style: AppTheme.lightTheme.textTheme.bodySmall?.copyWith(
+//                         fontWeight: FontWeight.w400,
+//                         color: AppTheme.teritiaryTextColor),
+//                     children: [
+//                       TextSpan(
+//                         text: '*',
+//                         style: AppTheme.lightTheme.textTheme.bodyLarge
+//                             ?.copyWith(
+//                                 fontSize: 11.sp, color: AppTheme.errorBorder),
+//                       ),
+//                     ],
+//                   ),
+//                 ),
+//                 suffixIcon: isPostalFilledNotifier.value
+//                     ? Icon(Icons.check, color: AppTheme.primaryColor)
+//                     : SizedBox(),
+//                 border: OutlineInputBorder(
+//                     borderSide:
+//                         BorderSide(color: AppTheme.strokeColor, width: 1.0),
+//                     borderRadius: BorderRadius.circular(8.sp)),
+//                 filled: true,
+//                 focusedBorder: OutlineInputBorder(
+//                     borderSide:
+//                         BorderSide(color: AppTheme.primaryColor, width: 1.0),
+//                     borderRadius: BorderRadius.circular(8.sp)),
+//                 enabledBorder: OutlineInputBorder(
+//                     borderSide: BorderSide(
+//                         color: isPostalFilledNotifier.value
+//                             ? AppTheme.primaryColor
+//                             : AppTheme.strokeColor,
+//                         width: 1.0),
+//                     borderRadius: BorderRadius.circular(8.sp)),
+//                 disabledBorder: OutlineInputBorder(
+//                     borderSide:
+//                         BorderSide(color: AppTheme.strokeColor, width: 1.0),
+//                     borderRadius: BorderRadius.circular(8.sp)),
+//                 errorBorder: OutlineInputBorder(
+//                     borderSide:
+//                         BorderSide(color: AppTheme.errorBorder, width: 1.0)),
+//                 focusedErrorBorder: OutlineInputBorder(
+//                     borderSide:
+//                         BorderSide(color: AppTheme.errorBorder, width: 1.0)),
+//                 errorStyle: AppTheme.lightTheme.textTheme.bodyLarge
+//                     ?.copyWith(color: AppTheme.errorBorder, fontSize: 11.sp),
+//                 fillColor: AppTheme.appBarAndBottomBarColor),
+//             onChanged: (value) {
+//               ref.read(postalCodeProvider.notifier).state = value;
+//               // Update validation state dynamically
+//               ref.read(postalCodeValidProvider.notifier).state =
+//                   value.trim().isNotEmpty;
+//               isPostalFilledNotifier.value = value.trim().isNotEmpty;
+//             },
+//             validator: (value) {
+//               if (value == null || value.trim().isEmpty) {
+//                 return 'Postcod/ZIP is required';
+//               }
+//               return null;
+//             },
+//           ),
+//           SizedBox(
+//             height: 10.sp,
+//           ),
+//           TextFormField(
+//             cursorColor: AppTheme.cursorColor,
+//             cursorWidth: 1.0,
+//             cursorHeight: 18.h,
+//             style: AppTheme.lightTheme.textTheme.labelSmall
+//                 ?.copyWith(fontSize: 14.sp, fontWeight: FontWeight.w400),
+//             controller: townController,
+//             decoration: InputDecoration(
+//                 label: RichText(
+//                   text: TextSpan(
+//                     text: 'Town/City',
+//                     style: AppTheme.lightTheme.textTheme.bodySmall?.copyWith(
+//                         fontWeight: FontWeight.w400,
+//                         color: AppTheme.teritiaryTextColor),
+//                     children: [
+//                       TextSpan(
+//                         text: '*',
+//                         style: AppTheme.lightTheme.textTheme.bodyLarge
+//                             ?.copyWith(
+//                                 fontSize: 11.sp, color: AppTheme.errorBorder),
+//                       ),
+//                     ],
+//                   ),
+//                 ),
+//                 suffixIcon: isTownFilledNotifier.value
+//                     ? Icon(Icons.check, color: AppTheme.primaryColor)
+//                     : SizedBox(),
+//                 border: OutlineInputBorder(
+//                     borderSide:
+//                         BorderSide(color: AppTheme.strokeColor, width: 1.0),
+//                     borderRadius: BorderRadius.circular(8.sp)),
+//                 filled: true,
+//                 focusedBorder: OutlineInputBorder(
+//                     borderSide:
+//                         BorderSide(color: AppTheme.primaryColor, width: 1.0),
+//                     borderRadius: BorderRadius.circular(8.sp)),
+//                 enabledBorder: OutlineInputBorder(
+//                     borderSide: BorderSide(
+//                         color: isTownFilledNotifier.value
+//                             ? AppTheme.primaryColor
+//                             : AppTheme.strokeColor,
+//                         width: 1.0),
+//                     borderRadius: BorderRadius.circular(8.sp)),
+//                 disabledBorder: OutlineInputBorder(
+//                     borderSide:
+//                         BorderSide(color: AppTheme.strokeColor, width: 1.0),
+//                     borderRadius: BorderRadius.circular(8.sp)),
+//                 errorBorder: OutlineInputBorder(
+//                     borderSide:
+//                         BorderSide(color: AppTheme.errorBorder, width: 1.0)),
+//                 focusedErrorBorder: OutlineInputBorder(
+//                     borderSide:
+//                         BorderSide(color: AppTheme.errorBorder, width: 1.0)),
+//                 errorStyle: AppTheme.lightTheme.textTheme.bodyLarge
+//                     ?.copyWith(color: AppTheme.errorBorder, fontSize: 11.sp),
+//                 fillColor: AppTheme.appBarAndBottomBarColor),
+//             onChanged: (value) {
+//               ref.read(townCityProvider.notifier).state = value;
+//               // Update validation state dynamically
+//               ref.read(townCityValidProvider.notifier).state =
+//                   value.trim().isNotEmpty;
+//               isTownFilledNotifier.value = value.trim().isNotEmpty;
+//             },
+//             validator: (value) {
+//               if (value == null || value.trim().isEmpty) {
+//                 return 'Town/City is required';
+//               }
+//               return null;
+//             },
+//           ),
+//           // SizedBox(
+//           //   height: 10.sp,
+//           // ),
+//           // TextFormField(
+//           //   cursorColor: AppTheme.cursorColor,
+//           //   cursorWidth: 1.0,
+//           //   cursorHeight: 18.h,
+//           //   style: AppTheme.lightTheme.textTheme.labelSmall
+//           //       ?.copyWith(fontSize: 14.sp, fontWeight: FontWeight.w400),
+//           //   decoration: InputDecoration(
+//           //       label: RichText(
+//           //         text: TextSpan(
+//           //           text: 'Phone Number',
+//           //           style: AppTheme.lightTheme.textTheme.bodySmall?.copyWith(
+//           //               fontWeight: FontWeight.w400,
+//           //               color: AppTheme.teritiaryTextColor),
+//           //           children: [
+//           //             TextSpan(
+//           //               text: '*',
+//           //               style: AppTheme.lightTheme.textTheme.bodyLarge
+//           //                   ?.copyWith(
+//           //                       fontSize: 11.sp, color: AppTheme.errorBorder),
+//           //             ),
+//           //           ],
+//           //         ),
+//           //       ),
+//           //       suffixIcon: ref.watch(shippingPhoneValidProvider)
+//           //           ? Icon(Icons.check, color: AppTheme.primaryColor)
+//           //           : SizedBox(),
+//           //       border: OutlineInputBorder(
+//           //           borderSide:
+//           //               BorderSide(color: AppTheme.strokeColor, width: 1.0),
+//           //           borderRadius: BorderRadius.circular(8.sp)),
+//           //       filled: true,
+//           //       focusedBorder: OutlineInputBorder(
+//           //           borderSide:
+//           //               BorderSide(color: AppTheme.primaryColor, width: 1.0),
+//           //           borderRadius: BorderRadius.circular(8.sp)),
+//           //       enabledBorder: OutlineInputBorder(
+//           //           borderSide: BorderSide(
+//           //               color: phoneProviderValidShipping
+//           //                   ? AppTheme.primaryColor
+//           //                   : AppTheme.strokeColor,
+//           //               width: 1.0),
+//           //           borderRadius: BorderRadius.circular(8.sp)),
+//           //       disabledBorder: OutlineInputBorder(
+//           //           borderSide:
+//           //               BorderSide(color: AppTheme.strokeColor, width: 1.0),
+//           //           borderRadius: BorderRadius.circular(8.sp)),
+//           //       errorBorder: OutlineInputBorder(
+//           //           borderSide:
+//           //               BorderSide(color: AppTheme.errorBorder, width: 1.0)),
+//           //       focusedErrorBorder: OutlineInputBorder(
+//           //           borderSide:
+//           //               BorderSide(color: AppTheme.errorBorder, width: 1.0)),
+//           //       errorStyle: AppTheme.lightTheme.textTheme.bodyLarge
+//           //           ?.copyWith(color: AppTheme.errorBorder, fontSize: 11.sp),
+//           //       fillColor: AppTheme.appBarAndBottomBarColor),
+//           //   keyboardType: TextInputType.phone,
+//           //   onChanged: (value) {
+//           //     ref.read(shippingPhoneProvider.notifier).state = value;
+//           //     // Update validation state dynamically
+//           //     final phoneRegex =
+//           //         RegExp(r'^\d{10}$'); // Example: 10-digit phone number
+//           //     ref.read(shippingPhoneValidProvider.notifier).state =
+//           //         phoneRegex.hasMatch(value);
+//           //   },
+//           //   validator: (value) {
+//           //     if (value == null || value.trim().isEmpty) {
+//           //       return 'Phone number is required';
+//           //     }
+//           //     final phoneRegex = RegExp(r'^\d{10}$');
+//           //     if (!phoneRegex.hasMatch(value)) {
+//           //       return 'Enter a valid phone number';
+//           //     }
+//           //     return null;
+//           //   },
+//           // ),
+//           SizedBox(
+//             height: 22.sp,
+//           ),
+//           Row(
+//             mainAxisAlignment: MainAxisAlignment.end,
+//             children: [
+//               InkWell(
+//                 onTap: () {
+//                   ref.read(isDefaultCheckedProvider.notifier).state =
+//                       !isDefaultChecked;
+//                 },
+//                 child: Container(
+//                   width: 15.sp,
+//                   height: 15.sp,
+//                   decoration: ShapeDecoration(
+//                     color: AppTheme.appBarAndBottomBarColor,
+//                     shape: RoundedRectangleBorder(
+//                       side: BorderSide(width: 1, color: AppTheme.primaryColor),
+//                       borderRadius: BorderRadius.circular(2),
+//                     ),
+//                   ),
+//                 ),
+//               ),
+//               SizedBox(
+//                 width: 3.sp,
+//               ),
+//               Text(
+//                 'Save Default',
+//                 style: AppTheme.lightTheme.textTheme.bodySmall
+//                     ?.copyWith(fontSize: 14.sp, fontWeight: FontWeight.w400),
+//               ),
+//             ],
+//           ),
+//           SizedBox(
+//             height: 36.sp,
+//           )
+//         ],
+//       ),
+//     );
+//   }
+// }
+
 class ShippingAddressWidget extends HookConsumerWidget {
   const ShippingAddressWidget({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final countryRegionProviderLocal = ref.watch(countryRegionProvider);
-    final streetAddressProviderLocal = ref.watch(streetAddressProvider);
-    final appartmentProviderLocal = ref.watch(appartmentProvider);
-    final postalCodeProviderLocal = ref.watch(postalCodeProvider);
-    final townCityProviderLocal = ref.watch(townCityProvider);
-    final phoneProviderValidShipping = ref.watch(shippingPhoneValidProvider);
+    final countryRegionController =
+        useMemoized(() => TextEditingController(), []);
+    final streetController = useMemoized(() => TextEditingController(), []);
+    final appartmentController = useMemoized(() => TextEditingController(), []);
+    final postalController = useMemoized(() => TextEditingController(), []);
+    final townController = useMemoized(() => TextEditingController(), []);
+
+    useEffect(() {
+      return () {
+        countryRegionController.dispose();
+        streetController.dispose();
+        appartmentController.dispose();
+        postalController.dispose();
+        townController.dispose();
+      };
+    }, []);
+
+    // final isCountryFilledNotifier = useState(false);
+    // final isStreetFilledNotifier = useState(false);
+    // final isAppartmentFilledNotifier = useState(false);
+    // final isPostalFilledNotifier = useState(false);
+    // final isTownFilledNotifier = useState(false);
+
     final key = GlobalKey<FormState>();
+
     return Form(
       key: key,
-      onChanged: () {
-        // final isValid = key.currentState?.validate() ?? false;
-        // ref.read(physicalFormValidProvider.notifier).state = isValid;
-      },
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1721,474 +2291,205 @@ class ShippingAddressWidget extends HookConsumerWidget {
             'Shipping Details',
             style: AppTheme.lightTheme.textTheme.bodyLarge,
           ),
-          SizedBox(
-            height: 16.sp,
-          ),
-          TextFormField(
-            cursorColor: AppTheme.cursorColor,
-            cursorWidth: 1.0,
-            cursorHeight: 18.h,
-            style: AppTheme.lightTheme.textTheme.labelSmall
-                ?.copyWith(fontSize: 14.sp, fontWeight: FontWeight.w400),
-            decoration: InputDecoration(
-                label: RichText(
-                  text: TextSpan(
-                    text: 'Country/Region',
-                    style: AppTheme.lightTheme.textTheme.bodySmall?.copyWith(
-                        fontWeight: FontWeight.w400,
-                        color: AppTheme.teritiaryTextColor),
-                    children: [
-                      TextSpan(
-                        text: '*',
-                        style: AppTheme.lightTheme.textTheme.bodyLarge
-                            ?.copyWith(
-                                fontSize: 11.sp, color: AppTheme.errorBorder),
-                      ),
-                    ],
-                  ),
-                ),
-                suffixIcon: ref.watch(countryRegionValidProvider)
-                    ? Icon(Icons.check, color: AppTheme.primaryColor)
-                    : SizedBox(),
-                border: OutlineInputBorder(
-                    borderSide:
-                        BorderSide(color: AppTheme.strokeColor, width: 1.0),
-                    borderRadius: BorderRadius.circular(8.sp)),
-                filled: true,
-                focusedBorder: OutlineInputBorder(
-                    borderSide:
-                        BorderSide(color: AppTheme.primaryColor, width: 1.0),
-                    borderRadius: BorderRadius.circular(8.sp)),
-                enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(
-                        color: countryRegionProviderLocal.isNotEmpty
-                            ? AppTheme.primaryColor
-                            : AppTheme.strokeColor,
-                        width: 1.0),
-                    borderRadius: BorderRadius.circular(8.sp)),
-                disabledBorder: OutlineInputBorder(
-                    borderSide:
-                        BorderSide(color: AppTheme.strokeColor, width: 1.0),
-                    borderRadius: BorderRadius.circular(8.sp)),
-                errorBorder: OutlineInputBorder(
-                    borderSide:
-                        BorderSide(color: AppTheme.errorBorder, width: 1.0)),
-                focusedErrorBorder: OutlineInputBorder(
-                    borderSide:
-                        BorderSide(color: AppTheme.errorBorder, width: 1.0)),
-                errorStyle: AppTheme.lightTheme.textTheme.bodyLarge
-                    ?.copyWith(color: AppTheme.errorBorder, fontSize: 11.sp),
-                fillColor: AppTheme.appBarAndBottomBarColor),
-            onChanged: (value) {
-              ref.read(countryRegionProvider.notifier).state = value;
-              // Update validation state dynamically
-              ref.read(countryRegionValidProvider.notifier).state =
-                  value.trim().isNotEmpty;
-            },
-            validator: (value) {
-              if (value == null || value.trim().isEmpty) {
-                return 'Country/Region is required';
-              }
-              return null;
-            },
-          ),
-          SizedBox(
-            height: 10.sp,
-          ),
-          TextFormField(
-            cursorColor: AppTheme.cursorColor,
-            cursorWidth: 1.0,
-            cursorHeight: 18.h,
-            style: AppTheme.lightTheme.textTheme.labelSmall
-                ?.copyWith(fontSize: 14.sp, fontWeight: FontWeight.w400),
-            decoration: InputDecoration(
-                label: RichText(
-                  text: TextSpan(
-                    text: 'Street Address',
-                    style: AppTheme.lightTheme.textTheme.bodySmall?.copyWith(
-                        fontWeight: FontWeight.w400,
-                        color: AppTheme.teritiaryTextColor),
-                    children: [
-                      TextSpan(
-                        text: '*',
-                        style: AppTheme.lightTheme.textTheme.bodyLarge
-                            ?.copyWith(
-                                fontSize: 11.sp, color: AppTheme.errorBorder),
-                      ),
-                    ],
-                  ),
-                ),
-                suffixIcon: ref.watch(streetAddressValidProvider)
-                    ? Icon(Icons.check, color: AppTheme.primaryColor)
-                    : SizedBox(),
-                border: OutlineInputBorder(
-                    borderSide:
-                        BorderSide(color: AppTheme.strokeColor, width: 1.0),
-                    borderRadius: BorderRadius.circular(8.sp)),
-                filled: true,
-                focusedBorder: OutlineInputBorder(
-                    borderSide:
-                        BorderSide(color: AppTheme.primaryColor, width: 1.0),
-                    borderRadius: BorderRadius.circular(8.sp)),
-                enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(
-                        color: streetAddressProviderLocal.isNotEmpty
-                            ? AppTheme.primaryColor
-                            : AppTheme.strokeColor,
-                        width: 1.0),
-                    borderRadius: BorderRadius.circular(8.sp)),
-                disabledBorder: OutlineInputBorder(
-                    borderSide:
-                        BorderSide(color: AppTheme.strokeColor, width: 1.0),
-                    borderRadius: BorderRadius.circular(8.sp)),
-                errorBorder: OutlineInputBorder(
-                    borderSide:
-                        BorderSide(color: AppTheme.errorBorder, width: 1.0)),
-                focusedErrorBorder: OutlineInputBorder(
-                    borderSide:
-                        BorderSide(color: AppTheme.errorBorder, width: 1.0)),
-                errorStyle: AppTheme.lightTheme.textTheme.bodyLarge
-                    ?.copyWith(color: AppTheme.errorBorder, fontSize: 11.sp),
-                fillColor: AppTheme.appBarAndBottomBarColor),
-            onChanged: (value) {
-              ref.read(streetAddressProvider.notifier).state = value;
-              // Update validation state dynamically
-              ref.read(streetAddressValidProvider.notifier).state =
-                  value.trim().isNotEmpty;
-            },
-            validator: (value) {
-              if (value == null || value.trim().isEmpty) {
-                return 'Street Address is required';
-              }
-              return null;
-            },
-          ),
-          SizedBox(
-            height: 10.sp,
-          ),
-          TextFormField(
-            cursorColor: AppTheme.cursorColor,
-            cursorWidth: 1.0,
-            cursorHeight: 18.h,
-            style: AppTheme.lightTheme.textTheme.labelSmall
-                ?.copyWith(fontSize: 14.sp, fontWeight: FontWeight.w400),
-            decoration: InputDecoration(
-                label: RichText(
-                  text: TextSpan(
-                    text: 'Appartment',
-                    style: AppTheme.lightTheme.textTheme.bodySmall?.copyWith(
-                        fontWeight: FontWeight.w400,
-                        color: AppTheme.teritiaryTextColor),
-                    children: [
-                      TextSpan(
-                        text: '*',
-                        style: AppTheme.lightTheme.textTheme.bodyLarge
-                            ?.copyWith(
-                                fontSize: 11.sp, color: AppTheme.errorBorder),
-                      ),
-                    ],
-                  ),
-                ),
-                suffixIcon: ref.watch(appartmentValidProvider)
-                    ? Icon(Icons.check, color: AppTheme.primaryColor)
-                    : SizedBox(),
-                border: OutlineInputBorder(
-                    borderSide:
-                        BorderSide(color: AppTheme.strokeColor, width: 1.0),
-                    borderRadius: BorderRadius.circular(8.sp)),
-                filled: true,
-                focusedBorder: OutlineInputBorder(
-                    borderSide:
-                        BorderSide(color: AppTheme.primaryColor, width: 1.0),
-                    borderRadius: BorderRadius.circular(8.sp)),
-                enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(
-                        color: appartmentProviderLocal.isNotEmpty
-                            ? AppTheme.primaryColor
-                            : AppTheme.strokeColor,
-                        width: 1.0),
-                    borderRadius: BorderRadius.circular(8.sp)),
-                disabledBorder: OutlineInputBorder(
-                    borderSide:
-                        BorderSide(color: AppTheme.strokeColor, width: 1.0),
-                    borderRadius: BorderRadius.circular(8.sp)),
-                errorBorder: OutlineInputBorder(
-                    borderSide:
-                        BorderSide(color: AppTheme.errorBorder, width: 1.0)),
-                focusedErrorBorder: OutlineInputBorder(
-                    borderSide:
-                        BorderSide(color: AppTheme.errorBorder, width: 1.0)),
-                errorStyle: AppTheme.lightTheme.textTheme.bodyLarge
-                    ?.copyWith(color: AppTheme.errorBorder, fontSize: 11.sp),
-                fillColor: AppTheme.appBarAndBottomBarColor),
-            onChanged: (value) {
-              ref.read(appartmentProvider.notifier).state = value;
-              // Update validation state dynamically
-              ref.read(appartmentValidProvider.notifier).state =
-                  value.trim().isNotEmpty;
-            },
-            validator: (value) {
-              if (value == null || value.trim().isEmpty) {
-                return 'Street Address is required';
-              }
-              return null;
-            },
-          ),
-          SizedBox(
-            height: 10.sp,
-          ),
-          TextFormField(
-            cursorColor: AppTheme.cursorColor,
-            cursorWidth: 1.0,
-            cursorHeight: 18.h,
-            style: AppTheme.lightTheme.textTheme.labelSmall
-                ?.copyWith(fontSize: 14.sp, fontWeight: FontWeight.w400),
-            decoration: InputDecoration(
-                label: RichText(
-                  text: TextSpan(
-                    text: 'Postcode/ZIP',
-                    style: AppTheme.lightTheme.textTheme.bodySmall?.copyWith(
-                        fontWeight: FontWeight.w400,
-                        color: AppTheme.teritiaryTextColor),
-                    children: [
-                      TextSpan(
-                        text: '*',
-                        style: AppTheme.lightTheme.textTheme.bodyLarge
-                            ?.copyWith(
-                                fontSize: 11.sp, color: AppTheme.errorBorder),
-                      ),
-                    ],
-                  ),
-                ),
-                suffixIcon: ref.watch(postalCodeValidProvider)
-                    ? Icon(Icons.check, color: AppTheme.primaryColor)
-                    : SizedBox(),
-                border: OutlineInputBorder(
-                    borderSide:
-                        BorderSide(color: AppTheme.strokeColor, width: 1.0),
-                    borderRadius: BorderRadius.circular(8.sp)),
-                filled: true,
-                focusedBorder: OutlineInputBorder(
-                    borderSide:
-                        BorderSide(color: AppTheme.primaryColor, width: 1.0),
-                    borderRadius: BorderRadius.circular(8.sp)),
-                enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(
-                        color: postalCodeProviderLocal.isNotEmpty
-                            ? AppTheme.primaryColor
-                            : AppTheme.strokeColor,
-                        width: 1.0),
-                    borderRadius: BorderRadius.circular(8.sp)),
-                disabledBorder: OutlineInputBorder(
-                    borderSide:
-                        BorderSide(color: AppTheme.strokeColor, width: 1.0),
-                    borderRadius: BorderRadius.circular(8.sp)),
-                errorBorder: OutlineInputBorder(
-                    borderSide:
-                        BorderSide(color: AppTheme.errorBorder, width: 1.0)),
-                focusedErrorBorder: OutlineInputBorder(
-                    borderSide:
-                        BorderSide(color: AppTheme.errorBorder, width: 1.0)),
-                errorStyle: AppTheme.lightTheme.textTheme.bodyLarge
-                    ?.copyWith(color: AppTheme.errorBorder, fontSize: 11.sp),
-                fillColor: AppTheme.appBarAndBottomBarColor),
-            onChanged: (value) {
-              ref.read(postalCodeProvider.notifier).state = value;
-              // Update validation state dynamically
-              ref.read(postalCodeValidProvider.notifier).state =
-                  value.trim().isNotEmpty;
-            },
-            validator: (value) {
-              if (value == null || value.trim().isEmpty) {
-                return 'Postcod/ZIP is required';
-              }
-              return null;
-            },
-          ),
-          SizedBox(
-            height: 10.sp,
-          ),
-          TextFormField(
-            cursorColor: AppTheme.cursorColor,
-            cursorWidth: 1.0,
-            cursorHeight: 18.h,
-            style: AppTheme.lightTheme.textTheme.labelSmall
-                ?.copyWith(fontSize: 14.sp, fontWeight: FontWeight.w400),
-            decoration: InputDecoration(
-                label: RichText(
-                  text: TextSpan(
-                    text: 'Town/City',
-                    style: AppTheme.lightTheme.textTheme.bodySmall?.copyWith(
-                        fontWeight: FontWeight.w400,
-                        color: AppTheme.teritiaryTextColor),
-                    children: [
-                      TextSpan(
-                        text: '*',
-                        style: AppTheme.lightTheme.textTheme.bodyLarge
-                            ?.copyWith(
-                                fontSize: 11.sp, color: AppTheme.errorBorder),
-                      ),
-                    ],
-                  ),
-                ),
-                suffixIcon: ref.watch(townCityValidProvider)
-                    ? Icon(Icons.check, color: AppTheme.primaryColor)
-                    : SizedBox(),
-                border: OutlineInputBorder(
-                    borderSide:
-                        BorderSide(color: AppTheme.strokeColor, width: 1.0),
-                    borderRadius: BorderRadius.circular(8.sp)),
-                filled: true,
-                focusedBorder: OutlineInputBorder(
-                    borderSide:
-                        BorderSide(color: AppTheme.primaryColor, width: 1.0),
-                    borderRadius: BorderRadius.circular(8.sp)),
-                enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(
-                        color: townCityProviderLocal.isNotEmpty
-                            ? AppTheme.primaryColor
-                            : AppTheme.strokeColor,
-                        width: 1.0),
-                    borderRadius: BorderRadius.circular(8.sp)),
-                disabledBorder: OutlineInputBorder(
-                    borderSide:
-                        BorderSide(color: AppTheme.strokeColor, width: 1.0),
-                    borderRadius: BorderRadius.circular(8.sp)),
-                errorBorder: OutlineInputBorder(
-                    borderSide:
-                        BorderSide(color: AppTheme.errorBorder, width: 1.0)),
-                focusedErrorBorder: OutlineInputBorder(
-                    borderSide:
-                        BorderSide(color: AppTheme.errorBorder, width: 1.0)),
-                errorStyle: AppTheme.lightTheme.textTheme.bodyLarge
-                    ?.copyWith(color: AppTheme.errorBorder, fontSize: 11.sp),
-                fillColor: AppTheme.appBarAndBottomBarColor),
-            onChanged: (value) {
-              ref.read(townCityProvider.notifier).state = value;
-              // Update validation state dynamically
-              ref.read(townCityValidProvider.notifier).state =
-                  value.trim().isNotEmpty;
-            },
-            validator: (value) {
-              if (value == null || value.trim().isEmpty) {
-                return 'Town/City is required';
-              }
-              return null;
-            },
-          ),
-          SizedBox(
-            height: 10.sp,
-          ),
-          TextFormField(
-            cursorColor: AppTheme.cursorColor,
-            cursorWidth: 1.0,
-            cursorHeight: 18.h,
-            style: AppTheme.lightTheme.textTheme.labelSmall
-                ?.copyWith(fontSize: 14.sp, fontWeight: FontWeight.w400),
-            decoration: InputDecoration(
-                label: RichText(
-                  text: TextSpan(
-                    text: 'Phone Number',
-                    style: AppTheme.lightTheme.textTheme.bodySmall?.copyWith(
-                        fontWeight: FontWeight.w400,
-                        color: AppTheme.teritiaryTextColor),
-                    children: [
-                      TextSpan(
-                        text: '*',
-                        style: AppTheme.lightTheme.textTheme.bodyLarge
-                            ?.copyWith(
-                                fontSize: 11.sp, color: AppTheme.errorBorder),
-                      ),
-                    ],
-                  ),
-                ),
-                suffixIcon: ref.watch(shippingPhoneValidProvider)
-                    ? Icon(Icons.check, color: AppTheme.primaryColor)
-                    : SizedBox(),
-                border: OutlineInputBorder(
-                    borderSide:
-                        BorderSide(color: AppTheme.strokeColor, width: 1.0),
-                    borderRadius: BorderRadius.circular(8.sp)),
-                filled: true,
-                focusedBorder: OutlineInputBorder(
-                    borderSide:
-                        BorderSide(color: AppTheme.primaryColor, width: 1.0),
-                    borderRadius: BorderRadius.circular(8.sp)),
-                enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(
-                        color: phoneProviderValidShipping
-                            ? AppTheme.primaryColor
-                            : AppTheme.strokeColor,
-                        width: 1.0),
-                    borderRadius: BorderRadius.circular(8.sp)),
-                disabledBorder: OutlineInputBorder(
-                    borderSide:
-                        BorderSide(color: AppTheme.strokeColor, width: 1.0),
-                    borderRadius: BorderRadius.circular(8.sp)),
-                errorBorder: OutlineInputBorder(
-                    borderSide:
-                        BorderSide(color: AppTheme.errorBorder, width: 1.0)),
-                focusedErrorBorder: OutlineInputBorder(
-                    borderSide:
-                        BorderSide(color: AppTheme.errorBorder, width: 1.0)),
-                errorStyle: AppTheme.lightTheme.textTheme.bodyLarge
-                    ?.copyWith(color: AppTheme.errorBorder, fontSize: 11.sp),
-                fillColor: AppTheme.appBarAndBottomBarColor),
-            keyboardType: TextInputType.phone,
-            onChanged: (value) {
-              ref.read(shippingPhoneProvider.notifier).state = value;
-              // Update validation state dynamically
-              final phoneRegex =
-                  RegExp(r'^\d{10}$'); // Example: 10-digit phone number
-              ref.read(shippingPhoneValidProvider.notifier).state =
-                  phoneRegex.hasMatch(value);
-            },
-            validator: (value) {
-              if (value == null || value.trim().isEmpty) {
-                return 'Phone number is required';
-              }
-              final phoneRegex = RegExp(r'^\d{10}$');
-              if (!phoneRegex.hasMatch(value)) {
-                return 'Enter a valid phone number';
-              }
-              return null;
-            },
-          ),
-          SizedBox(
-            height: 22.sp,
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Container(
+          SizedBox(height: 16.sp),
+
+          /// Country/Region
+          _buildTextField(
+              controller: countryRegionController,
+              label: 'Country/Region',
+              onChanged: (value) {
+                ref.read(countryRegionProvider.notifier).state = value;
+                ref.read(countryRegionValidProvider.notifier).state =
+                    value.trim().isNotEmpty;
+              },
+              validator: (value) =>
+                  value!.trim().isEmpty ? 'Country/Region is required' : null,
+              fier: countryRegionValidProvider,
+              ref: ref),
+
+          SizedBox(height: 10.sp),
+
+          /// Street Address
+          _buildTextField(
+              controller: streetController,
+              label: 'Street Address',
+              onChanged: (value) {
+                ref.read(streetAddressProvider.notifier).state = value;
+                ref.read(streetAddressValidProvider.notifier).state =
+                    value.trim().isNotEmpty;
+                // isStreetFilledNotifier.value = value.trim().isNotEmpty;
+              },
+              validator: (value) =>
+                  value!.trim().isEmpty ? 'Street Address is required' : null,
+              fier: streetAddressValidProvider,
+              ref: ref),
+
+          SizedBox(height: 10.sp),
+
+          /// Apartment
+          _buildTextField(
+              controller: appartmentController,
+              label: 'Apartment',
+              onChanged: (value) {
+                ref.read(appartmentProvider.notifier).state = value;
+                ref.read(appartmentValidProvider.notifier).state =
+                    value.trim().isNotEmpty;
+              },
+              validator: (value) =>
+                  value!.trim().isEmpty ? 'Apartment is required' : null,
+              fier: appartmentValidProvider,
+              ref: ref),
+
+          SizedBox(height: 10.sp),
+
+          /// Postcode/ZIP
+          _buildTextField(
+              controller: postalController,
+              label: 'Postcode/ZIP',
+              fier: postalCodeValidProvider,
+              onChanged: (value) {
+                ref.read(postalCodeProvider.notifier).state = value;
+                ref.read(postalCodeValidProvider.notifier).state =
+                    value.trim().isNotEmpty;
+              },
+              validator: (value) =>
+                  value!.trim().isEmpty ? 'Postcode/ZIP is required' : null,
+              ref: ref),
+
+          SizedBox(height: 10.sp),
+
+          /// Town/City
+          _buildTextField(
+              controller: townController,
+              label: 'Town/City',
+              fier: townCityValidProvider,
+              onChanged: (value) {
+                ref.read(townCityProvider.notifier).state = value;
+                ref.read(townCityValidProvider.notifier).state =
+                    value.trim().isNotEmpty;
+              },
+              validator: (value) =>
+                  value!.trim().isEmpty ? 'Town/City is required' : null,
+              ref: ref),
+
+          SizedBox(height: 22.sp),
+          safeDefaultWidget(),
+          SizedBox(height: 36.sp),
+        ],
+      ),
+    );
+  }
+
+  Widget safeDefaultWidget() {
+    return Consumer(
+      builder: (context, ref, child) {
+        final isDefaultChecked = ref.watch(isDefaultCheckedProvider);
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            InkWell(
+              onTap: () {
+                ref.read(isDefaultCheckedProvider.notifier).state =
+                    !isDefaultChecked;
+              },
+              child: Container(
                 width: 15.sp,
                 height: 15.sp,
                 decoration: ShapeDecoration(
-                  color: AppTheme.appBarAndBottomBarColor,
+                  color: isDefaultChecked
+                      ? AppTheme.primaryColor
+                      : AppTheme.appBarAndBottomBarColor,
                   shape: RoundedRectangleBorder(
                     side: BorderSide(width: 1, color: AppTheme.primaryColor),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
+                child: Center(
+                  child: isDefaultChecked
+                      ? Icon(
+                          Icons.check,
+                          color: AppTheme.appBarAndBottomBarColor,
+                          size: 13.sp,
+                        )
+                      : SizedBox.shrink(),
+                ),
               ),
-              SizedBox(
-                width: 3.sp,
-              ),
-              Text(
-                'Save Default',
-                style: AppTheme.lightTheme.textTheme.bodySmall
-                    ?.copyWith(fontSize: 14.sp, fontWeight: FontWeight.w400),
+            ),
+            SizedBox(width: 3.sp),
+            Text(
+              'Save Default',
+              style: AppTheme.lightTheme.textTheme.bodySmall
+                  ?.copyWith(fontSize: 14.sp, fontWeight: FontWeight.w400),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  /// Helper function for building a text field
+  Widget _buildTextField(
+      {required TextEditingController controller,
+      required String label,
+      required ProviderListenable<bool> fier,
+      required Function(String) onChanged,
+      required String? Function(String?) validator,
+      required WidgetRef ref}) {
+    return TextFormField(
+      cursorColor: AppTheme.cursorColor,
+      cursorWidth: 1.0,
+      cursorHeight: 18.h,
+      style: AppTheme.lightTheme.textTheme.labelSmall
+          ?.copyWith(fontSize: 14.sp, fontWeight: FontWeight.w400),
+      controller: controller,
+      decoration: InputDecoration(
+        label: RichText(
+          text: TextSpan(
+            text: label,
+            style: AppTheme.lightTheme.textTheme.bodySmall?.copyWith(
+                fontWeight: FontWeight.w400,
+                color: AppTheme.teritiaryTextColor),
+            children: [
+              TextSpan(
+                text: '*',
+                style: AppTheme.lightTheme.textTheme.bodyLarge
+                    ?.copyWith(fontSize: 11.sp, color: AppTheme.errorBorder),
               ),
             ],
           ),
-          SizedBox(
-            height: 36.sp,
-          )
-        ],
+        ),
+        // suffixIcon: ref.watch(fier)
+        //     ? Icon(Icons.check, color: AppTheme.primaryColor)
+        //     : SizedBox(),
+        border: OutlineInputBorder(
+          borderSide: BorderSide(color: AppTheme.strokeColor, width: 1.0),
+          borderRadius: BorderRadius.circular(8.sp),
+        ),
+        filled: true,
+        focusedBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: AppTheme.primaryColor, width: 1.0),
+          borderRadius: BorderRadius.circular(8.sp),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderSide: BorderSide(
+            color:
+                // ref.watch(fier) ? AppTheme.primaryColor :
+                AppTheme.strokeColor,
+            width: 1.0,
+          ),
+          borderRadius: BorderRadius.circular(8.sp),
+        ),
+        fillColor: AppTheme.appBarAndBottomBarColor,
       ),
+      onChanged: onChanged,
+      validator: validator,
     );
   }
 }
+
+final isDefaultCheckedProvider = StateProvider<bool>((ref) {
+  return false;
+});
 
 class OrderConfirmedWidget extends HookConsumerWidget {
   const OrderConfirmedWidget({super.key});

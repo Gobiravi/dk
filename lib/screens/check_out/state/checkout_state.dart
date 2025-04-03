@@ -3,7 +3,7 @@ import 'package:fl_country_code_picker/fl_country_code_picker.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class StepNotifier extends StateNotifier<int> {
-  StepNotifier() : super(2); // Start from step 1
+  StepNotifier() : super(1); // Start from step 1
 
   void updateStep(int step) {
     state = step; // Update the current step
@@ -41,8 +41,8 @@ final physicalFormValidProvider = StateProvider<bool>((ref) {
       ref.watch(streetAddressValidProvider) &&
       ref.watch(appartmentValidProvider) &&
       ref.watch(postalCodeValidProvider) &&
-      ref.watch(townCityValidProvider) &&
-      ref.watch(phoneValidProviderAddress);
+      ref.watch(townCityValidProvider);
+  // ref.watch(phoneValidProviderAddress);
 });
 
 //combined provider to check if both forms are valid

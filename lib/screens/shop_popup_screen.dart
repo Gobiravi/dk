@@ -8,7 +8,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 class ShopPopupScreen extends ConsumerStatefulWidget {
-  List<ShopListModelDatum> shopListModel;
+  List<ShopListModelMenus> shopListModel;
   ShopPopupScreen(this.shopListModel, {super.key});
 
   @override
@@ -74,7 +74,7 @@ class _ShopPopupScreen extends ConsumerState<ShopPopupScreen> {
                               //             .notifier)
                               //     .toggleBottomSheet();
                               if (widget
-                                  .shopListModel[index].children.isNotEmpty) {
+                                  .shopListModel[index].children!.isNotEmpty) {
                                 Navigator.of(context).pop();
                                 // showSubCategoryList();
                               }

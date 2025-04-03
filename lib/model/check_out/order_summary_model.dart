@@ -34,6 +34,7 @@ class OrderSummaryModelData {
   dynamic shippingCost;
   dynamic total;
   List<PaymentGateways>? paymentGateways;
+  OrderSummaryModelDataUser? user;
 
   OrderSummaryModelData(
       {this.currency,
@@ -44,6 +45,9 @@ class OrderSummaryModelData {
       this.paymentGateways});
 
   OrderSummaryModelData.fromJson(Map<String, dynamic> json) {
+    user = json['user'] != null
+        ? OrderSummaryModelDataUser.fromJson(json['user'])
+        : null;
     currency = json['currency'];
     if (json['product'] != null) {
       product = <OrderSummaryModelDataProduct>[];
@@ -65,6 +69,9 @@ class OrderSummaryModelData {
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['currency'] = currency;
+    if (user != null) {
+      data['user'] = user!.toJson();
+    }
     if (product != null) {
       data['product'] = product!.map((v) => v.toJson()).toList();
     }
@@ -75,6 +82,31 @@ class OrderSummaryModelData {
       data['payment_gateways'] =
           paymentGateways!.map((v) => v.toJson()).toList();
     }
+    return data;
+  }
+}
+
+class OrderSummaryModelDataUser {
+  String? firstName;
+  String? lastName;
+  String? email;
+  String? phone;
+
+  OrderSummaryModelDataUser({this.firstName, this.lastName, this.email});
+
+  OrderSummaryModelDataUser.fromJson(Map<String, dynamic> json) {
+    firstName = json['first_name'];
+    lastName = json['last_name'];
+    email = json['email'];
+    phone = json['phone_number'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['first_name'] = firstName;
+    data['last_name'] = lastName;
+    data['email'] = email;
+    data['phone_number'] = phone;
     return data;
   }
 }

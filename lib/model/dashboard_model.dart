@@ -160,7 +160,7 @@ class DashboardModelFastResult {
   final String? ratingCount;
   final String? symbol;
   final dynamic price;
-  final int? template;
+  final dynamic template;
   final String? type;
   bool? isWishlist;
   List<Variation>? variation;
@@ -207,7 +207,7 @@ class DashboardModelFastResult {
     String? ratingCount,
     String? symbol,
     dynamic price,
-    int? template,
+    dynamic template,
     String? type,
     bool? isWishlist,
     List<Variation>? variation,

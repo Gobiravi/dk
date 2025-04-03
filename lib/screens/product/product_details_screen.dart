@@ -44,6 +44,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
     final indexOfSelectedJewellery =
         ref.watch(indexOfJewelleryVariationInProductDetail);
     final choosedVariation = ref.watch(selectedVariation);
+    final suggestedPriceValid = ref.watch(suggestedPriceProviderValid);
     useEffect(() {
       productDetails.when(
         data: (data) {
@@ -72,14 +73,16 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
           actions: [
             IconButton(
                 onPressed: () {
-                  Share.share('check out my website https://example.com',
-                      subject: 'Look what I made!');
+                  Share.share(
+                      productDetails.value?.data?.productDetail?.productLink ??
+                          "",
+                      subject: 'Look Out For this product');
                 },
                 icon:
                     SvgPicture.asset("${Constants.imagePathAppBar}share.svg")),
             IconButton(
                 onPressed: () {
-                  context.pushNamed("address_widget");
+                  context.push("/search_widget");
                 },
                 icon: SvgPicture.asset("${Constants.imagePath}search.svg")),
             WishlistWidget(),
@@ -94,7 +97,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                 icon: IconButton(
                     onPressed: () {
                       ref.watch(selectedVariation.notifier).state = Variation();
-                      context.pop();
+                      context.goNamed("dashboard");
                     },
                     icon: SvgPicture.asset(
                         "${Constants.imagePathAppBar}back.svg")),
@@ -114,6 +117,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
         ),
         body: productDetails.when(
           data: (data) {
+            // final wishlistState = ref.watch(wishlistProvider);
             final datum = data.data ?? ProductDetailsModelData();
             final currency = CurrencySymbol.fromString(datum.currency ?? "ILS");
             // useEffect(
@@ -243,17 +247,32 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                                       Positioned(
                                           right: 14.sp,
                                           top: 16.sp,
-                                          child: IconButton(
-                                              onPressed: () {
-                                                ConstantMethods.toggleWishlist(
-                                                    WishListType.productDetail,
-                                                    ref);
-                                              },
-                                              icon: SvgPicture.asset(
-                                                "${Constants.imagePath}add_to_wish.svg",
-                                                height: ScreenUtil().setSp(20),
-                                                width: ScreenUtil().setSp(22.0),
-                                              )))
+                                          child: Consumer(
+                                            builder: (context, ref, child) {
+                                              final wishlistState =
+                                                  ref.watch(wishlistProvider);
+                                              final dato =
+                                                  wishlistState.productDetails;
+                                              return IconButton(
+                                                  onPressed: () {
+                                                    ConstantMethods
+                                                        .toggleWishlist(
+                                                            WishListType
+                                                                .productDetail,
+                                                            ref);
+                                                  },
+                                                  icon: SvgPicture.asset(
+                                                    dato.isWishlist != null &&
+                                                            dato.isWishlist!
+                                                        ? "${Constants.imagePath}heart_filled.svg"
+                                                        : "${Constants.imagePath}add_to_wish.svg",
+                                                    height:
+                                                        ScreenUtil().setSp(20),
+                                                    width: ScreenUtil()
+                                                        .setSp(22.0),
+                                                  ));
+                                            },
+                                          ))
                                     ],
                                   ),
                                 ),
@@ -375,192 +394,368 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                                                       for (var item
                                                           in content.items) {
                                                         print(
-                                                            '${item.isBold ? '[BOLD] ' : ''}${item.title}');
+                                                            '${item.headerIsBold ? '[BOLD] ' : ''}${item.header}');
                                                       }
+                                                      // showModalBottomSheet(
+                                                      //   isDismissible: false,
+                                                      //   context: context,
+                                                      //   builder: (context) {
+                                                      //     return Container(
+                                                      //       decoration: const BoxDecoration(
+                                                      //           color: AppTheme
+                                                      //               .appBarAndBottomBarColor,
+                                                      //           borderRadius: BorderRadius.only(
+                                                      //               topLeft: Radius
+                                                      //                   .circular(
+                                                      //                       12.0),
+                                                      //               topRight: Radius
+                                                      //                   .circular(
+                                                      //                       12.0))),
+                                                      //       child: Column(
+                                                      //         children: [
+                                                      //           SizedBox(
+                                                      //             height: 12.sp,
+                                                      //           ),
+                                                      //           Row(
+                                                      //             mainAxisAlignment:
+                                                      //                 MainAxisAlignment
+                                                      //                     .spaceBetween,
+                                                      //             children: [
+                                                      //               IconButton(
+                                                      //                   onPressed:
+                                                      //                       () {
+                                                      //                     context
+                                                      //                         .pop();
+                                                      //                   },
+                                                      //                   icon:
+                                                      //                       const Icon(
+                                                      //                     Icons
+                                                      //                         .close,
+                                                      //                     color:
+                                                      //                         Colors.transparent,
+                                                      //                   )),
+                                                      //               Text(
+                                                      //                   datum.productDetail!.descriptionQa?[index].question ??
+                                                      //                       "",
+                                                      //                   style: ThemeData.light()
+                                                      //                       .textTheme
+                                                      //                       .labelMedium!
+                                                      //                       .copyWith(color: AppTheme.primaryColor)),
+                                                      //               IconButton(
+                                                      //                   onPressed:
+                                                      //                       () {
+                                                      //                     // ref.read(indexOfBottomNavbarProvider.notifier).state = 0;
+                                                      //                     Navigator.of(context)
+                                                      //                         .pop();
+                                                      //                   },
+                                                      //                   icon:
+                                                      //                       const Icon(
+                                                      //                     Icons
+                                                      //                         .close,
+                                                      //                     color:
+                                                      //                         AppTheme.textColor,
+                                                      //                   ))
+                                                      //             ],
+                                                      //           ),
+                                                      //           Divider(),
+                                                      //           SizedBox(
+                                                      //             height: 14.sp,
+                                                      //           ),
+                                                      //           content.title !=
+                                                      //                       null &&
+                                                      //                   content
+                                                      //                       .title
+                                                      //                       .isNotEmpty
+                                                      //               ? Padding(
+                                                      //                   padding:
+                                                      //                       EdgeInsets.symmetric(horizontal: 20.sp),
+                                                      //                   child:
+                                                      //                       Text(
+                                                      //                     content
+                                                      //                         .title,
+                                                      //                     style: AppTheme
+                                                      //                         .lightTheme
+                                                      //                         .textTheme
+                                                      //                         .bodySmall
+                                                      //                         ?.copyWith(fontSize: 14.sp),
+                                                      //                   ),
+                                                      //                 )
+                                                      //               : SizedBox
+                                                      //                   .shrink(),
+                                                      //           SizedBox(
+                                                      //             height: 20.sp,
+                                                      //           ),
+                                                      //           Expanded(
+                                                      //             child: ListView
+                                                      //                 .builder(
+                                                      //               itemCount: content
+                                                      //                       .items
+                                                      //                       .length ??
+                                                      //                   0,
+                                                      //               itemBuilder:
+                                                      //                   (context,
+                                                      //                       index) {
+                                                      //                 final item =
+                                                      //                     content
+                                                      //                         .items[index]; // ✅ Safe access
+                                                      //                 if (item ==
+                                                      //                     null)
+                                                      //                   return SizedBox
+                                                      //                       .shrink(); // Skip if null
+
+                                                      //                 return Padding(
+                                                      //                   padding: EdgeInsets.only(
+                                                      //                       bottom:
+                                                      //                           14.sp,
+                                                      //                       left: 32.sp,
+                                                      //                       right: 32.sp),
+                                                      //                   child:
+                                                      //                       Row(
+                                                      //                     crossAxisAlignment:
+                                                      //                         CrossAxisAlignment.start,
+                                                      //                     children: [
+                                                      //                       SvgPicture.asset(
+                                                      //                         "${Constants.imagePath}heart_filled.svg",
+                                                      //                         height: 16.sp,
+                                                      //                         width: 16.sp,
+                                                      //                         placeholderBuilder: (context) => CircularProgressIndicator(),
+                                                      //                       ),
+                                                      //                       SizedBox(width: 10.w),
+                                                      //                       Expanded(
+                                                      //                         child: RichText(
+                                                      //                           textAlign: TextAlign.start,
+                                                      //                           text: TextSpan(
+                                                      //                             children: [
+                                                      //                               item.headerIsBold
+                                                      //                                   ? TextSpan(
+                                                      //                                       text: item.header ?? '',
+                                                      //                                       style: AppTheme.lightTheme.textTheme.headlineLarge?.copyWith(fontSize: 14.sp),
+                                                      //                                     )
+                                                      //                                   : TextSpan(
+                                                      //                                       text: item.header ?? '',
+                                                      //                                       style: TextStyle(fontWeight: FontWeight.normal),
+                                                      //                                     ),
+                                                      //                               TextSpan(
+                                                      //                                 text: item.description,
+                                                      //                                 style: AppTheme.lightTheme.textTheme.headlineLarge?.copyWith(fontSize: 14.sp, fontWeight: FontWeight.w300),
+                                                      //                               ),
+                                                      //                             ],
+                                                      //                           ),
+                                                      //                         ),
+                                                      //                       ),
+                                                      //                     ],
+                                                      //                   ),
+                                                      //                 );
+                                                      //               },
+                                                      //             ),
+                                                      //           ),
+                                                      //           // Expanded(
+                                                      //           //   child:
+                                                      //           //       Padding(
+                                                      //           //     padding: EdgeInsets.symmetric(
+                                                      //           //         horizontal:
+                                                      //           //             16.sp),
+                                                      //           //     child:
+                                                      //           //         SizedBox(
+                                                      //           //       // height: ScreenUtil()
+                                                      //           //       //     .setHeight(
+                                                      //           //       //         255),
+                                                      //           //       child:
+                                                      //           //           Padding(
+                                                      //           //         padding: EdgeInsets.only(
+                                                      //           //             left:
+                                                      //           //                 14.sp,
+                                                      //           //             right: 14.sp,
+                                                      //           //             bottom: 20.sp),
+                                                      //           //         child:
+                                                      //           //             HtmlWidget(
+                                                      //           //           datum.productDetail?.descriptionQa?[index].value ??
+                                                      //           //               "",
+                                                      //           //           renderMode:
+                                                      //           //               RenderMode.listView,
+                                                      //           //         ),
+                                                      //           //       ),
+                                                      //           //     ),
+                                                      //           //   ),
+                                                      //           // ),
+                                                      //           SizedBox(
+                                                      //             height: 4.sp,
+                                                      //           )
+                                                      //         ],
+                                                      //       ),
+                                                      //     );
+                                                      //   },
+                                                      // );
+
                                                       showModalBottomSheet(
-                                                        isDismissible: false,
+                                                        isDismissible:
+                                                            true, // Allow user to swipe down to dismiss
                                                         context: context,
+                                                        isScrollControlled:
+                                                            true, // Allow full-screen expansion
+                                                        shape:
+                                                            const RoundedRectangleBorder(
+                                                          borderRadius:
+                                                              BorderRadius.only(
+                                                            topLeft:
+                                                                Radius.circular(
+                                                                    12.0),
+                                                            topRight:
+                                                                Radius.circular(
+                                                                    12.0),
+                                                          ),
+                                                        ),
                                                         builder: (context) {
-                                                          return Container(
-                                                            decoration: const BoxDecoration(
-                                                                color: AppTheme
-                                                                    .appBarAndBottomBarColor,
-                                                                borderRadius: BorderRadius.only(
+                                                          return DraggableScrollableSheet(
+                                                            initialChildSize:
+                                                                0.5, // Starts at 50% of screen height
+                                                            minChildSize:
+                                                                0.3, // Can collapse to 30% of screen height
+                                                            maxChildSize:
+                                                                0.9, // Can expand up to 90% of screen height
+                                                            expand: false,
+                                                            builder: (context,
+                                                                scrollController) {
+                                                              return Container(
+                                                                decoration:
+                                                                    const BoxDecoration(
+                                                                  color: AppTheme
+                                                                      .appBarAndBottomBarColor,
+                                                                  borderRadius:
+                                                                      BorderRadius
+                                                                          .only(
                                                                     topLeft: Radius
                                                                         .circular(
                                                                             12.0),
                                                                     topRight: Radius
                                                                         .circular(
-                                                                            12.0))),
-                                                            child: Column(
-                                                              children: [
-                                                                SizedBox(
-                                                                  height: 12.sp,
-                                                                ),
-                                                                Row(
-                                                                  mainAxisAlignment:
-                                                                      MainAxisAlignment
-                                                                          .spaceBetween,
-                                                                  children: [
-                                                                    IconButton(
-                                                                        onPressed:
-                                                                            () {
-                                                                          context
-                                                                              .pop();
-                                                                        },
-                                                                        icon:
-                                                                            const Icon(
-                                                                          Icons
-                                                                              .close,
-                                                                          color:
-                                                                              Colors.transparent,
-                                                                        )),
-                                                                    Text(
-                                                                        datum.productDetail!.descriptionQa?[index].question ??
-                                                                            "",
-                                                                        style: ThemeData.light()
-                                                                            .textTheme
-                                                                            .labelMedium!
-                                                                            .copyWith(color: AppTheme.primaryColor)),
-                                                                    IconButton(
-                                                                        onPressed:
-                                                                            () {
-                                                                          // ref.read(indexOfBottomNavbarProvider.notifier).state = 0;
-                                                                          Navigator.of(context)
-                                                                              .pop();
-                                                                        },
-                                                                        icon:
-                                                                            const Icon(
-                                                                          Icons
-                                                                              .close,
-                                                                          color:
-                                                                              AppTheme.textColor,
-                                                                        ))
-                                                                  ],
-                                                                ),
-                                                                Divider(),
-                                                                SizedBox(
-                                                                  height: 14.sp,
-                                                                ),
-                                                                Padding(
-                                                                  padding: EdgeInsets
-                                                                      .symmetric(
-                                                                          horizontal:
-                                                                              20.sp),
-                                                                  child: Text(
-                                                                    'The spell is suitable for anyone feeling stressed, restless, or experiencing a sense of chronic anxiety. Whether you’re facing an important exam, have had a long day at work, or need some mental rest. Additionally, the spell is perfect in such situations as,',
-                                                                    style: AppTheme
-                                                                        .lightTheme
-                                                                        .textTheme
-                                                                        .bodySmall
-                                                                        ?.copyWith(
-                                                                            fontSize:
-                                                                                14.sp),
+                                                                            12.0),
                                                                   ),
                                                                 ),
-                                                                SizedBox(
-                                                                  height: 20.sp,
-                                                                ),
-                                                                Expanded(
-                                                                  child: ListView
-                                                                      .builder(
-                                                                    itemCount: content
-                                                                            .items
-                                                                            .length ??
-                                                                        0, // ✅ Null safety added
-                                                                    itemBuilder:
-                                                                        (context,
-                                                                            index) {
-                                                                      final item =
-                                                                          content
-                                                                              .items[index]; // ✅ Safe access
-                                                                      if (item ==
-                                                                          null)
-                                                                        return SizedBox
-                                                                            .shrink(); // Skip if null
+                                                                child: Column(
+                                                                  children: [
+                                                                    SizedBox(
+                                                                        height:
+                                                                            12.sp),
 
-                                                                      return Padding(
-                                                                        padding: EdgeInsets.only(
-                                                                            bottom:
-                                                                                14.sp,
-                                                                            left: 32.sp,
-                                                                            right: 32.sp),
+                                                                    // HEADER
+                                                                    Row(
+                                                                      mainAxisAlignment:
+                                                                          MainAxisAlignment
+                                                                              .spaceBetween,
+                                                                      children: [
+                                                                        IconButton(
+                                                                          onPressed: () =>
+                                                                              context.pop(),
+                                                                          icon: const Icon(
+                                                                              Icons.close,
+                                                                              color: Colors.transparent),
+                                                                        ),
+                                                                        Text(
+                                                                          datum.productDetail!.descriptionQa?[index].question ??
+                                                                              "",
+                                                                          style: ThemeData.light()
+                                                                              .textTheme
+                                                                              .labelMedium!
+                                                                              .copyWith(color: AppTheme.primaryColor),
+                                                                        ),
+                                                                        IconButton(
+                                                                          onPressed: () =>
+                                                                              Navigator.of(context).pop(),
+                                                                          icon: const Icon(
+                                                                              Icons.close,
+                                                                              color: AppTheme.textColor),
+                                                                        ),
+                                                                      ],
+                                                                    ),
+                                                                    const Divider(),
+                                                                    SizedBox(
+                                                                        height:
+                                                                            14.sp),
+
+                                                                    // TITLE (If Available)
+                                                                    if (content.title !=
+                                                                            null &&
+                                                                        content
+                                                                            .title
+                                                                            .isNotEmpty)
+                                                                      Padding(
+                                                                        padding:
+                                                                            EdgeInsets.symmetric(horizontal: 20.sp),
                                                                         child:
-                                                                            Row(
+                                                                            Text(
+                                                                          content
+                                                                              .title,
+                                                                          style: AppTheme
+                                                                              .lightTheme
+                                                                              .textTheme
+                                                                              .bodySmall
+                                                                              ?.copyWith(fontSize: 14.sp),
+                                                                        ),
+                                                                      ),
+                                                                    SizedBox(
+                                                                        height:
+                                                                            20.sp),
+
+                                                                    // SCROLLABLE CONTENT
+                                                                    Expanded(
+                                                                      child:
+                                                                          SingleChildScrollView(
+                                                                        controller:
+                                                                            scrollController,
+                                                                        padding:
+                                                                            EdgeInsets.symmetric(horizontal: 32.sp),
+                                                                        child:
+                                                                            Column(
                                                                           crossAxisAlignment:
                                                                               CrossAxisAlignment.start,
-                                                                          children: [
-                                                                            SvgPicture.asset(
-                                                                              "${Constants.imagePath}heart_filled.svg",
-                                                                              height: 20, // Optional: Add size to avoid errors
-                                                                              width: 20,
-                                                                              placeholderBuilder: (context) => CircularProgressIndicator(), // ✅ In case of missing asset
-                                                                            ),
-                                                                            SizedBox(width: 10.w),
-                                                                            Expanded(
-                                                                              // ✅ To handle overflow issues
-                                                                              child: RichText(
-                                                                                textAlign: TextAlign.start,
-                                                                                text: TextSpan(
-                                                                                  style: TextStyle(
-                                                                                    fontSize: 14,
-                                                                                    color: Colors.black,
-                                                                                    height: 1.5,
+                                                                          children: content
+                                                                              .items
+                                                                              .map((item) {
+                                                                            return Padding(
+                                                                              padding: EdgeInsets.only(bottom: 14.sp),
+                                                                              child: Row(
+                                                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                                                children: [
+                                                                                  SvgPicture.asset(
+                                                                                    "${Constants.imagePath}heart_filled.svg",
+                                                                                    height: 16.sp,
+                                                                                    width: 16.sp,
+                                                                                    placeholderBuilder: (context) => CircularProgressIndicator(),
                                                                                   ),
-                                                                                  children: [
-                                                                                    if (item.isBold) // ✅ Check if text should be bold
-                                                                                      TextSpan(
-                                                                                        text: item.title ?? '',
-                                                                                        style: TextStyle(fontWeight: FontWeight.bold),
+                                                                                  SizedBox(width: 10.w),
+                                                                                  Expanded(
+                                                                                    child: RichText(
+                                                                                      textAlign: TextAlign.start,
+                                                                                      text: TextSpan(
+                                                                                        children: [
+                                                                                          if (item.headerIsBold)
+                                                                                            TextSpan(
+                                                                                              text: item.header ?? '',
+                                                                                              style: AppTheme.lightTheme.textTheme.headlineLarge?.copyWith(fontSize: 14.sp),
+                                                                                            ),
+                                                                                          TextSpan(
+                                                                                            text: item.description,
+                                                                                            style: AppTheme.lightTheme.textTheme.headlineLarge?.copyWith(fontSize: 14.sp, fontWeight: FontWeight.w300),
+                                                                                          ),
+                                                                                        ],
                                                                                       ),
-                                                                                    TextSpan(
-                                                                                      text: item.title ?? '',
-                                                                                      style: TextStyle(fontWeight: FontWeight.normal),
                                                                                     ),
-                                                                                  ],
-                                                                                ),
+                                                                                  ),
+                                                                                ],
                                                                               ),
-                                                                            ),
-                                                                          ],
+                                                                            );
+                                                                          }).toList(),
                                                                         ),
-                                                                      );
-                                                                    },
-                                                                  ),
+                                                                      ),
+                                                                    ),
+                                                                    SizedBox(
+                                                                        height:
+                                                                            4.sp),
+                                                                  ],
                                                                 ),
-                                                                // Expanded(
-                                                                //   child:
-                                                                //       Padding(
-                                                                //     padding: EdgeInsets.symmetric(
-                                                                //         horizontal:
-                                                                //             16.sp),
-                                                                //     child:
-                                                                //         SizedBox(
-                                                                //       // height: ScreenUtil()
-                                                                //       //     .setHeight(
-                                                                //       //         255),
-                                                                //       child:
-                                                                //           Padding(
-                                                                //         padding: EdgeInsets.only(
-                                                                //             left:
-                                                                //                 14.sp,
-                                                                //             right: 14.sp,
-                                                                //             bottom: 20.sp),
-                                                                //         child:
-                                                                //             HtmlWidget(
-                                                                //           datum.productDetail?.descriptionQa?[index].value ??
-                                                                //               "",
-                                                                //           renderMode:
-                                                                //               RenderMode.listView,
-                                                                //         ),
-                                                                //       ),
-                                                                //     ),
-                                                                //   ),
-                                                                // ),
-                                                                SizedBox(
-                                                                  height: 4.sp,
-                                                                )
-                                                              ],
-                                                            ),
+                                                              );
+                                                            },
                                                           );
                                                         },
                                                       );
@@ -671,27 +866,32 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                                             CrossAxisAlignment.start,
                                         children: [
                                           datum.productDetail!.template == 4
-                                              ? Text(
-                                                  "There is only one price for a good service - what your heart chooses.",
-                                                  style: AppTheme.lightTheme
-                                                      .textTheme.labelMedium
+                                              ? Text("There is only one price for a good service - what your heart chooses.",
+                                                  style: AppTheme.lightTheme.textTheme.labelMedium
                                                       ?.copyWith(
                                                           color: AppTheme
                                                               .primaryColor,
                                                           fontWeight:
                                                               FontWeight.w500,
                                                           fontSize: 16.sp))
-                                              : Text(
-                                                  localization
-                                                      .howStrongDoYouWantYourSpell,
-                                                  style: AppTheme.lightTheme
-                                                      .textTheme.labelMedium
-                                                      ?.copyWith(
-                                                          color: AppTheme
-                                                              .primaryColor,
-                                                          fontWeight:
-                                                              FontWeight.w500,
-                                                          fontSize: 16.sp)),
+                                              : datum.productDetail!.template ==
+                                                      2
+                                                  ? Text("How curious are you to know the answer?",
+                                                      style: AppTheme.lightTheme
+                                                          .textTheme.labelMedium
+                                                          ?.copyWith(
+                                                              color: AppTheme
+                                                                  .primaryColor,
+                                                              fontWeight: FontWeight
+                                                                  .w500,
+                                                              fontSize: 16.sp))
+                                                  : Text(localization.howStrongDoYouWantYourSpell,
+                                                      style: AppTheme.lightTheme
+                                                          .textTheme.labelMedium
+                                                          ?.copyWith(
+                                                              color: AppTheme.primaryColor,
+                                                              fontWeight: FontWeight.w500,
+                                                              fontSize: 16.sp)),
                                           SizedBox(
                                             height: 16.sp,
                                           ),
@@ -755,14 +955,171 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                                             height: 18.0.sp,
                                           ),
                                           datum.productDetail!.template == 4
-                                              ? Text(
-                                                  "Suggested Price: \$27.00",
-                                                  style: AppTheme.lightTheme
-                                                      .textTheme.displayLarge
-                                                      ?.copyWith(
-                                                          fontSize: 16.sp,
-                                                          color: AppTheme
-                                                              .textColor),
+                                              ? Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      "Suggested Price: ${currency.symbol} ${datum.productDetail?.suggestedPrice.toString()}",
+                                                      style: AppTheme
+                                                          .lightTheme
+                                                          .textTheme
+                                                          .displayLarge
+                                                          ?.copyWith(
+                                                              fontSize: 16.sp,
+                                                              color: AppTheme
+                                                                  .textColor),
+                                                    ),
+                                                    SizedBox(
+                                                      height: 16.h,
+                                                    ),
+                                                    Text(
+                                                        'Name your price ( ${currency.symbol} )',
+                                                        textAlign:
+                                                            TextAlign.center,
+                                                        style: AppTheme
+                                                            .lightTheme
+                                                            .textTheme
+                                                            .bodySmall
+                                                            ?.copyWith(
+                                                                fontSize: 14.sp,
+                                                                letterSpacing:
+                                                                    -0.30)),
+                                                    SizedBox(
+                                                      height: 10.h,
+                                                    ),
+                                                    SizedBox(
+                                                      width: 120.w,
+                                                      child: TextFormField(
+                                                        autovalidateMode:
+                                                            AutovalidateMode
+                                                                .onUserInteraction,
+                                                        cursorColor: AppTheme
+                                                            .cursorColor,
+                                                        cursorWidth: 1.0,
+                                                        cursorHeight: 18.h,
+                                                        keyboardType:
+                                                            TextInputType
+                                                                .number,
+                                                        style: AppTheme
+                                                            .lightTheme
+                                                            .textTheme
+                                                            .labelSmall
+                                                            ?.copyWith(
+                                                                fontSize: 14.sp,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w400),
+                                                        decoration:
+                                                            InputDecoration(
+                                                          border: OutlineInputBorder(
+                                                              borderSide: BorderSide(
+                                                                  color: AppTheme
+                                                                      .strokeColor,
+                                                                  width: 1.0),
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          8.sp)),
+                                                          filled: true,
+                                                          focusedBorder: OutlineInputBorder(
+                                                              borderSide: BorderSide(
+                                                                  color: AppTheme
+                                                                      .primaryColor,
+                                                                  width: 1.0),
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          8.sp)),
+                                                          enabledBorder: OutlineInputBorder(
+                                                              borderSide: BorderSide(
+                                                                  color: AppTheme
+                                                                      .strokeColor,
+                                                                  width: 1.0),
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          8.sp)),
+                                                          disabledBorder: OutlineInputBorder(
+                                                              borderSide: BorderSide(
+                                                                  color: AppTheme
+                                                                      .strokeColor,
+                                                                  width: 1.0),
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          8.sp)),
+                                                          errorBorder: OutlineInputBorder(
+                                                              borderSide: BorderSide(
+                                                                  color: AppTheme
+                                                                      .errorBorder,
+                                                                  width: 1.0)),
+                                                          focusedErrorBorder:
+                                                              OutlineInputBorder(
+                                                                  borderSide: BorderSide(
+                                                                      color: AppTheme
+                                                                          .errorBorder,
+                                                                      width:
+                                                                          1.0)),
+                                                          errorStyle: AppTheme
+                                                              .lightTheme
+                                                              .textTheme
+                                                              .bodyLarge
+                                                              ?.copyWith(
+                                                                  color: AppTheme
+                                                                      .errorBorder,
+                                                                  fontSize:
+                                                                      11.sp),
+                                                          fillColor: AppTheme
+                                                              .appBarAndBottomBarColor,
+                                                        ),
+                                                        onChanged: (value) {
+                                                          ref
+                                                              .read(
+                                                                  suggestedPriceProvider
+                                                                      .notifier)
+                                                              .state = value;
+
+                                                          ref
+                                                                  .read(suggestedPriceProviderValid
+                                                                      .notifier)
+                                                                  .state =
+                                                              value
+                                                                  .trim()
+                                                                  .isNotEmpty;
+                                                        },
+                                                      ),
+                                                    ),
+                                                    SizedBox(
+                                                      height: 9.h,
+                                                    ),
+                                                    !suggestedPriceValid
+                                                        ? Row(
+                                                            children: [
+                                                              SvgPicture.asset(
+                                                                "${Constants.imagePathProducts}error.svg",
+                                                                height: 15.h,
+                                                              ),
+                                                              SizedBox(
+                                                                width: 7,
+                                                              ),
+                                                              Text(
+                                                                  'Please enter a higher amount.',
+                                                                  style: AppTheme
+                                                                      .lightTheme
+                                                                      .textTheme
+                                                                      .bodySmall
+                                                                      ?.copyWith(
+                                                                          fontSize: 11
+                                                                              .sp,
+                                                                          color: AppTheme
+                                                                              .errorBorder,
+                                                                          fontWeight:
+                                                                              FontWeight.w400))
+                                                            ],
+                                                          )
+                                                        : SizedBox.shrink()
+                                                  ],
                                                 )
                                               : Text(
                                                   choosedVariation.price != null
@@ -775,9 +1132,6 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                                                           color: AppTheme
                                                               .textColor),
                                                 ),
-                                          SizedBox(
-                                            height: 16.sp,
-                                          ),
                                           Padding(
                                             padding: EdgeInsets.only(
                                                 left: 14.sp,
@@ -1048,249 +1402,253 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                                     ],
                                   )
                                 : SizedBox(),
-                            Container(
-                              width: ScreenUtil().screenWidth,
-                              decoration: BoxDecoration(
-                                  color: AppTheme.appBarAndBottomBarColor),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  SizedBox(
-                                    height: 12.sp,
-                                  ),
-                                  Padding(
-                                    padding: EdgeInsets.only(
-                                        left: 16.0.sp, bottom: 20.sp),
-                                    child: Text(
-                                        localization.questionsAndAnswers,
-                                        style: AppTheme
-                                            .lightTheme.textTheme.titleMedium
-                                            ?.copyWith(
-                                                color: AppTheme.primaryColor)),
-                                  ),
-                                  ConstantMethods.customDivider(),
-                                  SizedBox(
-                                    height: 12.sp,
-                                  ),
-                                  datum.questionAnswer != null &&
-                                          datum.questionAnswer!.isNotEmpty
-                                      ? SizedBox.fromSize(
-                                          size: Size.fromHeight(
-                                              datum.questionAnswer!.length *
-                                                  50.sp),
-                                          child: ListView.builder(
-                                            itemCount:
-                                                datum.questionAnswer!.length,
-                                            itemBuilder: (context, index) {
-                                              return InkWell(
-                                                onTap: () {
-                                                  showModalBottomSheet(
-                                                    isDismissible: false,
-                                                    context: context,
-                                                    builder: (context) {
-                                                      return Container(
-                                                        decoration: const BoxDecoration(
-                                                            color: AppTheme
-                                                                .appBarAndBottomBarColor,
-                                                            borderRadius: BorderRadius.only(
-                                                                topLeft: Radius
-                                                                    .circular(
-                                                                        12.0),
-                                                                topRight: Radius
-                                                                    .circular(
-                                                                        12.0))),
-                                                        child: Column(
-                                                          crossAxisAlignment:
-                                                              CrossAxisAlignment
-                                                                  .center,
-                                                          mainAxisAlignment:
-                                                              MainAxisAlignment
-                                                                  .center,
-                                                          children: [
-                                                            Row(
-                                                              mainAxisAlignment:
-                                                                  MainAxisAlignment
-                                                                      .spaceBetween,
-                                                              children: [
-                                                                IconButton(
-                                                                    onPressed:
-                                                                        () {
-                                                                      context
-                                                                          .pop();
-                                                                    },
-                                                                    icon:
-                                                                        const Icon(
-                                                                      Icons
-                                                                          .close,
-                                                                      color: Colors
-                                                                          .transparent,
-                                                                    )),
-                                                                SizedBox(
-                                                                  width: ScreenUtil()
-                                                                          .screenWidth *
-                                                                      0.7,
-                                                                  child: Text(
-                                                                    datum.questionAnswer![index]
-                                                                            .question ??
-                                                                        "",
-                                                                    style: ThemeData
-                                                                            .light()
-                                                                        .textTheme
-                                                                        .labelMedium!
-                                                                        .copyWith(
-                                                                            color:
-                                                                                AppTheme.primaryColor),
-                                                                    maxLines: 2,
-                                                                    overflow:
-                                                                        TextOverflow
-                                                                            .ellipsis,
+                            datum.questionAnswer != null &&
+                                    datum.questionAnswer!.isNotEmpty
+                                ? Container(
+                                    width: ScreenUtil().screenWidth,
+                                    decoration: BoxDecoration(
+                                        color:
+                                            AppTheme.appBarAndBottomBarColor),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        SizedBox(
+                                          height: 12.sp,
+                                        ),
+                                        Padding(
+                                          padding: EdgeInsets.only(
+                                              left: 16.0.sp, bottom: 20.sp),
+                                          child: Text(
+                                              localization.questionsAndAnswers,
+                                              style: AppTheme.lightTheme
+                                                  .textTheme.titleMedium
+                                                  ?.copyWith(
+                                                      color: AppTheme
+                                                          .primaryColor)),
+                                        ),
+                                        ConstantMethods.customDivider(),
+                                        SizedBox(
+                                          height: 12.sp,
+                                        ),
+                                        SizedBox.fromSize(
+                                            size: Size.fromHeight(
+                                                datum.questionAnswer!.length *
+                                                    50.sp),
+                                            child: ListView.builder(
+                                              itemCount:
+                                                  datum.questionAnswer!.length,
+                                              itemBuilder: (context, index) {
+                                                return InkWell(
+                                                  onTap: () {
+                                                    showModalBottomSheet(
+                                                      isDismissible: false,
+                                                      context: context,
+                                                      builder: (context) {
+                                                        return Container(
+                                                          decoration: BoxDecoration(
+                                                              color: AppTheme
+                                                                  .appBarAndBottomBarColor,
+                                                              borderRadius: BorderRadius.only(
+                                                                  topLeft: Radius
+                                                                      .circular(
+                                                                          12.0
+                                                                              .r),
+                                                                  topRight: Radius
+                                                                      .circular(
+                                                                          12.0))),
+                                                          child: Column(
+                                                            crossAxisAlignment:
+                                                                CrossAxisAlignment
+                                                                    .center,
+                                                            mainAxisAlignment:
+                                                                MainAxisAlignment
+                                                                    .center,
+                                                            children: [
+                                                              SizedBox(
+                                                                height: 14.h,
+                                                              ),
+                                                              Row(
+                                                                mainAxisAlignment:
+                                                                    MainAxisAlignment
+                                                                        .spaceBetween,
+                                                                children: [
+                                                                  IconButton(
+                                                                      onPressed:
+                                                                          () {},
+                                                                      icon:
+                                                                          Icon(
+                                                                        Icons
+                                                                            .close,
+                                                                        color: Colors
+                                                                            .transparent,
+                                                                      )),
+                                                                  SizedBox(
+                                                                    width: ScreenUtil()
+                                                                            .screenWidth *
+                                                                        0.6,
+                                                                    child:
+                                                                        Center(
+                                                                      child:
+                                                                          Text(
+                                                                        datum.questionAnswer![index].question ??
+                                                                            "",
+                                                                        style: ThemeData.light()
+                                                                            .textTheme
+                                                                            .labelMedium!
+                                                                            .copyWith(color: AppTheme.primaryColor),
+                                                                        maxLines:
+                                                                            1,
+                                                                        overflow:
+                                                                            TextOverflow.ellipsis,
+                                                                      ),
+                                                                    ),
                                                                   ),
-                                                                ),
-                                                                IconButton(
-                                                                    onPressed:
-                                                                        () {
-                                                                      Navigator.of(
-                                                                              context)
-                                                                          .pop();
-                                                                    },
-                                                                    icon:
-                                                                        const Icon(
-                                                                      Icons
-                                                                          .close,
-                                                                      color: AppTheme
-                                                                          .textColor,
-                                                                    ))
-                                                              ],
-                                                            ),
-                                                            const Divider(),
-                                                            SizedBox(
-                                                              height: 14.sp,
-                                                            ),
-                                                            Expanded(
-                                                              child: SizedBox(
-                                                                // height:
-                                                                //     ScreenUtil()
-                                                                //         .setHeight(
-                                                                //             250),
-                                                                child: Padding(
-                                                                  padding:
-                                                                      EdgeInsets
-                                                                          .only(
-                                                                    left: 14.sp,
-                                                                    right:
-                                                                        14.sp,
-                                                                    bottom:
-                                                                        20.sp,
-                                                                  ),
+                                                                  IconButton(
+                                                                      onPressed:
+                                                                          () {
+                                                                        context
+                                                                            .pop();
+                                                                      },
+                                                                      icon:
+                                                                          const Icon(
+                                                                        Icons
+                                                                            .close,
+                                                                        color: AppTheme
+                                                                            .textColor,
+                                                                      ))
+                                                                ],
+                                                              ),
+                                                              const Divider(),
+                                                              SizedBox(
+                                                                height: 14.sp,
+                                                              ),
+                                                              Expanded(
+                                                                child: SizedBox(
+                                                                  // height:
+                                                                  //     ScreenUtil()
+                                                                  //         .setHeight(
+                                                                  //             250),
                                                                   child:
-                                                                      HtmlWidget(
-                                                                    datum.questionAnswer![index]
-                                                                            .answer ??
-                                                                        "",
-                                                                    renderMode:
-                                                                        RenderMode
-                                                                            .listView,
+                                                                      Padding(
+                                                                    padding:
+                                                                        EdgeInsets
+                                                                            .only(
+                                                                      left:
+                                                                          14.sp,
+                                                                      right:
+                                                                          14.sp,
+                                                                      bottom:
+                                                                          20.sp,
+                                                                    ),
+                                                                    child:
+                                                                        HtmlWidget(
+                                                                      datum.questionAnswer![index]
+                                                                              .answer ??
+                                                                          "",
+                                                                      renderMode:
+                                                                          RenderMode
+                                                                              .listView,
+                                                                    ),
                                                                   ),
                                                                 ),
+                                                              )
+                                                            ],
+                                                          ),
+                                                        );
+                                                      },
+                                                    );
+                                                  },
+                                                  child: SizedBox(
+                                                    height: 50.sp,
+                                                    child: Column(
+                                                      children: [
+                                                        Padding(
+                                                          padding: EdgeInsets
+                                                              .symmetric(
+                                                                  horizontal:
+                                                                      16.0.sp,
+                                                                  vertical:
+                                                                      8.0.sp),
+                                                          child: Row(
+                                                            mainAxisAlignment:
+                                                                MainAxisAlignment
+                                                                    .spaceBetween,
+                                                            children: [
+                                                              SizedBox(
+                                                                width: ScreenUtil()
+                                                                        .screenWidth *
+                                                                    0.8,
+                                                                child: Text(
+                                                                  datum.questionAnswer![index]
+                                                                          .question ??
+                                                                      "",
+                                                                  style: AppTheme
+                                                                      .lightTheme
+                                                                      .textTheme
+                                                                      .labelMedium
+                                                                      ?.copyWith(
+                                                                          fontSize:
+                                                                              13.sp),
+                                                                  maxLines: 1,
+                                                                  overflow:
+                                                                      TextOverflow
+                                                                          .ellipsis,
+                                                                ),
                                                               ),
-                                                            )
-                                                          ],
+                                                              Icon(Icons
+                                                                  .keyboard_arrow_down)
+                                                            ],
+                                                          ),
                                                         ),
-                                                      );
-                                                    },
-                                                  );
-                                                },
-                                                child: SizedBox(
-                                                  height: 50.sp,
-                                                  child: Column(
-                                                    children: [
-                                                      Padding(
-                                                        padding: EdgeInsets
-                                                            .symmetric(
-                                                                horizontal:
-                                                                    16.0.sp,
-                                                                vertical:
-                                                                    8.0.sp),
-                                                        child: Row(
-                                                          mainAxisAlignment:
-                                                              MainAxisAlignment
-                                                                  .spaceBetween,
-                                                          children: [
-                                                            SizedBox(
-                                                              width: ScreenUtil()
-                                                                      .screenWidth *
-                                                                  0.8,
-                                                              child: Text(
-                                                                datum
-                                                                        .questionAnswer![
-                                                                            index]
-                                                                        .question ??
-                                                                    "",
-                                                                style: AppTheme
-                                                                    .lightTheme
-                                                                    .textTheme
-                                                                    .labelMedium
-                                                                    ?.copyWith(
-                                                                        fontSize:
-                                                                            13.sp),
-                                                                maxLines: 1,
-                                                                overflow:
-                                                                    TextOverflow
-                                                                        .ellipsis,
-                                                              ),
-                                                            ),
-                                                            Icon(Icons
-                                                                .keyboard_arrow_down)
-                                                          ],
+                                                        SizedBox(
+                                                          height: 4.sp,
                                                         ),
-                                                      ),
-                                                      SizedBox(
-                                                        height: 4.sp,
-                                                      ),
-                                                      ConstantMethods
-                                                          .customDivider(),
-                                                    ],
+                                                        ConstantMethods
+                                                            .customDivider(),
+                                                      ],
+                                                    ),
                                                   ),
-                                                ),
-                                              );
+                                                );
+                                              },
+                                            )),
+                                        SizedBox(
+                                          height: 28.sp,
+                                        ),
+                                        Align(
+                                          alignment: Alignment.center,
+                                          child: ElevatedButton(
+                                            onPressed: () {
+                                              // Button press action
                                             },
-                                          ))
-                                      : SizedBox(),
-                                  SizedBox(
-                                    height: 28.sp,
-                                  ),
-                                  Align(
-                                    alignment: Alignment.center,
-                                    child: ElevatedButton(
-                                      onPressed: () {
-                                        // Button press action
-                                      },
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor:
-                                            AppTheme.appBarAndBottomBarColor,
-                                        side: const BorderSide(
-                                          color: AppTheme.subTextColor,
-                                          width: 1.0,
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: AppTheme
+                                                  .appBarAndBottomBarColor,
+                                              side: const BorderSide(
+                                                color: AppTheme.subTextColor,
+                                                width: 1.0,
+                                              ),
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(
+                                                        ScreenUtil().setSp(10)),
+                                              ),
+                                            ),
+                                            child: Text(
+                                              localization.forMoreQuestions,
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .labelSmall!,
+                                            ),
+                                          ),
                                         ),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(
-                                              ScreenUtil().setSp(10)),
+                                        SizedBox(
+                                          height: 35.sp,
                                         ),
-                                      ),
-                                      child: Text(
-                                        localization.forMoreQuestions,
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .labelSmall!,
-                                      ),
+                                      ],
                                     ),
-                                  ),
-                                  SizedBox(
-                                    height: 35.sp,
-                                  ),
-                                ],
-                              ),
-                            ),
+                                  )
+                                : SizedBox(),
                             SizedBox(
                               height: 40.sp,
                             ),
@@ -1454,7 +1812,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                                 ),
                                 child: Center(
                                   child: Text(
-                                    'Write a Review',
+                                    localization.writeAReview,
                                     style: AppTheme
                                         .lightTheme.textTheme.headlineLarge
                                         ?.copyWith(
@@ -1635,6 +1993,39 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                                                 SizedBox(
                                                   height: 8.sp,
                                                 ),
+
+                                                datum.reviews![index].title !=
+                                                            null &&
+                                                        datum.reviews![index]
+                                                            .title!.isNotEmpty
+                                                    ? Column(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                          Text(
+                                                            datum
+                                                                    .reviews![
+                                                                        index]
+                                                                    .title ??
+                                                                "",
+                                                            style: AppTheme
+                                                                .lightTheme
+                                                                .textTheme
+                                                                .bodySmall
+                                                                ?.copyWith(
+                                                                    fontSize:
+                                                                        15,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .w400),
+                                                          ),
+                                                          SizedBox(
+                                                            height: 8.sp,
+                                                          ),
+                                                        ],
+                                                      )
+                                                    : SizedBox.shrink(),
                                                 Text(
                                                   datum.reviews![index]
                                                           .content ??
@@ -1746,75 +2137,85 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                         alignment: Alignment.bottomCenter,
                         child: InkWell(
                           onTap: () {
-                            if (datum.productDetail?.template == 3) {
-                              if (datum.productDetail?.type == "variabl") {
-                                ref
-                                    .refresh(addToCartApiProvider(datum
-                                                .productDetail!
-                                                .variations?[
-                                                    indexOfSelectedJewellery]
-                                                .id
-                                                .toString() ??
-                                            "")
-                                        .future)
-                                    .then((value) {
-                                  if (value.status!) {
-                                    ConstantMethods.showSnackbar(context,
-                                        "${datum.productDetail?.title ?? ""} Added To Bag");
-                                  } else {
-                                    ConstantMethods.showSnackbar(
-                                        context, value.message ?? "");
-                                  }
-                                });
+                            if (datum.productDetail?.stockStatus != "instock") {
+                              if (datum.productDetail?.template == 3) {
+                                if (datum.productDetail?.type == "variabl") {
+                                  ref
+                                      .refresh(addToCartApiProvider(datum
+                                                  .productDetail!
+                                                  .variations?[
+                                                      indexOfSelectedJewellery]
+                                                  .id
+                                                  .toString() ??
+                                              "")
+                                          .future)
+                                      .then((value) {
+                                    if (context.mounted) {
+                                      if (value.status!) {
+                                        ConstantMethods.showSnackbar(context,
+                                            "${datum.productDetail?.title ?? ""} Added To Bag");
+                                      } else {
+                                        ConstantMethods.showSnackbar(
+                                            context, value.message ?? "");
+                                      }
+                                    }
+                                  });
+                                } else {
+                                  ref
+                                      .refresh(addToCartApiProvider(datum
+                                                  .productDetail?.id
+                                                  .toString() ??
+                                              "")
+                                          .future)
+                                      .then((value) {
+                                    if (context.mounted) {
+                                      if (value.status!) {
+                                        ConstantMethods.showSnackbar(context,
+                                            "${datum.productDetail?.title ?? ""} Added To Bag");
+                                      } else {
+                                        ConstantMethods.showSnackbar(
+                                            context, value.message ?? "");
+                                      }
+                                    }
+                                  });
+                                }
                               } else {
-                                ref
-                                    .refresh(addToCartApiProvider(datum
-                                                .productDetail?.id
-                                                .toString() ??
-                                            "")
-                                        .future)
-                                    .then((value) {
-                                  if (value.status!) {
-                                    ConstantMethods.showSnackbar(context,
-                                        "${datum.productDetail?.title ?? ""} Added To Bag");
-                                  } else {
-                                    ConstantMethods.showSnackbar(
-                                        context, value.message ?? "");
-                                  }
-                                });
-                              }
-                            } else {
-                              if (datum.productDetail?.type == "variable") {
-                                ref
-                                    .refresh(addToCartApiProvider(
-                                            choosedVariation.id.toString() ??
-                                                "")
-                                        .future)
-                                    .then((value) {
-                                  if (value.status!) {
-                                    ConstantMethods.showSnackbar(context,
-                                        "${datum.productDetail?.title ?? ""} Added To Bag");
-                                  } else {
-                                    ConstantMethods.showSnackbar(
-                                        context, value.message ?? "");
-                                  }
-                                });
-                              } else {
-                                ref
-                                    .refresh(addToCartApiProvider(datum
-                                                .productDetail?.id
-                                                .toString() ??
-                                            "")
-                                        .future)
-                                    .then((value) {
-                                  if (value.status!) {
-                                    ConstantMethods.showSnackbar(context,
-                                        "${datum.productDetail?.title ?? ""} Added To Bag");
-                                  } else {
-                                    ConstantMethods.showSnackbar(
-                                        context, value.message ?? "");
-                                  }
-                                });
+                                if (datum.productDetail?.type == "variable") {
+                                  ref
+                                      .refresh(addToCartApiProvider(
+                                              choosedVariation.id.toString() ??
+                                                  "")
+                                          .future)
+                                      .then((value) {
+                                    if (context.mounted) {
+                                      if (value.status!) {
+                                        ConstantMethods.showSnackbar(context,
+                                            "${datum.productDetail?.title ?? ""} Added To Bag");
+                                      } else {
+                                        ConstantMethods.showSnackbar(
+                                            context, value.message ?? "");
+                                      }
+                                    }
+                                  });
+                                } else {
+                                  ref
+                                      .refresh(addToCartApiProvider(datum
+                                                  .productDetail?.id
+                                                  .toString() ??
+                                              "")
+                                          .future)
+                                      .then((value) {
+                                    if (context.mounted) {
+                                      if (value.status!) {
+                                        ConstantMethods.showSnackbar(context,
+                                            "${datum.productDetail?.title ?? ""} Added To Bag");
+                                      } else {
+                                        ConstantMethods.showSnackbar(
+                                            context, value.message ?? "");
+                                      }
+                                    }
+                                  });
+                                }
                               }
                             }
                           },
@@ -1843,7 +2244,10 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                                 ),
                                 child: Center(
                                   child: Text(
-                                    localization.with_a_click_its_yours,
+                                    datum.productDetail?.stockStatus ==
+                                            "instock"
+                                        ? localization.with_a_click_its_yours
+                                        : localization.out_of_stock,
                                     style: AppTheme
                                         .lightTheme.textTheme.bodySmall
                                         ?.copyWith(
@@ -1861,49 +2265,12 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                   ),
                 );
               case false:
-                return Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.error,
-                        size: 80.sp,
-                        color: AppTheme.primaryColor,
-                      ),
-                      SizedBox(height: 16.h),
-                      Text(
-                        'Something went wrong',
-                        style:
-                            AppTheme.lightTheme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w700,
-                          color: AppTheme.textColor,
-                        ),
-                      ),
-                      SizedBox(height: 14.h),
-                      ElevatedButton(
-                        onPressed: () async {
-                          await ApiUtils.refreshToken();
-                          ref.watch(productDetailsApiProvider(productId));
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.primaryColor,
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 24.w, vertical: 12.h),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8.r),
-                          ),
-                        ),
-                        child: Text(
-                          'Retry',
-                          style: AppTheme.lightTheme.textTheme.labelMedium
-                              ?.copyWith(
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                return ConstantMethods.buildErrorUI(
+                  ref,
+                  onPressed: () async {
+                    await ApiUtils.refreshToken();
+                    ref.watch(productDetailsApiProvider(productId));
+                  },
                 );
               default:
                 return SizedBox();
@@ -2024,46 +2391,103 @@ class StarRatingProgress extends StatelessWidget {
 }
 
 HtmlContent parseHtmlString(String html) {
-  // Extract description
-  final descriptionRegex = RegExp(r'<p>(.*?)<\/p>', dotAll: true);
-  final descriptionMatch = descriptionRegex.firstMatch(html);
-  final description = descriptionMatch != null
-      ? descriptionMatch.group(1)?.replaceAll(RegExp(r'&nbsp;'), '').trim() ??
-          ''
-      : '';
+  // Extract all paragraphs
+  final paragraphRegex = RegExp(r'<p>(.*?)<\/p>', dotAll: true);
+  final paragraphs = paragraphRegex
+      .allMatches(html)
+      .map((match) => match.group(1) ?? '')
+      .toList();
+
+  String title = '';
+  bool titleIsBold = false;
+  String description = '';
+
+  if (paragraphs.isNotEmpty) {
+    String firstParagraph =
+        paragraphs.first.replaceAll(RegExp(r'&nbsp;'), '').trim();
+
+    // Check if the first paragraph is fully bold
+    final boldRegex =
+        RegExp(r'^(<b>|<strong>)(.*?)(<\/b>|<\/strong>)$', dotAll: true);
+    final boldMatch = boldRegex.firstMatch(firstParagraph);
+
+    if (boldMatch != null) {
+      // Extract the title and mark it as bold
+      title = boldMatch.group(2)?.replaceAll(RegExp(r'<.*?>'), '').trim() ?? '';
+      titleIsBold = true;
+    } else {
+      // If not bold, just take the first paragraph as title
+      title = firstParagraph.replaceAll(RegExp(r'<.*?>'), '').trim();
+      titleIsBold = false;
+    }
+
+    // Use the next paragraph as the description if available
+    if (paragraphs.length > 1) {
+      description = paragraphs[1].replaceAll(RegExp(r'<.*?>'), '').trim();
+    }
+  }
 
   // Extract list items
   final listItemRegex = RegExp(r'<li>(.*?)<\/li>', dotAll: true);
-  final boldRegex = RegExp(r'<b>|<\/b>|<strong>|<\/strong>');
-
   final items = listItemRegex.allMatches(html).map((match) {
-    final rawText = match.group(1) ?? '';
+    String rawText = match.group(1) ?? '';
 
-    // Check if the item starts with <b> or <strong>
-    final isBold = rawText.startsWith(RegExp(r'<b>|<strong>'));
+    // Extract bold header (if exists)
+    final boldMatch = RegExp(
+            r'^(?:<b>|<strong>)(.*?)(?:<\/b>|<\/strong>)\s*-?\s*',
+            dotAll: true)
+        .firstMatch(rawText);
+    final header = boldMatch?.group(1)?.replaceAll(RegExp(r'<.*?>'), '').trim();
 
-    // Remove bold tags and other HTML tags
-    final cleanText = rawText
-        .replaceAll(boldRegex, '')
-        .replaceAll(RegExp(r'<.*?>'), '')
-        .trim();
+    // Extract remaining text after the bold header
+    String remainingText = rawText;
+    if (header != null) {
+      remainingText =
+          remainingText.replaceFirst(boldMatch!.group(0)!, '').trim();
+    }
 
-    return ListItem(title: cleanText, isBold: isBold);
+    // Remove any extra HTML tags from the description
+    remainingText = remainingText.replaceAll(RegExp(r'<.*?>'), '').trim();
+
+    return ListItem(
+      header: header ?? "", // Keep empty if no header
+      headerIsBold: header != null, // True if there's a header
+      description: remainingText,
+      descriptionIsBold: false, // Assuming only headers are bold
+    );
   }).toList();
 
-  return HtmlContent(description: description, items: items);
+  return HtmlContent(
+    title: title,
+    titleIsBold: titleIsBold,
+    description: description,
+    items: items,
+  );
 }
 
 class HtmlContent {
   final String description;
+  final String title;
+  final bool titleIsBold;
   final List<ListItem> items;
 
-  HtmlContent({required this.description, required this.items});
+  HtmlContent(
+      {required this.description,
+      required this.items,
+      required this.title,
+      required this.titleIsBold});
 }
 
 class ListItem {
-  final String title;
-  final bool isBold;
+  final String? header;
+  final bool headerIsBold;
+  final String? description;
+  final bool descriptionIsBold;
 
-  ListItem({required this.title, this.isBold = false});
+  ListItem({
+    this.header,
+    required this.headerIsBold,
+    this.description,
+    required this.descriptionIsBold,
+  });
 }

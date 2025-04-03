@@ -77,6 +77,9 @@
     "welcome": "Bienvenida",
     "shipping_address": "Dirección de envío",
     "zodiac_sign": "Signo del zodiaco",
+    "recent_purchase_dikla": "Compra reciente de \n Dikla Spirit",
+    "popular_categories": "Categorías populares",
+    "out_of_stock": "Agotado",
     "pageSettingsInputLanguage": "{locale, select, he {עברית} en {English} es {Español} other {-}}",
     "@pageSettingsInputLanguage": {
       "placeholders": {

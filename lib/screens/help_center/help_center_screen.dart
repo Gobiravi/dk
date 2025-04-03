@@ -346,60 +346,12 @@ class HelpCenterScreen extends HookConsumerWidget {
                               },
                             );
                           }
-                          return Center(
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Container(
-                                  width: 121.w,
-                                  height: 121.92.h,
-                                  decoration: ShapeDecoration(
-                                    color: AppTheme.appBarAndBottomBarColor,
-                                    shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(8.sp)),
-                                  ),
-                                  child: SvgPicture.asset(
-                                    "${Constants.imagePath}warning.svg",
-                                    height: 40.sp,
-                                  ),
-                                ),
-                                SizedBox(height: 16.h),
-                                Text(
-                                  'Something went wrong',
-                                  style: AppTheme
-                                      .lightTheme.textTheme.titleMedium
-                                      ?.copyWith(
-                                    fontWeight: FontWeight.w700,
-                                    color: AppTheme.textColor,
-                                  ),
-                                ),
-                                SizedBox(height: 14.h),
-                                ElevatedButton(
-                                  onPressed: () {
-                                    return ref.refresh(
-                                        getHelpCenterListApiProvider(""));
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: AppTheme.primaryColor,
-                                    padding: EdgeInsets.symmetric(
-                                        horizontal: 24.w, vertical: 12.h),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8.r),
-                                    ),
-                                  ),
-                                  child: Text(
-                                    'Retry',
-                                    style: AppTheme
-                                        .lightTheme.textTheme.labelMedium
-                                        ?.copyWith(
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
+                          return ConstantMethods.buildErrorUI(
+                            ref,
+                            onPressed: () {
+                              return ref
+                                  .refresh(getHelpCenterListApiProvider(""));
+                            },
                           );
                         },
                         loading: () {
@@ -499,55 +451,11 @@ class HelpCenterScreen extends HookConsumerWidget {
                               ref.refresh(getHelpCenterListApiProvider("")),
                         );
                       }
-                      return Center(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(
-                              width: 121.w,
-                              height: 121.92.h,
-                              decoration: ShapeDecoration(
-                                color: AppTheme.appBarAndBottomBarColor,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8.sp),
-                                ),
-                              ),
-                              child: SvgPicture.asset(
-                                "${Constants.imagePath}warning.svg",
-                                height: 40.sp,
-                              ),
-                            ),
-                            SizedBox(height: 16.h),
-                            Text(
-                              'Something went wrong',
-                              style: AppTheme.lightTheme.textTheme.titleMedium
-                                  ?.copyWith(
-                                fontWeight: FontWeight.w700,
-                                color: AppTheme.textColor,
-                              ),
-                            ),
-                            SizedBox(height: 14.h),
-                            ElevatedButton(
-                              onPressed: () =>
-                                  ref.refresh(getHelpCenterListApiProvider("")),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppTheme.primaryColor,
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: 24.w, vertical: 12.h),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8.r),
-                                ),
-                              ),
-                              child: Text(
-                                'Retry',
-                                style: AppTheme.lightTheme.textTheme.labelMedium
-                                    ?.copyWith(
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
+                      return ConstantMethods.buildErrorUI(
+                        ref,
+                        onPressed: () {
+                          return ref.refresh(getHelpCenterListApiProvider(""));
+                        },
                       );
                     },
                     loading: () => Center(

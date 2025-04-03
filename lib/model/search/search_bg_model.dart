@@ -74,7 +74,7 @@ class SearchBgModelData {
 
 class SearchBgModelCategories {
   String? title;
-  String? id;
+  dynamic id;
   String? slug;
 
   SearchBgModelCategories({this.title, this.id, this.slug});

@@ -5,11 +5,8 @@ import 'package:dikla_spirit/custom/constants.dart';
 import 'package:dikla_spirit/screens/product/notifier/product_cat_notifier.dart';
 import 'package:dikla_spirit/screens/wishlist/state/wishlist_state.dart';
 import 'package:dikla_spirit/widgets/app_bar.dart';
-import 'package:dikla_spirit/widgets/home_widgets.dart';
 import 'package:dikla_spirit/widgets/no_net_widget.dart';
-import 'package:dikla_spirit/widgets/products_widget.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_rating_stars/flutter_rating_stars.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -19,9 +16,9 @@ import 'package:go_router/go_router.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 class ProductCategoryListScreen extends StatefulHookConsumerWidget {
-  String id;
-  String name;
-  ProductCategoryListScreen(this.id, this.name, {super.key});
+  final String id;
+  final String name;
+  const ProductCategoryListScreen(this.id, this.name, {super.key});
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() =>
@@ -58,7 +55,7 @@ class _ProductCategoryListScreenState
           children: [
             IconButton(
                 onPressed: () {
-                  context.pop();
+                  context.goNamed("dashboard");
                 },
                 icon: Icon(Icons.arrow_back_outlined)),
             SizedBox(
@@ -451,49 +448,15 @@ class _ProductCategoryListScreenState
               //     ConstantMethods.showSnackbar(context, error.toString());
               //   },
               // );
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.error,
-                    size: 80.sp,
-                    color: AppTheme.primaryColor,
-                  ),
-                  SizedBox(height: 16.h),
-                  Text(
-                    'Something went wrong',
-                    style: AppTheme.lightTheme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: AppTheme.textColor,
-                    ),
-                  ),
-                  SizedBox(height: 14.h),
-                  ElevatedButton(
-                    onPressed: () {
-                      ref
-                          .read(productCategoryListNotifierProvider(
-                            widget.id,
-                          ).notifier)
-                          .fetchProductCategory(widget.id);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.primaryColor,
-                      padding: EdgeInsets.symmetric(
-                          horizontal: 24.w, vertical: 12.h),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8.r),
-                      ),
-                    ),
-                    child: Text(
-                      'Retry',
-                      style:
-                          AppTheme.lightTheme.textTheme.labelMedium?.copyWith(
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ],
+              return ConstantMethods.buildErrorUI(
+                ref,
+                onPressed: () {
+                  ref
+                      .read(productCategoryListNotifierProvider(
+                        widget.id,
+                      ).notifier)
+                      .fetchProductCategory(widget.id);
+                },
               );
             },
             loading: () => _buildShimmerLoading(context),

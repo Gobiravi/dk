@@ -71,7 +71,7 @@ class _SideMenuScreenState extends ConsumerState<SideMenuScreen> {
                     element.name.toLowerCase() ==
                     data.data?.country?.toLowerCase(),
                 orElse: () =>
-                    CountryCode(name: "Unknown", code: "", dialCode: ""),
+                    CountryCode(name: "Isreal", code: "", dialCode: ""),
               );
 
               final currentCountry = ref.read(selectedCountryProvider);
@@ -220,7 +220,8 @@ class _SideMenuScreenState extends ConsumerState<SideMenuScreen> {
                       "order.svg",
                       localization.my_orders,
                       onTap: () {
-                        context.push("/my_orders");
+                        context.pop();
+                        context.go("/my_orders");
                       },
                     ),
                     _customNavButton(

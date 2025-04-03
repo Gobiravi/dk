@@ -243,6 +243,15 @@ class AppLocalizationsEs extends AppLocalizations {
   String get select_your_zodiac_sign => 'Select Your Zodiac Sign';
 
   @override
+  String get recent_purchase_dikla => 'Compra reciente de \n Dikla Spirit';
+
+  @override
+  String get popular_categories => 'Categorías populares';
+
+  @override
+  String get out_of_stock => 'Agotado';
+
+  @override
   String pageSettingsInputLanguage(String locale) {
     String _temp0 = intl.Intl.selectLogic(
       locale,

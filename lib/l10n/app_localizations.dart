@@ -565,6 +565,24 @@ abstract class AppLocalizations {
   /// **'Select Your Zodiac Sign'**
   String get select_your_zodiac_sign;
 
+  /// No description provided for @recent_purchase_dikla.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent Purchase\nFrom Dikla Spirit'**
+  String get recent_purchase_dikla;
+
+  /// No description provided for @popular_categories.
+  ///
+  /// In en, this message translates to:
+  /// **'Popular\nCategories'**
+  String get popular_categories;
+
+  /// No description provided for @out_of_stock.
+  ///
+  /// In en, this message translates to:
+  /// **'Out of Stock'**
+  String get out_of_stock;
+
   /// No description provided for @pageSettingsInputLanguage.
   ///
   /// In en, this message translates to:

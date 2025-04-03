@@ -3,6 +3,7 @@ import 'package:dikla_spirit/custom/app_theme.dart';
 import 'package:dikla_spirit/custom/constants.dart';
 import 'package:dikla_spirit/l10n/app_localizations.dart';
 import 'package:dikla_spirit/model/providers.dart';
+import 'package:dikla_spirit/screens/profile/zodiac_sign_screen.dart';
 import 'package:fl_country_code_picker/fl_country_code_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -30,7 +31,14 @@ class MyProfileScreen extends HookConsumerWidget {
     final emailController = useTextEditingController();
     final phoneController = useTextEditingController();
     final dobController = useTextEditingController();
+    final selectedZodiac = ref.watch(selectedZodiacProvider);
 
+    useEffect(() {
+      Future.microtask(() {
+        return ref.invalidate(getUserProfileApiProvider); // Force refresh API
+      });
+      return null;
+    }, []);
     // Update controllers when API data is loaded
     useEffect(() {
       userProfile.whenData((profile) {
@@ -51,13 +59,36 @@ class MyProfileScreen extends HookConsumerWidget {
             emailController.text != profile.data?.email) {
           emailController.text = profile.data?.email ?? "";
         }
-        ref.read(dobProvider.notifier).state = profile.data?.dateOfBirth ?? "";
-        ref.read(indexOfGenderProvider.notifier).state =
-            profile.data?.gender == "male"
-                ? 0
-                : profile.data?.gender == "female"
-                    ? 1
-                    : 2;
+        if (dobController.text.isEmpty ||
+            dobController.text != profile.data?.dateOfBirth) {
+          dobController.text = profile.data?.dateOfBirth ?? "";
+        }
+
+        Future.microtask(
+          () {
+            ref.read(dobProvider.notifier).state =
+                profile.data?.dateOfBirth ?? "";
+            ref.read(indexOfGenderProvider.notifier).state =
+                profile.data?.gender == "male"
+                    ? 0
+                    : profile.data?.gender == "female"
+                        ? 1
+                        : 2;
+            if (profile.data?.zodiacSign != null &&
+                profile.data!.zodiacSign!.isNotEmpty) {
+              ref.read(selectedZodiacProvider.notifier).state = ZodiacSignModel(
+                  name: profile.data?.zodiacSign ?? "",
+                  dateRange: "",
+                  imagePath:
+                      "${Constants.imagePathZodiacSign}${profile.data?.zodiacSign?.toLowerCase()}.svg");
+            }
+            ref.read(selectedCountryProviderProfile.notifier).state =
+                CountryCode(
+                    name: profile.data?.countryName ?? "",
+                    code: profile.data?.countryCode ?? "",
+                    dialCode: profile.data?.dialCode ?? "");
+          },
+        );
       });
       return null;
     }, [userProfile.value]);
@@ -439,7 +470,7 @@ class MyProfileScreen extends HookConsumerWidget {
                                             mainAxisSize: MainAxisSize.min,
                                             children: [
                                               Text(
-                                                "+ ${selectedCountry.dialCode}",
+                                                selectedCountry.dialCode,
                                                 style: TextStyle(
                                                   color: Colors.black,
                                                   fontSize: 14,
@@ -761,6 +792,112 @@ class MyProfileScreen extends HookConsumerWidget {
                                   ),
                                 ),
                                 SizedBox(
+                                  height: 13.h,
+                                ),
+                                selectedZodiac != null
+                                    ? Container(
+                                        width: ScreenUtil().screenWidth,
+                                        decoration: ShapeDecoration(
+                                          color:
+                                              AppTheme.appBarAndBottomBarColor,
+                                          shape: RoundedRectangleBorder(
+                                            side: BorderSide(
+                                              width: 1,
+                                              color: AppTheme.strokeColor,
+                                            ),
+                                            borderRadius:
+                                                BorderRadius.circular(8),
+                                          ),
+                                        ),
+                                        child: Padding(
+                                          padding: EdgeInsets.only(
+                                              left: 16.w,
+                                              top: 18.h,
+                                              right: 16.w,
+                                              bottom: 22.h),
+                                          child: Column(
+                                            children: [
+                                              Row(
+                                                children: [
+                                                  Container(
+                                                    width: 68.w,
+                                                    height: 73.h,
+                                                    decoration: ShapeDecoration(
+                                                      color: AppTheme
+                                                          .appBarAndBottomBarColor,
+                                                      shape:
+                                                          RoundedRectangleBorder(
+                                                        side: BorderSide(
+                                                          width: 1,
+                                                          color: AppTheme
+                                                              .strokeColor,
+                                                        ),
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(4.r),
+                                                      ),
+                                                    ),
+                                                    child: Center(
+                                                      child: SvgPicture.asset(
+                                                        selectedZodiac
+                                                            .imagePath,
+                                                        height: 44.h,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  SizedBox(
+                                                    width: 17.w,
+                                                  ),
+                                                  Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      Text(selectedZodiac.name,
+                                                          textAlign:
+                                                              TextAlign.center,
+                                                          style: AppTheme
+                                                              .lightTheme
+                                                              .textTheme
+                                                              .labelMedium
+                                                              ?.copyWith(
+                                                                  color: AppTheme
+                                                                      .subTextColor)),
+                                                      SizedBox(
+                                                        height: 8.h,
+                                                      ),
+                                                      SizedBox(
+                                                        width: ScreenUtil()
+                                                                .screenWidth *
+                                                            0.5,
+                                                        child: Text(
+                                                          data.data
+                                                                  ?.todayHoroscope ??
+                                                              'Today is a great day for new beginnings. Your innovative ideas will be well-received.',
+                                                          maxLines: 3,
+                                                          overflow: TextOverflow
+                                                              .ellipsis,
+                                                          style: AppTheme
+                                                              .lightTheme
+                                                              .textTheme
+                                                              .bodySmall
+                                                              ?.copyWith(
+                                                                  color: AppTheme
+                                                                      .textColor,
+                                                                  fontSize:
+                                                                      11.sp),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ],
+                                              )
+                                            ],
+                                          ),
+                                        ),
+                                      )
+                                    : SizedBox(),
+                                SizedBox(
                                   height: 31.h,
                                 ),
                                 Container(
@@ -799,7 +936,10 @@ class MyProfileScreen extends HookConsumerWidget {
                                           height: 17.h,
                                         ),
                                         InkWell(
-                                          onTap: () {},
+                                          onTap: () {
+                                            context.push("/forgotPassword",
+                                                extra: false);
+                                          },
                                           child: Text(
                                             'Change Password',
                                             style: AppTheme
@@ -880,7 +1020,47 @@ class MyProfileScreen extends HookConsumerWidget {
                       Align(
                         alignment: Alignment.bottomCenter,
                         child: InkWell(
-                          onTap: () {},
+                          onTap: () {
+                            ref
+                                .read(updateProfileApiProvider(
+                                        UpdateProfileParams(
+                                            firstName: fNameController.text,
+                                            lastName: lNameController.text,
+                                            phone: phoneController.text,
+                                            dob: dobController.text,
+                                            countryName: selectedCountry.name,
+                                            countryCode: selectedCountry.code,
+                                            dialCode: selectedCountry.dialCode,
+                                            zodiac: selectedZodiac?.name ?? "",
+                                            gender: indexOfGender == 0
+                                                ? "male"
+                                                : indexOfGender == 1
+                                                    ? "female"
+                                                    : "other"))
+                                    .future)
+                                .then((onValue) async {
+                              if (context.mounted) {
+                                if (onValue.statusCode != 402) {
+                                  if (onValue.status!) {
+                                    context.pop();
+                                    ConstantMethods.showSnackbar(
+                                      context,
+                                      onValue.message ?? "",
+                                    );
+                                  } else {
+                                    ConstantMethods.showSnackbar(
+                                        context, onValue.message ?? "",
+                                        isFalse: true);
+                                  }
+                                } else {
+                                  await ApiUtils.refreshToken();
+                                  ConstantMethods.showSnackbar(
+                                      context, "please try again",
+                                      isFalse: true);
+                                }
+                              }
+                            });
+                          },
                           child: Container(
                             height: ScreenUtil().setHeight(60.sp),
                             decoration: ShapeDecoration(

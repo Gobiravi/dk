@@ -85,12 +85,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: 16.0.sp),
                       child: Form(
-                        autovalidateMode: AutovalidateMode.onUserInteraction,
                         key: _formKey,
                         child: Column(
                           children: [
                             SizedBox(height: 16.0),
                             TextFormField(
+                              autovalidateMode:
+                                  AutovalidateMode.onUserInteraction,
                               cursorColor: AppTheme.cursorColor,
                               cursorWidth: 1.0,
                               cursorHeight: 18.h,
@@ -190,6 +191,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             ),
                             SizedBox(height: 16.0),
                             TextFormField(
+                              autovalidateMode:
+                                  AutovalidateMode.onUserInteraction,
                               cursorColor: AppTheme.cursorColor,
                               cursorWidth: 1.0,
                               cursorHeight: 18.h,
@@ -302,7 +305,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                     InkWell(
                       onTap: () {
-                        context.push("/forgotPassword");
+                        context.push("/forgotPassword", extra: true);
                       },
                       child: Padding(
                         padding: EdgeInsets.only(right: 14.sp),
@@ -360,7 +363,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                     Platform.isAndroid
                         ? Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 16.0),
+                            padding: EdgeInsets.symmetric(horizontal: 50.0.w),
                             child: SizedBox(
                               height: 44.sp,
                               child: ElevatedButton(
@@ -399,7 +402,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             ),
                           )
                         : Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 16.0),
+                            padding: EdgeInsets.symmetric(horizontal: 50.0.w),
                             child: SizedBox(
                               height: 44.sp,
                               child: ElevatedButton(
@@ -441,7 +444,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       height: 16.sp,
                     ),
                     Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 16.0),
+                      padding: EdgeInsets.symmetric(horizontal: 50.0.w),
                       child: SizedBox(
                         height: 44.sp,
                         child: ElevatedButton(
@@ -481,7 +484,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       height: 28.sp,
                     ),
                     Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 50.0.sp),
+                      padding: EdgeInsets.symmetric(horizontal: 75.0.sp),
                       child: Text.rich(
                         textAlign: TextAlign.center,
                         TextSpan(
@@ -489,38 +492,32 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             TextSpan(
                               text:
                                   'By clicking the Sign Up button, you agree to the',
-                              style: TextStyle(
-                                color: Color(0xFF393939),
-                                fontSize: 14.sp,
-                                fontFamily: 'NotoSansHebrew',
-                                fontWeight: FontWeight.w400,
-                              ),
+                              style: AppTheme.lightTheme.textTheme.bodySmall
+                                  ?.copyWith(
+                                      fontSize: 12.sp,
+                                      fontWeight: FontWeight.w400),
                             ),
                             TextSpan(
                               text: ' Term & Condition',
-                              style: TextStyle(
-                                color: Color(0xFFC1768D),
-                                fontSize: 14.sp,
-                                fontFamily: 'NotoSansHebrew',
-                                fontWeight: FontWeight.w400,
+                              style: AppTheme.lightTheme.textTheme.bodyLarge
+                                  ?.copyWith(
+                                fontSize: 12.sp,
                               ),
                             ),
                             TextSpan(
                               text: ' and',
                               style: TextStyle(
                                 color: Color(0xFF393939),
-                                fontSize: 14,
+                                fontSize: 12,
                                 fontFamily: 'NotoSansHebrew',
                                 fontWeight: FontWeight.w400,
                               ),
                             ),
                             TextSpan(
                               text: ' Privacy Policy.',
-                              style: TextStyle(
-                                color: Color(0xFFC1768D),
-                                fontSize: 14,
-                                fontFamily: 'NotoSansHebrew',
-                                fontWeight: FontWeight.w400,
+                              style: AppTheme.lightTheme.textTheme.bodyLarge
+                                  ?.copyWith(
+                                fontSize: 12.sp,
                               ),
                             ),
                           ],

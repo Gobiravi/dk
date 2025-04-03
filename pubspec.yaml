@@ -58,6 +58,7 @@ dependencies:
   json_annotation: ^4.9.0
   flutter_stripe: ^11.4.0
   share_plus: ^10.1.4
+  dotted_border: ^2.1.0
 
 dev_dependencies:
   flutter_test:

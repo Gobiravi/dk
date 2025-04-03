@@ -39,6 +39,7 @@ class Constants {
   static String addToWishList = "add-wishlist";
   static String addToCart = "add-to-cart";
   static String removeFromCart = "remove-from-cart";
+  static String updateProfileUrl = "profile";
   static String faqUrl = "faq";
   static String helpQuestionsUrl = "help-questions";
   static String shippingAddress = "shipping-addresses";
@@ -125,11 +126,11 @@ class ConstantMethods {
                 final wishlistData = ref.watch(wishListApiProvider);
 
                 return Container(
-                    decoration: const BoxDecoration(
+                    decoration: BoxDecoration(
                         color: AppTheme.appBarAndBottomBarColor,
                         borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(12.0),
-                            topRight: Radius.circular(12.0))),
+                            topLeft: Radius.circular(12.0.r),
+                            topRight: Radius.circular(12.0.r))),
                     child: Column(
                       children: [
                         Row(
@@ -309,11 +310,13 @@ class ConstantMethods {
                                                                               index]
                                                                           .type ==
                                                                       "variable") {
-                                                                    if (data
+                                                                    if (data.data!.wishlist?[index].variation !=
+                                                                            null &&
+                                                                        data
                                                                             .data!
-                                                                            .wishlist?[index]
-                                                                            .variation !=
-                                                                        null) {
+                                                                            .wishlist![index]
+                                                                            .variation!
+                                                                            .isNotEmpty) {
                                                                       showVariation(
                                                                           context,
                                                                           data.data!.wishlist?[index].variation ??
@@ -580,27 +583,50 @@ class ConstantMethods {
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.error, size: 80.sp, color: AppTheme.primaryColor),
-          SizedBox(height: 16.h),
-          Text(
-            'Something went wrong',
-            style: AppTheme.lightTheme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w700,
-              color: AppTheme.textColor,
+          Container(
+            height: 120.h,
+            width: 120.h,
+            decoration: ShapeDecoration(
+              color: AppTheme.appBarAndBottomBarColor,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8.r)),
+            ),
+            child: Center(
+              child: SvgPicture.asset(
+                "${Constants.imagePath}warning.svg",
+                fit: BoxFit.contain,
+                height: 38.h,
+                width: 42.w,
+              ),
             ),
           ),
-          SizedBox(height: 14.h),
+          SizedBox(height: 20.h),
+          Text(
+            'Oops!',
+            style: AppTheme.lightTheme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: AppTheme.subTextColor,
+            ),
+          ),
+          SizedBox(height: 8.h),
+          Text(
+            'Sorry, we can’t load this \npage right now.',
+            textAlign: TextAlign.center,
+            style: AppTheme.lightTheme.textTheme.bodySmall
+                ?.copyWith(fontSize: 14.sp, letterSpacing: 0.20.sp),
+          ),
+          SizedBox(height: 20.h),
           ElevatedButton(
             onPressed: onPressed,
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primaryColor,
+              backgroundColor: AppTheme.subTextColor,
               padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8.r),
               ),
             ),
             child: Text(
-              'Retry',
+              'Try Again',
               style: AppTheme.lightTheme.textTheme.labelMedium
                   ?.copyWith(color: Colors.white),
             ),
@@ -817,10 +843,17 @@ class ConstantMethods {
                                                     .searchRecentPurchase
                                             ? ref
                                                 .read(wishlistProvider)
-                                                .productCatList[index!]
-                                            : ref
-                                                .read(wishlistProvider)
-                                                .fastResults[index!];
+                                                .searchRecentPurchase[index!]
+                                            : listType ==
+                                                    WishListType
+                                                        .shopBestSellingWishlist
+                                                ? ref
+                                                        .read(wishlistProvider)
+                                                        .shopBestSellingWishlist[
+                                                    index!]
+                                                : ref
+                                                    .read(wishlistProvider)
+                                                    .fastResults[index!];
 
     // Step 1: Optimistic update
     if (index != null) {
@@ -855,7 +888,6 @@ class ConstantMethods {
           useAuth: true);
 
       if (data["status"]) {
-        // Step 3: Overwrite with backend response (if needed)
         var fastResults = DashboardModelFastResult.fromJson(data["data"]);
 
         if (index != null) {
@@ -865,7 +897,9 @@ class ConstantMethods {
         } else {
           ref.read(wishlistProvider.notifier).updateItem(listType, fastResults);
         }
-
+        if (ref.context.mounted) {
+          ConstantMethods.showSnackbar(ref.context, data["message"] ?? "");
+        }
         ref.invalidate(wishListApiProvider);
       } else {
         if (data["status_code"] == 402) {
@@ -888,262 +922,534 @@ class ConstantMethods {
     showModalBottomSheet(
       isDismissible: false,
       context: context,
+      isScrollControlled: true, // Ensures the sheet can expand properly
       builder: (context) {
         return Consumer(
           builder: (context, ref, child) {
             final selectedVariation = ref.watch(selectedVariationOfWishList);
-            return Container(
-              decoration: const BoxDecoration(
-                  color: AppTheme.appBarAndBottomBarColor,
-                  borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(12.0),
-                      topRight: Radius.circular(12.0))),
-              height: template == 3
-                  ? ScreenUtil().setHeight(280)
-                  : ScreenUtil().setHeight(250),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      IconButton(
-                          onPressed: () {},
-                          icon: const Icon(
-                            Icons.close,
-                            color: Colors.transparent,
-                          )),
-                      Text(
-                        title,
-                        style: AppTheme.lightTheme.textTheme.labelMedium
-                            ?.copyWith(
-                                color: AppTheme.primaryColor,
-                                fontWeight: FontWeight.w500),
-                      ),
-                      IconButton(
-                          onPressed: () {
-                            ref
-                                .read(selectedVariationOfWishList.notifier)
-                                .state = Variation();
-                            context.pop();
-                          },
-                          icon: SvgPicture.asset(
-                            "${Constants.imagePath}close_variation.svg",
-                            height: 11.sp,
-                          ))
-                    ],
-                  ),
-                  Divider(),
-                  SizedBox(
-                    height: 28.sp,
-                  ),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 18.sp),
-                    child: Wrap(
-                      spacing: 8.0, // Adjust the spacing between the items
-                      runSpacing: 8.0, // Adjust the spacing between the rows
-                      children: variation.map((variation) {
-                        return InkWell(
-                          onTap: () {
-                            ref
-                                .watch(selectedVariationOfWishList.notifier)
-                                .state = variation;
-                          },
-                          child: Container(
-                            padding: EdgeInsets.all(8.0.sp),
-                            decoration: ShapeDecoration(
-                                color: AppTheme.appBarAndBottomBarColor,
-                                shape: RoundedRectangleBorder(
-                                  side: ref
-                                              .watch(
-                                                  selectedVariationOfWishList)
-                                              .id ==
-                                          variation.id
-                                      ? BorderSide(
-                                          width: 0.8, color: AppTheme.textColor)
-                                      : BorderSide(
-                                          width: 0.8,
-                                          color: AppTheme.strokeColor),
-                                  borderRadius: BorderRadius.circular(3.sp),
-                                ),
-                                shadows: [
-                                  BoxShadow(
-                                    color: AppTheme.textColor.withOpacity(0.1),
-                                  )
-                                ]),
-                            child: Text(
-                              variation.termName ??
-                                  "", // Assuming `name` is a property of `variation`
-                              style: AppTheme.lightTheme.textTheme.bodySmall
-                                  ?.copyWith(fontSize: 14.sp), // Text style
+            return DraggableScrollableSheet(
+              expand: false,
+              initialChildSize: 0.3,
+              minChildSize: 0.3,
+              maxChildSize: 0.9,
+              builder: (context, scrollController) {
+                return Container(
+                  decoration: const BoxDecoration(
+                      color: AppTheme.appBarAndBottomBarColor,
+                      borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(12.0),
+                          topRight: Radius.circular(12.0))),
+                  child: SingleChildScrollView(
+                    controller: scrollController,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Close button & title
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            IconButton(
+                                onPressed: () {},
+                                icon: const Icon(
+                                  Icons.close,
+                                  color: Colors.transparent,
+                                )),
+                            Text(
+                              title,
+                              style: AppTheme.lightTheme.textTheme.labelMedium
+                                  ?.copyWith(
+                                      color: AppTheme.primaryColor,
+                                      fontWeight: FontWeight.w500),
                             ),
+                            IconButton(
+                                onPressed: () {
+                                  ref
+                                      .read(
+                                          selectedVariationOfWishList.notifier)
+                                      .state = Variation();
+                                  context.pop();
+                                },
+                                icon: SvgPicture.asset(
+                                  "${Constants.imagePath}close_variation.svg",
+                                  height: 11.sp,
+                                ))
+                          ],
+                        ),
+                        Divider(),
+                        SizedBox(height: 28.sp),
+
+                        // Variation Selection
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 18.sp),
+                          child: Wrap(
+                            spacing: 8.0,
+                            runSpacing: 8.0,
+                            children: variation.map((variation) {
+                              return InkWell(
+                                onTap: () {
+                                  ref
+                                      .watch(
+                                          selectedVariationOfWishList.notifier)
+                                      .state = variation;
+                                },
+                                child: Container(
+                                  padding: EdgeInsets.all(8.0.sp),
+                                  decoration: ShapeDecoration(
+                                      color: AppTheme.appBarAndBottomBarColor,
+                                      shape: RoundedRectangleBorder(
+                                        side: ref
+                                                    .watch(
+                                                        selectedVariationOfWishList)
+                                                    .id ==
+                                                variation.id
+                                            ? BorderSide(
+                                                width: 0.8,
+                                                color: AppTheme.textColor)
+                                            : BorderSide(
+                                                width: 0.8,
+                                                color: AppTheme.strokeColor),
+                                        borderRadius:
+                                            BorderRadius.circular(3.sp),
+                                      ),
+                                      shadows: [
+                                        BoxShadow(
+                                          color: AppTheme.textColor
+                                              .withOpacity(0.1),
+                                        )
+                                      ]),
+                                  child: Text(
+                                    variation.termName ?? "",
+                                    style: AppTheme
+                                        .lightTheme.textTheme.bodySmall
+                                        ?.copyWith(fontSize: 14.sp),
+                                  ),
+                                ),
+                              );
+                            }).toList(),
                           ),
-                        );
-                      }).toList(), // Convert the Iterable to a List
-                    ),
-                  ),
-                  SizedBox(
-                    height: 14.sp,
-                  ),
-                  selectedVariation.price != null
-                      ? Align(
-                          alignment: Alignment.centerLeft,
-                          child: Padding(
+                        ),
+                        SizedBox(height: 14.sp),
+
+                        // Price
+                        if (selectedVariation.price != null)
+                          Padding(
                             padding: EdgeInsets.symmetric(horizontal: 19.sp),
                             child: Text(
                               '\$ ${selectedVariation.price}',
                               style: AppTheme.lightTheme.textTheme.titleSmall,
                             ),
                           ),
-                        )
-                      : SizedBox(),
-                  Visibility(
-                    visible: template == 3,
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 18.sp),
-                        child: Column(
-                          children: [
-                            SizedBox(
-                              height: 8.sp,
-                            ),
-                            Text.rich(
-                              TextSpan(
-                                children: [
+
+                        // Expected Day
+                        if (template == 3)
+                          Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 18.sp),
+                            child: Column(
+                              children: [
+                                SizedBox(height: 8.sp),
+                                Text.rich(
                                   TextSpan(
-                                    text: 'Expected Day',
-                                    style: AppTheme
-                                        .lightTheme.textTheme.titleSmall
-                                        ?.copyWith(
-                                            color: AppTheme.primaryColor,
-                                            fontWeight: FontWeight.w500,
-                                            fontSize: 12.sp),
+                                    children: [
+                                      TextSpan(
+                                        text: 'Expected Day',
+                                        style: AppTheme
+                                            .lightTheme.textTheme.titleSmall
+                                            ?.copyWith(
+                                                color: AppTheme.primaryColor,
+                                                fontWeight: FontWeight.w500,
+                                                fontSize: 12.sp),
+                                      ),
+                                      TextSpan(
+                                        text: ' : 30.12.2024',
+                                        style: AppTheme
+                                            .lightTheme.textTheme.titleSmall
+                                            ?.copyWith(
+                                                color: AppTheme.subTextColor,
+                                                fontWeight: FontWeight.w500,
+                                                fontSize: 12.sp),
+                                      ),
+                                    ],
                                   ),
-                                  TextSpan(
-                                    text: ' : 30.12.2024',
-                                    style: AppTheme
-                                        .lightTheme.textTheme.titleSmall
-                                        ?.copyWith(
-                                            color: AppTheme.subTextColor,
-                                            fontWeight: FontWeight.w500,
-                                            fontSize: 12.sp),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            SizedBox(
-                              height: 8.sp,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  SizedBox(
-                    height: 20.sp,
-                  ),
-                  Center(
-                    child: InkWell(
-                      onTap: () {
-                        if (selectedVariation.id == null) {
-                          showDialog(
-                            useSafeArea: true,
-                            barrierDismissible: true,
-                            context: context,
-                            builder: (context) {
-                              return Container(
-                                height: ScreenUtil().screenHeight,
-                                width: ScreenUtil().screenWidth,
-                                child: FittedBox(
-                                  child: Card(
-                                      margin: EdgeInsets.all(20.sp),
-                                      child: Padding(
-                                        padding: EdgeInsets.all(20.0.sp),
-                                        child: Text(
-                                          "Kindly, Select a Varient To Continue.",
-                                          style: AppTheme
-                                              .lightTheme.textTheme.bodyMedium,
-                                        ),
-                                      )),
                                 ),
-                              );
-                            },
-                          );
-                        } else {
-                          ref.watch(isLoadingProvider.notifier).state = true;
-                          ref
-                              .refresh(addToCartApiProvider(
-                                      selectedVariation.id.toString())
-                                  .future)
-                              .then((onValue) {
-                            if (onValue.status!) {
-                              ref.watch(isLoadingProvider.notifier).state =
-                                  false;
-                              ConstantMethods.showAlertBottomSheet(
-                                  context: context,
-                                  title: title,
-                                  message: onValue.message ?? "",
-                                  icon:
-                                      "${Constants.imagePathAuth}success_new.svg");
-                            } else {
-                              ref.watch(isLoadingProvider.notifier).state =
-                                  false;
-                            }
-                          });
-                        }
-                      },
-                      child: Container(
-                          width: ScreenUtil().screenWidth * 0.9,
-                          height: 36.sp,
-                          decoration: ShapeDecoration(
-                            color: AppTheme.subTextColor,
-                            shape: RoundedRectangleBorder(
-                              side: BorderSide(
-                                  width: 1, color: AppTheme.subTextColor),
-                              borderRadius: BorderRadius.circular(8.sp),
+                                SizedBox(height: 8.sp),
+                              ],
                             ),
                           ),
-                          child: Consumer(
-                            builder: (context, ref, child) {
-                              final loading = ref.watch(isLoadingProvider);
-                              return loading
-                                  ? SizedBox(
-                                      height: 20.sp,
-                                      // width: 40.sp,
-                                      child: Padding(
-                                        padding: EdgeInsets.all(8.0.sp),
-                                        child: Center(
-                                          child: CircularProgressIndicator(
-                                            color: AppTheme
-                                                .appBarAndBottomBarColor,
-                                          ),
-                                        ),
-                                      ),
-                                    )
-                                  : Center(
-                                      child: Text(
-                                        "Add to Bag",
+
+                        SizedBox(height: 20.sp),
+
+                        // Add to Bag Button
+                        Center(
+                          child: InkWell(
+                            onTap: () {
+                              if (selectedVariation.id == null) {
+                                showDialog(
+                                  useSafeArea: true,
+                                  barrierDismissible: true,
+                                  context: context,
+                                  builder: (context) {
+                                    return AlertDialog(
+                                      content: Text(
+                                        "Kindly, Select a Variant To Continue.",
                                         style: AppTheme
-                                            .lightTheme.textTheme.bodySmall
-                                            ?.copyWith(
-                                                color: AppTheme
-                                                    .appBarAndBottomBarColor,
-                                                fontSize: 14.sp),
+                                            .lightTheme.textTheme.bodyMedium,
                                       ),
                                     );
+                                  },
+                                );
+                              } else {
+                                ref.watch(isLoadingProvider.notifier).state =
+                                    true;
+                                ref
+                                    .refresh(addToCartApiProvider(
+                                            selectedVariation.id.toString())
+                                        .future)
+                                    .then((onValue) {
+                                  if (onValue.status!) {
+                                    ref
+                                        .watch(isLoadingProvider.notifier)
+                                        .state = false;
+                                    context.pop();
+                                    if (context.mounted) {
+                                      ConstantMethods.showSnackbar(
+                                          context, onValue.message ?? "");
+
+                                      ref.refresh(myCartApiProvider);
+                                    }
+                                  } else {
+                                    ref
+                                        .watch(isLoadingProvider.notifier)
+                                        .state = false;
+                                    ConstantMethods.showSnackbar(
+                                        context, onValue.message ?? "");
+                                  }
+                                });
+                              }
                             },
-                          )),
+                            child: Container(
+                                width: ScreenUtil().screenWidth * 0.9,
+                                height: 36.sp,
+                                decoration: ShapeDecoration(
+                                  color: AppTheme.subTextColor,
+                                  shape: RoundedRectangleBorder(
+                                    side: BorderSide(
+                                        width: 1, color: AppTheme.subTextColor),
+                                    borderRadius: BorderRadius.circular(8.sp),
+                                  ),
+                                ),
+                                child: Consumer(
+                                  builder: (context, ref, child) {
+                                    final loading =
+                                        ref.watch(isLoadingProvider);
+                                    return loading
+                                        ? Padding(
+                                            padding: EdgeInsets.all(8.0.sp),
+                                            child: Center(
+                                              child: CircularProgressIndicator(
+                                                color: AppTheme
+                                                    .appBarAndBottomBarColor,
+                                              ),
+                                            ),
+                                          )
+                                        : Center(
+                                            child: Text(
+                                              "Add to Bag",
+                                              style: AppTheme.lightTheme
+                                                  .textTheme.bodySmall
+                                                  ?.copyWith(
+                                                      color: AppTheme
+                                                          .appBarAndBottomBarColor,
+                                                      fontSize: 14.sp),
+                                            ),
+                                          );
+                                  },
+                                )),
+                          ),
+                        ),
+                        SizedBox(height: 20.sp),
+                      ],
                     ),
                   ),
-                ],
-              ),
+                );
+              },
             );
           },
         );
       },
     );
   }
+
+  // static void showVariation(BuildContext context, List<Variation> variation,
+  //     String title, int template, String itemTitle) {
+  //   final localization = AppLocalizations.of(context);
+  //   showModalBottomSheet(
+  //     isDismissible: false,
+  //     context: context,
+  //     builder: (context) {
+  //       return Consumer(
+  //         builder: (context, ref, child) {
+  //           final selectedVariation = ref.watch(selectedVariationOfWishList);
+  //           return Container(
+  //             decoration: const BoxDecoration(
+  //                 color: AppTheme.appBarAndBottomBarColor,
+  //                 borderRadius: BorderRadius.only(
+  //                     topLeft: Radius.circular(12.0),
+  //                     topRight: Radius.circular(12.0))),
+  //             // height: template == 3
+  //             //     ? ScreenUtil().setHeight(280)
+  //             //     : ScreenUtil().setHeight(250),
+  //             child: Column(
+  //               crossAxisAlignment: CrossAxisAlignment.start,
+  //               children: [
+  //                 Row(
+  //                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //                   children: [
+  //                     IconButton(
+  //                         onPressed: () {},
+  //                         icon: const Icon(
+  //                           Icons.close,
+  //                           color: Colors.transparent,
+  //                         )),
+  //                     Text(
+  //                       title,
+  //                       style: AppTheme.lightTheme.textTheme.labelMedium
+  //                           ?.copyWith(
+  //                               color: AppTheme.primaryColor,
+  //                               fontWeight: FontWeight.w500),
+  //                     ),
+  //                     IconButton(
+  //                         onPressed: () {
+  //                           ref
+  //                               .read(selectedVariationOfWishList.notifier)
+  //                               .state = Variation();
+  //                           context.pop();
+  //                         },
+  //                         icon: SvgPicture.asset(
+  //                           "${Constants.imagePath}close_variation.svg",
+  //                           height: 11.sp,
+  //                         ))
+  //                   ],
+  //                 ),
+  //                 Divider(),
+  //                 SizedBox(
+  //                   height: 28.sp,
+  //                 ),
+  //                 Padding(
+  //                   padding: EdgeInsets.symmetric(horizontal: 18.sp),
+  //                   child: Wrap(
+  //                     spacing: 8.0, // Adjust the spacing between the items
+  //                     runSpacing: 8.0, // Adjust the spacing between the rows
+  //                     children: variation.map((variation) {
+  //                       return InkWell(
+  //                         onTap: () {
+  //                           ref
+  //                               .watch(selectedVariationOfWishList.notifier)
+  //                               .state = variation;
+  //                         },
+  //                         child: Container(
+  //                           padding: EdgeInsets.all(8.0.sp),
+  //                           decoration: ShapeDecoration(
+  //                               color: AppTheme.appBarAndBottomBarColor,
+  //                               shape: RoundedRectangleBorder(
+  //                                 side: ref
+  //                                             .watch(
+  //                                                 selectedVariationOfWishList)
+  //                                             .id ==
+  //                                         variation.id
+  //                                     ? BorderSide(
+  //                                         width: 0.8, color: AppTheme.textColor)
+  //                                     : BorderSide(
+  //                                         width: 0.8,
+  //                                         color: AppTheme.strokeColor),
+  //                                 borderRadius: BorderRadius.circular(3.sp),
+  //                               ),
+  //                               shadows: [
+  //                                 BoxShadow(
+  //                                   color: AppTheme.textColor.withOpacity(0.1),
+  //                                 )
+  //                               ]),
+  //                           child: Text(
+  //                             variation.termName ??
+  //                                 "", // Assuming `name` is a property of `variation`
+  //                             style: AppTheme.lightTheme.textTheme.bodySmall
+  //                                 ?.copyWith(fontSize: 14.sp), // Text style
+  //                           ),
+  //                         ),
+  //                       );
+  //                     }).toList(), // Convert the Iterable to a List
+  //                   ),
+  //                 ),
+  //                 SizedBox(
+  //                   height: 14.sp,
+  //                 ),
+  //                 selectedVariation.price != null
+  //                     ? Align(
+  //                         alignment: Alignment.centerLeft,
+  //                         child: Padding(
+  //                           padding: EdgeInsets.symmetric(horizontal: 19.sp),
+  //                           child: Text(
+  //                             '\$ ${selectedVariation.price}',
+  //                             style: AppTheme.lightTheme.textTheme.titleSmall,
+  //                           ),
+  //                         ),
+  //                       )
+  //                     : SizedBox(),
+  //                 Visibility(
+  //                   visible: template == 3,
+  //                   child: Align(
+  //                     alignment: Alignment.centerLeft,
+  //                     child: Padding(
+  //                       padding: EdgeInsets.symmetric(horizontal: 18.sp),
+  //                       child: Column(
+  //                         children: [
+  //                           SizedBox(
+  //                             height: 8.sp,
+  //                           ),
+  //                           Text.rich(
+  //                             TextSpan(
+  //                               children: [
+  //                                 TextSpan(
+  //                                   text: 'Expected Day',
+  //                                   style: AppTheme
+  //                                       .lightTheme.textTheme.titleSmall
+  //                                       ?.copyWith(
+  //                                           color: AppTheme.primaryColor,
+  //                                           fontWeight: FontWeight.w500,
+  //                                           fontSize: 12.sp),
+  //                                 ),
+  //                                 TextSpan(
+  //                                   text: ' : 30.12.2024',
+  //                                   style: AppTheme
+  //                                       .lightTheme.textTheme.titleSmall
+  //                                       ?.copyWith(
+  //                                           color: AppTheme.subTextColor,
+  //                                           fontWeight: FontWeight.w500,
+  //                                           fontSize: 12.sp),
+  //                                 ),
+  //                               ],
+  //                             ),
+  //                           ),
+  //                           SizedBox(
+  //                             height: 8.sp,
+  //                           ),
+  //                         ],
+  //                       ),
+  //                     ),
+  //                   ),
+  //                 ),
+  //                 SizedBox(
+  //                   height: 20.sp,
+  //                 ),
+  //                 Center(
+  //                   child: InkWell(
+  //                     onTap: () {
+  //                       if (selectedVariation.id == null) {
+  //                         showDialog(
+  //                           useSafeArea: true,
+  //                           barrierDismissible: true,
+  //                           context: context,
+  //                           builder: (context) {
+  //                             return Container(
+  //                               height: ScreenUtil().screenHeight,
+  //                               width: ScreenUtil().screenWidth,
+  //                               child: FittedBox(
+  //                                 child: Card(
+  //                                     margin: EdgeInsets.all(20.sp),
+  //                                     child: Padding(
+  //                                       padding: EdgeInsets.all(20.0.sp),
+  //                                       child: Text(
+  //                                         "Kindly, Select a Varient To Continue.",
+  //                                         style: AppTheme
+  //                                             .lightTheme.textTheme.bodyMedium,
+  //                                       ),
+  //                                     )),
+  //                               ),
+  //                             );
+  //                           },
+  //                         );
+  //                       } else {
+  //                         ref.watch(isLoadingProvider.notifier).state = true;
+  //                         ref
+  //                             .refresh(addToCartApiProvider(
+  //                                     selectedVariation.id.toString())
+  //                                 .future)
+  //                             .then((onValue) {
+  //                           if (onValue.status!) {
+  //                             ref.watch(isLoadingProvider.notifier).state =
+  //                                 false;
+  //                             context.pop();
+  //                             if (context.mounted) {
+  //                               ConstantMethods.showSnackbar(
+  //                                   context, onValue.message ?? "");
+
+  //                               ref.refresh(myCartApiProvider);
+  //                             }
+  //                             // ConstantMethods.showAlertBottomSheet(
+  //                             //     context: context,
+  //                             //     title: title,
+  //                             //     message: onValue.message ?? "",
+  //                             //     icon:
+  //                             //         "${Constants.imagePathAuth}success_new.svg");
+  //                           } else {
+  //                             ref.watch(isLoadingProvider.notifier).state =
+  //                                 false;
+  //                             ConstantMethods.showSnackbar(
+  //                                 context, onValue.message ?? "");
+  //                           }
+  //                         });
+  //                       }
+  //                     },
+  //                     child: Container(
+  //                         width: ScreenUtil().screenWidth * 0.9,
+  //                         height: 36.sp,
+  //                         decoration: ShapeDecoration(
+  //                           color: AppTheme.subTextColor,
+  //                           shape: RoundedRectangleBorder(
+  //                             side: BorderSide(
+  //                                 width: 1, color: AppTheme.subTextColor),
+  //                             borderRadius: BorderRadius.circular(8.sp),
+  //                           ),
+  //                         ),
+  //                         child: Consumer(
+  //                           builder: (context, ref, child) {
+  //                             final loading = ref.watch(isLoadingProvider);
+  //                             return loading
+  //                                 ? SizedBox(
+  //                                     height: 20.sp,
+  //                                     // width: 40.sp,
+  //                                     child: Padding(
+  //                                       padding: EdgeInsets.all(8.0.sp),
+  //                                       child: Center(
+  //                                         child: CircularProgressIndicator(
+  //                                           color: AppTheme
+  //                                               .appBarAndBottomBarColor,
+  //                                         ),
+  //                                       ),
+  //                                     ),
+  //                                   )
+  //                                 : Center(
+  //                                     child: Text(
+  //                                       "Add to Bag",
+  //                                       style: AppTheme
+  //                                           .lightTheme.textTheme.bodySmall
+  //                                           ?.copyWith(
+  //                                               color: AppTheme
+  //                                                   .appBarAndBottomBarColor,
+  //                                               fontSize: 14.sp),
+  //                                     ),
+  //                                   );
+  //                           },
+  //                         )),
+  //                   ),
+  //                 ),
+  //               ],
+  //             ),
+  //           );
+  //         },
+  //       );
+  //     },
+  //   );
+  // }
 }
 
 // Wishlisting Types
@@ -1158,7 +1464,8 @@ enum WishListType {
   productDetailFastResult,
   productDetailYouMayLikeThis,
   wishList,
-  searchRecentPurchase
+  searchRecentPurchase,
+  shopBestSellingWishlist
 }
 
 enum Currency {

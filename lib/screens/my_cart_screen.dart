@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dikla_spirit/custom/api.dart';
 import 'package:dikla_spirit/custom/app_theme.dart';
@@ -10,18 +8,16 @@ import 'package:dikla_spirit/model/providers.dart';
 import 'package:dikla_spirit/screens/wishlist/state/wishlist_state.dart';
 import 'package:dikla_spirit/widgets/app_bar.dart';
 import 'package:dikla_spirit/widgets/home_widgets.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class MyCartScreen extends HookConsumerWidget {
-  MyCartScreen({super.key});
+  const MyCartScreen({super.key});
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final myCartList = ref.watch(myCartApiProvider);
@@ -177,9 +173,7 @@ class MyCartScreen extends HookConsumerWidget {
                                                                             .ellipsis,
                                                                   ),
                                                                   Text(
-                                                                    cart[index]
-                                                                        .price
-                                                                        .toString(),
+                                                                    '$currency ${cart[index].price.toString() ?? ""}',
                                                                     style: AppTheme
                                                                         .lightTheme
                                                                         .textTheme
@@ -188,6 +182,29 @@ class MyCartScreen extends HookConsumerWidget {
                                                                             fontSize:
                                                                                 16.sp),
                                                                   ),
+                                                                  SizedBox(
+                                                                    height: 8.h,
+                                                                  ),
+                                                                  cart[index].quantity !=
+                                                                              null &&
+                                                                          cart[index].quantity !=
+                                                                              0
+                                                                      ? Text(
+                                                                          "x ${cart[index].quantity.toString()}",
+                                                                          style: AppTheme
+                                                                              .lightTheme
+                                                                              .textTheme
+                                                                              .labelMedium
+                                                                              ?.copyWith(fontSize: 16.sp),
+                                                                        )
+                                                                      : Text(
+                                                                          'Out of Stock',
+                                                                          style: AppTheme
+                                                                              .lightTheme
+                                                                              .textTheme
+                                                                              .bodySmall
+                                                                              ?.copyWith(fontSize: 16.sp, color: AppTheme.primaryColor),
+                                                                        ),
                                                                 ],
                                                               ),
                                                             ),
@@ -353,7 +370,7 @@ class MyCartScreen extends HookConsumerWidget {
                                         ),
                                         InkWell(
                                           onTap: () {
-                                            bool isContainJewel = cart.every(
+                                            bool isContainJewel = cart.any(
                                               (element) =>
                                                   element.template == 3,
                                             );
@@ -593,45 +610,11 @@ class MyCartScreen extends HookConsumerWidget {
                   ConstantMethods.showSnackbar(context, error.toString());
                 },
               );
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.error,
-                    size: 80.sp,
-                    color: AppTheme.primaryColor,
-                  ),
-                  SizedBox(height: 16.h),
-                  Text(
-                    'Something went wrong',
-                    style: AppTheme.lightTheme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: AppTheme.textColor,
-                    ),
-                  ),
-                  SizedBox(height: 14.h),
-                  ElevatedButton(
-                    onPressed: () {
-                      ref.watch(myCartApiProvider);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.primaryColor,
-                      padding: EdgeInsets.symmetric(
-                          horizontal: 24.w, vertical: 12.h),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8.r),
-                      ),
-                    ),
-                    child: Text(
-                      'Retry',
-                      style:
-                          AppTheme.lightTheme.textTheme.labelMedium?.copyWith(
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ],
+              return ConstantMethods.buildErrorUI(
+                ref,
+                onPressed: () {
+                  ref.watch(myCartApiProvider);
+                },
               );
             },
             loading: () {
@@ -738,11 +721,11 @@ class MyCartScreen extends HookConsumerWidget {
                                     .future)
                                 .then((onValue) {
                               if (onValue.status!) {
+                                context.pop();
                                 if (context.mounted) {
+                                  ref.invalidate(myCartApiProvider);
                                   ConstantMethods.showSnackbar(
                                       context, onValue.message ?? "");
-
-                                  return ref.refresh(myCartApiProvider);
                                 }
                               } else {
                                 if (context.mounted) {
@@ -775,27 +758,55 @@ class MyCartScreen extends HookConsumerWidget {
                             ),
                           ),
                         ),
-                        Container(
-                          width: ScreenUtil().screenWidth / 2.3,
-                          height: 38.sp,
-                          decoration: ShapeDecoration(
-                            color: AppTheme.subTextColor,
-                            shape: RoundedRectangleBorder(
-                              side: BorderSide(
-                                  width: 1, color: AppTheme.subTextColor),
-                              borderRadius: BorderRadius.circular(8.sp),
+                        InkWell(
+                          onTap: () {
+                            // ref
+                            //     .read(addTowishListApiProvider(
+                            //             cart.variationId.toString())
+                            //         .future)
+                            //     .then((onValue) {
+                            //   if (context.mounted) {
+                            //     context.pop();
+                            //     if (onValue != null && onValue.id != null) {
+                            //       ConstantMethods.showSnackbar(context,
+                            //           "Product moved to wishlist successfully");
+
+                            //       return ref.refresh(myCartApiProvider);
+                            //     }
+                            //     // } else {
+                            //     //   if (context.mounted) {
+                            //     //     ConstantMethods.showSnackbar(
+                            //     //         context, onValue.message ?? "",
+                            //     //         isFalse: true);
+                            //     //   }
+                            //   }
+                            // });
+                            context.pop();
+                            ConstantMethods.showSnackbar(
+                                context, "Working On It.");
+                          },
+                          child: Container(
+                            width: ScreenUtil().screenWidth / 2.3,
+                            height: 38.sp,
+                            decoration: ShapeDecoration(
+                              color: AppTheme.subTextColor,
+                              shape: RoundedRectangleBorder(
+                                side: BorderSide(
+                                    width: 1, color: AppTheme.subTextColor),
+                                borderRadius: BorderRadius.circular(8.sp),
+                              ),
                             ),
-                          ),
-                          child: Center(
-                            child: Text(
-                              'Move to Wishlist',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 14,
-                                fontFamily: 'Noto Sans Hebrew',
-                                fontWeight: FontWeight.w400,
-                                height: 1,
-                                letterSpacing: 0.20,
+                            child: Center(
+                              child: Text(
+                                'Move to Wishlist',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 14,
+                                  fontFamily: 'Noto Sans Hebrew',
+                                  fontWeight: FontWeight.w400,
+                                  height: 1,
+                                  letterSpacing: 0.20,
+                                ),
                               ),
                             ),
                           ),

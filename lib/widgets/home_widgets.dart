@@ -34,7 +34,7 @@ class HomeMenuWidget extends StatelessWidget {
               child: InkWell(
                 onTap: () {
                   if (menuModel[index].type == "taxonomy") {
-                    context.push("/product", extra: {
+                    context.go("/product", extra: {
                       "id": menuModel[index].id,
                       "name": menuModel[index].title ?? ""
                     });
@@ -198,7 +198,7 @@ class _HomeBestSellingWidget extends ConsumerState<HomeBestSellingWidget> {
                                   ),
                                   GestureDetector(
                                     onTap: () {
-                                      context.push("/product", extra: {
+                                      context.go("/product", extra: {
                                         "id": widget
                                             .bestSellingModel[index].redirect,
                                         "name": widget.bestSellingModel[index]
@@ -259,7 +259,7 @@ class HomeFastResultsWidget extends ConsumerWidget {
   final List<DashboardModelFastResult> fastResults;
   final WishListType type;
 
-  HomeFastResultsWidget(this.fastResults, this.type, {super.key});
+  const HomeFastResultsWidget(this.fastResults, this.type, {super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -307,17 +307,37 @@ class HomeFastResultsWidget extends ConsumerWidget {
                                         ? wishlistState
                                             .productDetailFastResult[index]
                                         : fastResults[index]
-                                    : wishlistState.productDetailYouMayLikeThis
-                                            .isNotEmpty
+                                    : type == WishListType.searchRecentPurchase
                                         ? wishlistState
-                                            .productDetailYouMayLikeThis[index]
-                                        : fastResults[index];
+                                                .searchRecentPurchase.isNotEmpty
+                                            ? wishlistState
+                                                .searchRecentPurchase[index]
+                                            : fastResults[index]
+                                        : type ==
+                                                WishListType
+                                                    .shopBestSellingWishlist
+                                            ? wishlistState
+                                                    .shopBestSellingWishlist
+                                                    .isNotEmpty
+                                                ? wishlistState
+                                                        .shopBestSellingWishlist[
+                                                    index]
+                                                : fastResults[index]
+                                            : wishlistState
+                                                    .productDetailYouMayLikeThis
+                                                    .isNotEmpty
+                                                ? wishlistState
+                                                        .productDetailYouMayLikeThis[
+                                                    index]
+                                                : fastResults[index];
 
             return Padding(
               padding: EdgeInsets.only(right: 8.sp),
               child: InkWell(
                 onTap: () {
-                  context.push("/product_detail", extra: {
+                  //  final router = GoRouter.of(context);
+                  //  if (router.location.startsWith('/shell')) { }
+                  context.goNamed("product_detail", extra: {
                     "id": item.id.toString(),
                     "isMoonJewelry": false,
                     "name": item.title ?? ""
@@ -400,8 +420,10 @@ class HomeFastResultsWidget extends ConsumerWidget {
                                 Row(
                                   children: [
                                     RatingStars(
-                                      value: double.parse(
-                                          item.rating.toString() ?? "0.0"),
+                                      value: item.rating!.isNotEmpty
+                                          ? double.parse(
+                                              item.rating.toString() ?? "0.0")
+                                          : 0.0,
                                       onValueChanged: (v) {
                                         //
                                       },
@@ -619,7 +641,7 @@ class _HomeMoreFromDiklaWidget extends ConsumerState<HomeMoreFromDiklaWidget> {
                     padding: EdgeInsets.only(right: 4.0.sp),
                     child: InkWell(
                       onTap: () {
-                        context.push("/product_Detail", extra: {
+                        context.go("/product_Detail", extra: {
                           "id": widget.moreFromModel[index].redirect,
                           "name": widget.moreFromModel[index].title ?? ""
                         });
@@ -724,7 +746,7 @@ class HomeBestSellingServiceWidget extends ConsumerWidget {
               padding: EdgeInsets.only(right: 10.0.sp),
               child: InkWell(
                 onTap: () {
-                  context.push("/product_Detail", extra: {
+                  context.go("/product_Detail", extra: {
                     "id": bestSelling[index].id.toString(),
                     "name": bestSelling[index].title ?? ""
                   });
@@ -1015,7 +1037,7 @@ class HomeQuickSolutionstsWidget extends ConsumerWidget {
               padding: EdgeInsets.only(right: 8.0.sp),
               child: InkWell(
                 onTap: () {
-                  context.push("/product_detail", extra: {
+                  context.go("/product_detail", extra: {
                     "id": item.id.toString(),
                     "isMoonJewelry": false,
                     "name": item.title ?? ""

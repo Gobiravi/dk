@@ -47,7 +47,7 @@ class OrderDetailsScreen extends HookConsumerWidget {
       appBar: AppBar(
         leading: IconButton(
             onPressed: () {
-              context.pop(context);
+              context.goNamed("dashboard");
             },
             icon: SvgPicture.asset("${Constants.imagePathAppBar}back.svg")),
         title: Text(
@@ -424,45 +424,9 @@ class OrderDetailsScreen extends HookConsumerWidget {
               if (data.statusCode == 402) {
                 refreshApi(ref);
               }
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.error,
-                    size: 80.sp,
-                    color: AppTheme.primaryColor,
-                  ),
-                  SizedBox(height: 16.h),
-                  Text(
-                    'Something went wrong',
-                    style: AppTheme.lightTheme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: AppTheme.textColor,
-                    ),
-                  ),
-                  SizedBox(height: 14.h),
-                  ElevatedButton(
-                    onPressed: () {
-                      ref.refresh(getMyOrdersApiProvider);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.primaryColor,
-                      padding: EdgeInsets.symmetric(
-                          horizontal: 24.w, vertical: 12.h),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8.r),
-                      ),
-                    ),
-                    child: Text(
-                      'Retry',
-                      style:
-                          AppTheme.lightTheme.textTheme.labelMedium?.copyWith(
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ],
+              return ConstantMethods.buildErrorUI(
+                ref,
+                onPressed: () => ref.refresh(getMyOrdersApiProvider),
               );
             default:
               return SizedBox();
@@ -473,48 +437,13 @@ class OrderDetailsScreen extends HookConsumerWidget {
             // Show No Internet Widget
             return NoInternetWidget(
               onRetry: () {
-                ref.refresh(getMyOrdersApiProvider);
+                return ref.refresh(getMyOrdersApiProvider);
               },
             );
           }
-          return Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.error,
-                size: 80.sp,
-                color: AppTheme.primaryColor,
-              ),
-              SizedBox(height: 16.h),
-              Text(
-                'Something went wrong',
-                style: AppTheme.lightTheme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: AppTheme.textColor,
-                ),
-              ),
-              SizedBox(height: 14.h),
-              ElevatedButton(
-                onPressed: () {
-                  ref.refresh(getMyOrdersApiProvider);
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primaryColor,
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8.r),
-                  ),
-                ),
-                child: Text(
-                  'Retry',
-                  style: AppTheme.lightTheme.textTheme.labelMedium?.copyWith(
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ],
+          return ConstantMethods.buildErrorUI(
+            ref,
+            onPressed: () => ref.refresh(getMyOrdersApiProvider),
           );
         },
         loading: () {

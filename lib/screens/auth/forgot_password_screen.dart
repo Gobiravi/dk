@@ -10,7 +10,8 @@ import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class ForgotPasswordScreen extends HookConsumerWidget {
-  const ForgotPasswordScreen({super.key});
+  final bool isForgot;
+  const ForgotPasswordScreen({required this.isForgot, super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -31,7 +32,11 @@ class ForgotPasswordScreen extends HookConsumerWidget {
                     onTap: () {
                       ref.read(forgotEmailValidProvider.notifier).state = false;
                       ref.read(forgotEmailProvider.notifier).state = "";
-                      context.go("/login");
+                      if (isForgot) {
+                        context.go("/login");
+                      } else {
+                        context.pop();
+                      }
                     },
                     child: Container(
                       width: 39.sp,
@@ -72,12 +77,21 @@ class ForgotPasswordScreen extends HookConsumerWidget {
                       SizedBox(
                         height: 15.sp,
                       ),
-                      Text(
-                        'Forgot Password ?',
-                        style: AppTheme.lightTheme.textTheme.bodyLarge
-                            ?.copyWith(
-                                fontWeight: FontWeight.w500, fontSize: 20.sp),
-                      ),
+                      isForgot
+                          ? Text(
+                              'Forgot Password ?',
+                              style: AppTheme.lightTheme.textTheme.bodyLarge
+                                  ?.copyWith(
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 20.sp),
+                            )
+                          : Text(
+                              'Change Password ?',
+                              style: AppTheme.lightTheme.textTheme.bodyLarge
+                                  ?.copyWith(
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 20.sp),
+                            ),
                       SizedBox(
                         height: 15.sp,
                       ),
@@ -202,56 +216,68 @@ class ForgotPasswordScreen extends HookConsumerWidget {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    ConstantMethods.customDivider(),
-                    SizedBox(
-                      height: 24.sp,
-                    ),
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 16.sp),
-                      child: Text.rich(
-                        TextSpan(
-                          children: [
-                            TextSpan(
-                              text: 'Remember Password?',
-                              style: AppTheme.lightTheme.textTheme.bodyLarge
-                                  ?.copyWith(
-                                      fontWeight: FontWeight.w500,
-                                      fontSize: 14.sp,
-                                      color: AppTheme.subTextColor),
-                            ),
-                            TextSpan(
-                              text: ' ',
-                              style: AppTheme.lightTheme.textTheme.bodyLarge
-                                  ?.copyWith(
-                                      fontWeight: FontWeight.w500,
-                                      fontSize: 14.sp,
-                                      color: AppTheme.subTextColor),
-                            ),
-                            TextSpan(
-                                text: 'Log In',
-                                style: AppTheme.lightTheme.textTheme.bodyLarge
-                                    ?.copyWith(
-                                  fontWeight: FontWeight.w500,
-                                  fontSize: 14.sp,
+                    isForgot
+                        ? Column(
+                            children: [
+                              ConstantMethods.customDivider(),
+                              SizedBox(
+                                height: 24.sp,
+                              ),
+                              Padding(
+                                padding:
+                                    EdgeInsets.symmetric(horizontal: 16.sp),
+                                child: Text.rich(
+                                  TextSpan(
+                                    children: [
+                                      TextSpan(
+                                        text: 'Remember Password?',
+                                        style: AppTheme
+                                            .lightTheme.textTheme.bodyLarge
+                                            ?.copyWith(
+                                                fontWeight: FontWeight.w500,
+                                                fontSize: 14.sp,
+                                                color: AppTheme.subTextColor),
+                                      ),
+                                      TextSpan(
+                                        text: ' ',
+                                        style: AppTheme
+                                            .lightTheme.textTheme.bodyLarge
+                                            ?.copyWith(
+                                                fontWeight: FontWeight.w500,
+                                                fontSize: 14.sp,
+                                                color: AppTheme.subTextColor),
+                                      ),
+                                      TextSpan(
+                                          text: 'Log In',
+                                          style: AppTheme
+                                              .lightTheme.textTheme.bodyLarge
+                                              ?.copyWith(
+                                            fontWeight: FontWeight.w500,
+                                            fontSize: 14.sp,
+                                          ),
+                                          recognizer: TapGestureRecognizer()
+                                            ..onTap = () {
+                                              ref
+                                                  .read(forgotEmailValidProvider
+                                                      .notifier)
+                                                  .state = false;
+                                              ref
+                                                  .read(forgotEmailProvider
+                                                      .notifier)
+                                                  .state = "";
+                                              context.go("/login");
+                                            }),
+                                    ],
+                                  ),
+                                  textAlign: TextAlign.center,
                                 ),
-                                recognizer: TapGestureRecognizer()
-                                  ..onTap = () {
-                                    ref
-                                        .read(forgotEmailValidProvider.notifier)
-                                        .state = false;
-                                    ref
-                                        .read(forgotEmailProvider.notifier)
-                                        .state = "";
-                                    context.go("/login");
-                                  }),
-                          ],
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                    SizedBox(
-                      height: 24.sp,
-                    ),
+                              ),
+                              SizedBox(
+                                height: 24.sp,
+                              ),
+                            ],
+                          )
+                        : SizedBox(),
                     Container(
                       width: ScreenUtil().screenWidth,
                       height: 67.sp,
@@ -289,8 +315,17 @@ class ForgotPasswordScreen extends HookConsumerWidget {
                                         isLoading: true);
                                     Future.delayed(Duration(seconds: 3)).then(
                                       (value1) {
-                                        context.push("/resetPassword",
-                                            extra: value.data);
+                                        value.data?.isForgot = isForgot;
+                                        if (context.mounted) {
+                                          if (isForgot) {
+                                            context.push("/resetPassword",
+                                                extra: value.data);
+                                          } else {
+                                            context.pushReplacement(
+                                                "/resetPassword",
+                                                extra: value.data);
+                                          }
+                                        }
                                       },
                                     );
                                   } else {
