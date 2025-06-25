@@ -14,6 +14,7 @@ import 'package:dikla_spirit/screens/dashboard/dashboard_screen.dart';
 import 'package:dikla_spirit/screens/help_center/help_center_screen.dart';
 import 'package:dikla_spirit/screens/help_center/submit_request_screen.dart';
 import 'package:dikla_spirit/screens/home.dart';
+import 'package:dikla_spirit/screens/horoscope/screens/horoscope_chat.dart';
 import 'package:dikla_spirit/screens/my_cart_screen.dart';
 import 'package:dikla_spirit/screens/onboarding/onboarding_screen.dart';
 import 'package:dikla_spirit/screens/orders/my_orders_screen.dart';
@@ -132,6 +133,13 @@ class CustomRouter {
         name: "login",
         path: '/login',
         builder: (context, state) => LoginScreen(),
+      ),
+      GoRoute(
+        name: "horoscope_chat",
+        path: '/horoscope_chat',
+        builder: (context, state) {
+          return HoroscopeChatUI();
+        },
       ),
       GoRoute(
         name: "login_options",

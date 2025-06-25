@@ -23,4 +23,8 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
       state = DashboardState.error(e.toString());
     }
   }
+
+  uploadFcmToken() {
+    _repository.uploadFcmToken();
+  }
 }

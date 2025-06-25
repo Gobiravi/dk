@@ -96,6 +96,7 @@ class WishlistWidget extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final wishListData = ref.watch(wishListApiProvider);
+    final currency = ref.watch(currentCurrencySymbolProvider);
     return Consumer(
       builder: (context, ref, child) {
         return InkWell(
@@ -104,7 +105,8 @@ class WishlistWidget extends HookConsumerWidget {
                 (value) {
                   final data = value.data ?? WishlistModelData(wishlist: []);
                   if (data.wishlist != null && data.wishlist!.isNotEmpty) {
-                    ConstantMethods.wishlistPopUP(context, wishListData);
+                    ConstantMethods.wishlistPopUP(
+                        context, wishListData, currency);
                   } else {
                     context.push("/wishlist");
                   }

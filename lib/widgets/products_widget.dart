@@ -7,7 +7,6 @@ import 'package:dikla_spirit/l10n/app_localizations.dart';
 import 'package:dikla_spirit/model/product_details_model.dart';
 import 'package:dikla_spirit/model/product_filter_opt_model.dart';
 import 'package:dikla_spirit/model/providers.dart';
-import 'package:dikla_spirit/widgets/customWidgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_stars/flutter_rating_stars.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -25,39 +24,35 @@ class ProductFilterWidget extends StatefulHookConsumerWidget {
 }
 
 class _ProductFilterWidgetState extends ConsumerState<ProductFilterWidget> {
-  late List<FilterRatingModel> filterRatingModel;
   @override
   void initState() {
     super.initState();
-    filterRatingModel = [
-      FilterRatingModel(title: "5 Rating", isSelected: false, rating: 5.0),
-      FilterRatingModel(title: "4 & up", isSelected: false, rating: 4.0),
-      FilterRatingModel(title: "3 & up", isSelected: false, rating: 3.0),
-      FilterRatingModel(title: "2 & up", isSelected: false, rating: 2.0),
-    ];
   }
 
   @override
   Widget build(BuildContext context) {
-    final localization = AppLocalizations.of(context);
+    // final localization = AppLocalizations.of(context);
     return DraggableScrollableSheet(
       expand: false,
-      initialChildSize: 0.7, // Adjust the initial size
-      maxChildSize: 0.7, // Adjust maximum size
-      minChildSize: 0.7, // Adjust minimum size
+      initialChildSize: 0.7,
+      maxChildSize: 0.7,
+      minChildSize: 0.5,
       builder: (context, scrollController) {
         return Container(
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             color: AppTheme.appBarAndBottomBarColor,
             borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(12.0),
-              topRight: Radius.circular(12.0),
+              topLeft: Radius.circular(12.0.r),
+              topRight: Radius.circular(12.0.r),
             ),
           ),
           child: SingleChildScrollView(
             controller: scrollController,
             child: Column(
               children: [
+                SizedBox(
+                  height: 16.h,
+                ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -70,7 +65,8 @@ class _ProductFilterWidgetState extends ConsumerState<ProductFilterWidget> {
                     ),
                     Text(
                       AppLocalizations.of(context).filterBy,
-                      style: ThemeData.light().textTheme.labelMedium!,
+                      style: AppTheme.lightTheme.textTheme.bodyLarge
+                          ?.copyWith(fontWeight: FontWeight.w500),
                     ),
                     IconButton(
                       onPressed: () {
@@ -83,16 +79,34 @@ class _ProductFilterWidgetState extends ConsumerState<ProductFilterWidget> {
                     )
                   ],
                 ),
+                SizedBox(
+                  height: 16.h,
+                ),
+                Divider(
+                  height: 0.3,
+                ),
                 Column(
                   children: [
-                    _buildExpandableListOfCategory(
-                        context, "Category", widget.productFilterOptionsModel),
-                    const Divider(),
-                    _buildExpandableListOfRating(
-                        context, "Rating", filterRatingModel),
+                    widget.productFilterOptionsModel.data != null &&
+                            widget.productFilterOptionsModel.data!.categories !=
+                                null &&
+                            widget.productFilterOptionsModel.data!.categories
+                                .isNotEmpty
+                        ? Column(
+                            children: [
+                              _buildExpandableListOfCategory(context,
+                                  "Category", widget.productFilterOptionsModel),
+                              const Divider(
+                                height: 0.30,
+                              ),
+                            ],
+                          )
+                        : SizedBox.shrink(),
+
+                    _buildExpandableListOfRating(context, "Rating", ref),
                     const Divider(),
                     PriceSelector(
-                      title: "Price Range",
+                      title: "Price range",
                       maxPrice: double.parse(widget
                               .productFilterOptionsModel.data?.price
                               .toString() ??
@@ -465,15 +479,21 @@ Widget _buildExpandableListOfCategory(BuildContext context, String title,
     color: AppTheme.appBarAndBottomBarColor,
     elevation: 0,
     child: ExpansionTile(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.zero, // Removes default border
+        side: BorderSide.none, // Removes the line
+      ),
+      // tilePadding: EdgeInsets.zero,
       title: Text(
         title,
-        style: Theme.of(context).textTheme.bodyMedium,
+        style: AppTheme.lightTheme.textTheme.bodyMedium
+            ?.copyWith(fontSize: 16.sp, fontWeight: FontWeight.w600),
       ),
       children: [
         SizedBox(
           height: ScreenUtil().setHeight(300),
           child: Padding(
-            padding: const EdgeInsets.only(top: 2.0, left: 12.0),
+            padding: EdgeInsets.only(top: 2.0.h, left: 12.0.w),
             child: ListView.builder(
               scrollDirection: Axis.vertical,
               itemCount: productFilterOptionsModel.data?.categories.length,
@@ -484,7 +504,8 @@ Widget _buildExpandableListOfCategory(BuildContext context, String title,
                       checkColor: AppTheme.primaryColor,
                       activeColor: AppTheme.appBgColor,
                       value: productFilterOptionsModel
-                          .data?.categories[index].isSelected,
+                              .data?.categories[index].isSelected ??
+                          false,
                       onChanged: (bool? newValue) {
                         productFilterOptionsModel.data?.categories[index]
                             .isSelected = newValue ?? false;
@@ -503,7 +524,7 @@ Widget _buildExpandableListOfCategory(BuildContext context, String title,
                             "",
                         style: Theme.of(context)
                             .textTheme
-                            .labelSmall!
+                            .bodySmall!
                             .copyWith(fontSize: 14.sp),
                       ),
                     )
@@ -519,20 +540,24 @@ Widget _buildExpandableListOfCategory(BuildContext context, String title,
 }
 
 Widget _buildExpandableListOfRating(
-    BuildContext context, String title, List<FilterRatingModel> ratingModel) {
+    BuildContext context, String title, WidgetRef ref) {
+  final ratingModel = ref.watch(ratingProvider);
   return Card(
     color: AppTheme.appBarAndBottomBarColor,
     elevation: 0,
     child: ExpansionTile(
-      title: Text(
-        title,
-        style: Theme.of(context).textTheme.bodyMedium,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.zero, // Removes default border
+        side: BorderSide.none, // Removes the line
       ),
+      title: Text(title,
+          style: AppTheme.lightTheme.textTheme.bodyMedium
+              ?.copyWith(fontSize: 16.sp, fontWeight: FontWeight.w600)),
       children: [
         SizedBox(
           height: ScreenUtil().setHeight(220),
           child: Padding(
-            padding: const EdgeInsets.only(top: 2.0, left: 12.0),
+            padding: EdgeInsets.only(top: 2.0.h, left: 12.0.w),
             child: ListView.builder(
               scrollDirection: Axis.vertical,
               itemCount: ratingModel.length,
@@ -542,24 +567,36 @@ Widget _buildExpandableListOfRating(
                     Checkbox.adaptive(
                       checkColor: AppTheme.primaryColor,
                       activeColor: AppTheme.appBgColor,
-                      value: true,
+                      value: ratingModel[index].isSelected,
+                      side: BorderSide(
+                        color: AppTheme.subTextColor,
+                        width: 0.6,
+                      ),
                       onChanged: (bool? newValue) {
-                        ratingModel[index].isSelected = newValue ?? false;
+                        // ratingModel[index].isSelected = newValue ?? false;
+                        ref
+                            .read(ratingProvider.notifier)
+                            .toggleSelection(index);
                       },
-                    ),
-                    SizedBox(
-                      width: 4.0,
                     ),
                     RatingStars(
                       value: ratingModel[index].rating,
                       onValueChanged: (v) {
                         //
                       },
-                      starBuilder: (index, color) => ColorFiltered(
-                        colorFilter: ColorFilter.mode(color!, BlendMode.srcIn),
-                        child: SvgPicture.asset(
-                            "${Constants.imagePath}empty_star.svg"),
-                      ),
+                      starBuilder: (starIndex, color) {
+                        bool isFilled =
+                            starIndex < ratingModel[index].rating.floor();
+                        return ColorFiltered(
+                          colorFilter: ColorFilter.mode(
+                              color ?? Colors.transparent, BlendMode.srcIn),
+                          child: SvgPicture.asset(
+                            isFilled
+                                ? "${Constants.imagePath}star.svg"
+                                : "${Constants.imagePathOrders}star_outlined.svg",
+                          ),
+                        );
+                      },
                       starCount: 5,
                       starSize: ScreenUtil().setSp(14),
                       maxValue: 5,
@@ -571,18 +608,19 @@ Widget _buildExpandableListOfRating(
                       starColor: AppTheme.primaryColor,
                     ),
                     SizedBox(
-                      width: 4.0,
+                      width: 6.0.w,
                     ),
                     GestureDetector(
                       onTap: () {
-                        ratingModel[index].isSelected =
-                            !(ratingModel[index].isSelected);
+                        ref
+                            .read(ratingProvider.notifier)
+                            .toggleSelection(index);
                       },
                       child: Text(
                         ratingModel[index].title,
                         style: Theme.of(context)
                             .textTheme
-                            .labelSmall!
+                            .bodySmall!
                             .copyWith(fontSize: 14.sp),
                       ),
                     )
@@ -624,14 +662,14 @@ Widget _buildActionButton(
   );
 }
 
-class PriceSelector extends StatefulWidget {
+class PriceSelector extends StatefulHookConsumerWidget {
   final String title;
   final double maxPrice;
   final double initialMinPrice;
   final double initialMaxPrice;
   final Function(double minPrice, double maxPrice) onPriceChanged;
 
-  const PriceSelector({
+  PriceSelector({
     super.key,
     required this.title,
     required this.maxPrice,
@@ -641,10 +679,10 @@ class PriceSelector extends StatefulWidget {
   });
 
   @override
-  State<PriceSelector> createState() => _PriceSelectorState();
+  ConsumerState<ConsumerStatefulWidget> createState() => _PriceSelectorState();
 }
 
-class _PriceSelectorState extends State<PriceSelector> {
+class _PriceSelectorState extends ConsumerState<PriceSelector> {
   late TextEditingController minPriceController;
   late TextEditingController maxPriceController;
   late RangeValues priceRange;
@@ -668,132 +706,218 @@ class _PriceSelectorState extends State<PriceSelector> {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      color: AppTheme.appBarAndBottomBarColor,
-      elevation: 0,
-      child: ExpansionTile(
-        title: Text(
-          widget.title,
-          style: Theme.of(context).textTheme.bodyMedium,
-        ),
-        children: [
-          Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    Text(
-                      'Min',
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 12,
-                        fontFamily: 'NotoSansHebrew',
-                        fontWeight: FontWeight.w400,
-                      ),
-                    ),
-                    Text(
-                      'Max',
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 12,
-                        fontFamily: 'NotoSansHebrew',
-                        fontWeight: FontWeight.w400,
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(
-                  height: 12,
-                ),
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        cursorColor: AppTheme.cursorColor,
-                        cursorWidth: 1.0,
-                        cursorHeight: 18.h,
-                        controller: minPriceController,
-                        keyboardType: TextInputType.number,
-                        decoration: InputDecoration(
-                          // labelText: "Min Price",
-                          border: const OutlineInputBorder(
-                              borderSide: BorderSide(
-                                  color: AppTheme.strokeColor, width: 0.2)),
-                          contentPadding:
-                              const EdgeInsets.symmetric(horizontal: 12),
-                        ),
-                        onChanged: (value) {
-                          final minPrice =
-                              double.tryParse(value) ?? priceRange.start;
-                          if (minPrice <= priceRange.end) {
-                            setState(() {
-                              priceRange =
-                                  RangeValues(minPrice, priceRange.end);
-                              widget.onPriceChanged(
-                                  priceRange.start, priceRange.end);
-                            });
-                          }
-                        },
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: TextField(
-                        cursorColor: AppTheme.cursorColor,
-                        cursorWidth: 1.0,
-                        cursorHeight: 18.h,
-                        controller: maxPriceController,
-                        keyboardType: TextInputType.number,
-                        decoration: InputDecoration(
-                          // labelText: "Max Price",
-                          border: const OutlineInputBorder(),
-                          contentPadding:
-                              const EdgeInsets.symmetric(horizontal: 12),
-                        ),
-                        onChanged: (value) {
-                          final maxPrice =
-                              double.tryParse(value) ?? priceRange.end;
-                          if (maxPrice >= priceRange.start) {
-                            setState(() {
-                              priceRange =
-                                  RangeValues(priceRange.start, maxPrice);
-                              widget.onPriceChanged(
-                                  priceRange.start, priceRange.end);
-                            });
-                          }
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-                RangeSlider(
-                  values: priceRange,
-                  min: 0,
-                  max: widget.maxPrice,
-                  divisions: 100,
-                  activeColor: AppTheme.primaryColor,
-                  labels: RangeLabels(
-                    priceRange.start.toStringAsFixed(0),
-                    priceRange.end.toStringAsFixed(0),
-                  ),
-                  onChanged: (RangeValues values) {
-                    setState(() {
-                      priceRange = values;
-                      minPriceController.text = values.start.toStringAsFixed(0);
-                      maxPriceController.text = values.end.toStringAsFixed(0);
-                      widget.onPriceChanged(values.start, values.end);
-                    });
-                  },
-                ),
-              ],
-            ),
+    final currency = ref.watch(currentCurrencySymbolProvider);
+    return GestureDetector(
+      onTap: () {
+        FocusScope.of(context).unfocus();
+      },
+      child: Card(
+        color: AppTheme.appBarAndBottomBarColor,
+        elevation: 0,
+        child: ExpansionTile(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.zero, // Removes default border
+            side: BorderSide.none, // Removes the line
           ),
-        ],
+          title: Text(widget.title,
+              style: AppTheme.lightTheme.textTheme.bodyMedium
+                  ?.copyWith(fontSize: 16.sp, fontWeight: FontWeight.w600)),
+          children: [
+            Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(
+                    height: 12.h,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Min',
+                            style: AppTheme.lightTheme.textTheme.bodySmall
+                                ?.copyWith(
+                                    fontSize: 14.sp,
+                                    fontWeight: FontWeight.w400,
+                                    color: AppTheme.textColor),
+                          ),
+                          SizedBox(
+                            height: 10.h,
+                          ),
+                          SizedBox(
+                            width: ScreenUtil().screenWidth / 2.35,
+                            child: TextField(
+                              cursorColor: AppTheme.cursorColor,
+                              cursorWidth: 1.0,
+                              cursorHeight: 18.h,
+                              style: AppTheme.lightTheme.textTheme.labelSmall
+                                  ?.copyWith(
+                                      fontSize: 14.sp,
+                                      fontWeight: FontWeight.w400),
+                              controller: minPriceController,
+                              keyboardType: TextInputType.number,
+                              decoration: InputDecoration(
+                                  border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8.r),
+                                      borderSide: BorderSide(
+                                          color: AppTheme.strokeColor,
+                                          width: 0.2.w)),
+                                  contentPadding:
+                                      EdgeInsets.symmetric(horizontal: 12.w),
+                                  focusedBorder: OutlineInputBorder(
+                                      borderSide: BorderSide(
+                                          color: AppTheme.primaryColor,
+                                          width: 1.0),
+                                      borderRadius:
+                                          BorderRadius.circular(8.sp)),
+                                  enabledBorder: OutlineInputBorder(
+                                      borderSide: BorderSide(
+                                          color: AppTheme.strokeColor,
+                                          width: 1.0),
+                                      borderRadius:
+                                          BorderRadius.circular(8.sp)),
+                                  disabledBorder: OutlineInputBorder(
+                                      borderSide: BorderSide(
+                                          color: AppTheme.strokeColor,
+                                          width: 1.0),
+                                      borderRadius:
+                                          BorderRadius.circular(8.sp)),
+                                  suffix: Text(
+                                    currency,
+                                    style: AppTheme
+                                        .lightTheme.textTheme.bodySmall
+                                        ?.copyWith(
+                                            fontSize: 14.sp,
+                                            fontWeight: FontWeight.w400,
+                                            color: AppTheme.teritiaryTextColor),
+                                  )),
+                              onChanged: (value) {
+                                final minPrice =
+                                    double.tryParse(value) ?? priceRange.start;
+                                if (minPrice <= priceRange.end) {
+                                  setState(() {
+                                    priceRange =
+                                        RangeValues(minPrice, priceRange.end);
+                                    widget.onPriceChanged(
+                                        priceRange.start, priceRange.end);
+                                  });
+                                }
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(width: 16.w),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Max',
+                            style: AppTheme.lightTheme.textTheme.bodySmall
+                                ?.copyWith(
+                                    fontSize: 14.sp,
+                                    fontWeight: FontWeight.w400,
+                                    color: AppTheme.textColor),
+                          ),
+                          SizedBox(
+                            height: 10.h,
+                          ),
+                          SizedBox(
+                            width: ScreenUtil().screenWidth / 2.35,
+                            child: TextField(
+                              cursorColor: AppTheme.cursorColor,
+                              cursorWidth: 1.0,
+                              cursorHeight: 18.h,
+                              style: AppTheme.lightTheme.textTheme.labelSmall
+                                  ?.copyWith(
+                                      fontSize: 14.sp,
+                                      fontWeight: FontWeight.w400),
+                              controller: maxPriceController,
+                              keyboardType: TextInputType.number,
+                              decoration: InputDecoration(
+                                  border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8.r),
+                                      borderSide: BorderSide(
+                                          color: AppTheme.strokeColor,
+                                          width: 0.2.w)),
+                                  contentPadding:
+                                      EdgeInsets.symmetric(horizontal: 12.w),
+                                  focusedBorder: OutlineInputBorder(
+                                      borderSide: BorderSide(
+                                          color: AppTheme.primaryColor,
+                                          width: 1.0),
+                                      borderRadius:
+                                          BorderRadius.circular(8.sp)),
+                                  enabledBorder: OutlineInputBorder(
+                                      borderSide: BorderSide(
+                                          color: AppTheme.strokeColor,
+                                          width: 1.0),
+                                      borderRadius:
+                                          BorderRadius.circular(8.sp)),
+                                  disabledBorder: OutlineInputBorder(
+                                      borderSide: BorderSide(
+                                          color: AppTheme.strokeColor,
+                                          width: 1.0),
+                                      borderRadius:
+                                          BorderRadius.circular(8.sp)),
+                                  suffix: Text(
+                                    currency,
+                                    style: AppTheme
+                                        .lightTheme.textTheme.bodySmall
+                                        ?.copyWith(
+                                            fontSize: 14.sp,
+                                            fontWeight: FontWeight.w400,
+                                            color: AppTheme.teritiaryTextColor),
+                                  )),
+                              onChanged: (value) {
+                                final maxPrice =
+                                    double.tryParse(value) ?? priceRange.end;
+                                if (maxPrice >= priceRange.start) {
+                                  setState(() {
+                                    priceRange =
+                                        RangeValues(priceRange.start, maxPrice);
+                                    widget.onPriceChanged(
+                                        priceRange.start, priceRange.end);
+                                  });
+                                }
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 20.h),
+                  RangeSlider(
+                    values: priceRange,
+                    min: 0,
+                    max: widget.maxPrice,
+                    divisions: 100,
+                    activeColor: AppTheme.primaryColor,
+                    labels: RangeLabels(
+                      "$currency ${priceRange.start.toStringAsFixed(0)}",
+                      "$currency ${priceRange.end.toStringAsFixed(0)}",
+                    ),
+                    onChanged: (RangeValues values) {
+                      setState(() {
+                        priceRange = values;
+                        minPriceController.text =
+                            values.start.toStringAsFixed(0);
+                        maxPriceController.text = values.end.toStringAsFixed(0);
+                        widget.onPriceChanged(values.start, values.end);
+                      });
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -833,6 +957,9 @@ class _ProductSortByWidgetState extends ConsumerState<ProductSortByWidget> {
               topLeft: Radius.circular(12.0), topRight: Radius.circular(12.0))),
       child: Column(
         children: [
+          SizedBox(
+            height: 16.h,
+          ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -842,8 +969,11 @@ class _ProductSortByWidgetState extends ConsumerState<ProductSortByWidget> {
                     Icons.close,
                     color: Colors.transparent,
                   )),
-              CustomText(localization.sortBy,
-                  ThemeData.light().textTheme.labelMedium!),
+              Text(
+                AppLocalizations.of(context).filterBy,
+                style: AppTheme.lightTheme.textTheme.bodyLarge
+                    ?.copyWith(fontWeight: FontWeight.w500),
+              ),
               IconButton(
                   onPressed: () {
                     // ref.read(indexOfBottomNavbarProvider.notifier).state = 0;
@@ -855,11 +985,14 @@ class _ProductSortByWidgetState extends ConsumerState<ProductSortByWidget> {
                   ))
             ],
           ),
+          // SizedBox(
+          //   height: 16.h,
+          // ),
           const Divider(),
           SizedBox(
-            height: ScreenUtil().setHeight(230),
+            height: ScreenUtil().setHeight(260),
             child: Padding(
-                padding: const EdgeInsets.only(top: 2.0, left: 12.0),
+                padding: EdgeInsets.only(top: 2.0.h, left: 12.0.w),
                 child: ListView.builder(
                   scrollDirection: Axis.vertical,
                   itemCount: options.length,
@@ -870,6 +1003,10 @@ class _ProductSortByWidgetState extends ConsumerState<ProductSortByWidget> {
                           checkColor: AppTheme.primaryColor,
                           activeColor: AppTheme.appBgColor,
                           value: options[index].isSelected,
+                          side: BorderSide(
+                            color: AppTheme.subTextColor,
+                            width: 0.6,
+                          ),
                           onChanged: (bool? newValue) {
                             setState(() {
                               options[index].isSelected = newValue ?? false;
@@ -883,11 +1020,9 @@ class _ProductSortByWidgetState extends ConsumerState<ProductSortByWidget> {
                                   !options[index].isSelected;
                             });
                           },
-                          child: CustomText(
+                          child: Text(
                             options[index].title,
-                            ThemeData.light()
-                                .textTheme
-                                .labelSmall!
+                            style: AppTheme.lightTheme.textTheme.labelSmall!
                                 .copyWith(fontSize: 14.sp),
                           ),
                         )
@@ -976,11 +1111,19 @@ class FilterRatingModel {
 
   FilterRatingModel(
       {required this.title, this.isSelected = false, required this.rating});
+
+  FilterRatingModel copyWith({bool? isSelected}) {
+    return FilterRatingModel(
+      title: title,
+      rating: rating,
+      isSelected: isSelected ?? this.isSelected,
+    );
+  }
 }
 
 class ProvenResultsWidget extends ConsumerStatefulWidget {
-  List<ProvenResult> provenResults;
-  ProvenResultsWidget(this.provenResults, {super.key});
+  final List<ProvenResult> provenResults;
+  const ProvenResultsWidget(this.provenResults, {super.key});
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() {
@@ -1103,135 +1246,28 @@ class _ProvenResultsWidget extends ConsumerState<ProvenResultsWidget> {
   }
 }
 
-// class SimilarProductsInDetailWidget extends ConsumerWidget {
-//   List<RelatedProduct> relatedProducts;
-//   String currency;
-//   SimilarProductsInDetailWidget(this.relatedProducts, this.currency,
-//       {super.key});
+// Create a StateNotifier to Manage the List
+class RatingNotifier extends StateNotifier<List<FilterRatingModel>> {
+  RatingNotifier()
+      : super([
+          FilterRatingModel(title: "5 Rating", isSelected: true, rating: 5.0),
+          FilterRatingModel(title: "4 & up", isSelected: true, rating: 4.0),
+          FilterRatingModel(title: "3 & up", isSelected: true, rating: 3.0),
+          FilterRatingModel(title: "2 & up", isSelected: true, rating: 2.0),
+        ]);
 
-//   @override
-//   Widget build(BuildContext context, WidgetRef ref) {
-//     return SizedBox(
-//       height: ScreenUtil().setHeight(270.0),
-//       width: ScreenUtil().screenWidth,
-//       child: ListView.builder(
-//         scrollDirection: Axis.horizontal,
-//         itemCount: relatedProducts.length,
-//         itemBuilder: (context, index) {
-//           return Container(
-//               width: ScreenUtil().setWidth(160),
-//               decoration: BoxDecoration(
-//                   borderRadius: const BorderRadius.all(Radius.circular(12)),
-//                   color: AppTheme.appBarAndBottomBarColor,
-//                   border: Border.all(
-//                     color: AppTheme.strokeColor,
-//                     width: 0.3,
-//                   )),
-//               margin: const EdgeInsets.symmetric(horizontal: 10.0),
-//               child: Column(
-//                 children: [
-//                   Expanded(
-//                     flex: 2,
-//                     child: ClipRRect(
-//                       borderRadius: const BorderRadius.only(
-//                           topLeft: Radius.circular(12),
-//                           topRight: Radius.circular(12.0)),
-//                       child: SizedBox.expand(
-//                         child: CachedNetworkImage(
-//                           fit: BoxFit.fill,
-//                           imageUrl: relatedProducts[index].image ?? "",
-//                           progressIndicatorBuilder:
-//                               (context, url, downloadProgress) => Center(
-//                             child: SizedBox(
-//                               height: ScreenUtil().setHeight(20),
-//                               width: ScreenUtil().setWidth(20),
-//                               child: CircularProgressIndicator(
-//                                   value: downloadProgress.progress),
-//                             ),
-//                           ),
-//                           errorWidget: (context, url, error) =>
-//                               const Icon(Icons.error),
-//                         ),
-//                       ),
-//                     ),
-//                   ),
-//                   const SizedBox(
-//                     height: 12.0,
-//                   ),
-//                   Expanded(
-//                       flex: 1,
-//                       child: SizedBox(
-//                         child: Padding(
-//                           padding: const EdgeInsets.symmetric(horizontal: 9.0),
-//                           child: Column(
-//                             crossAxisAlignment: CrossAxisAlignment.start,
-//                             children: [
-//                               Row(
-//                                 children: [
-//                                   RatingStars(
-//                                     value: double.parse(relatedProducts[index]
-//                                         .rating
-//                                         .toString()),
-//                                     onValueChanged: (v) {
-//                                       //
-//                                     },
-//                                     starBuilder: (index, color) =>
-//                                         ColorFiltered(
-//                                       colorFilter: ColorFilter.mode(
-//                                           color!, BlendMode.srcIn),
-//                                       child: SvgPicture.asset(
-//                                           "${Constants.imagePath}empty_star.svg"),
-//                                     ),
-//                                     starCount: 5,
-//                                     starSize: ScreenUtil().setSp(20),
-//                                     maxValue: 5,
-//                                     starSpacing: 2,
-//                                     maxValueVisibility: true,
-//                                     animationDuration:
-//                                         Duration(milliseconds: 1000),
-//                                     valueLabelVisibility: false,
-//                                     starOffColor: AppTheme.strokeColor,
-//                                     starColor: AppTheme.primaryColor,
-//                                   ),
-//                                   const SizedBox(
-//                                     width: 8,
-//                                   ),
-//                                   Text(
-//                                     "(${relatedProducts[index].ratingCount ?? ""})",
-//                                     style:
-//                                         AppTheme.lightTheme.textTheme.bodySmall,
-//                                   )
-//                                 ],
-//                               ),
-//                               const SizedBox(
-//                                 height: 8,
-//                               ),
-//                               Text(
-//                                 relatedProducts[index].title ?? "",
-//                                 style: AppTheme.lightTheme.textTheme.bodyMedium
-//                                     ?.copyWith(
-//                                   overflow: TextOverflow.ellipsis,
-//                                 ),
-//                                 maxLines: 1,
-//                               ),
-//                               const SizedBox(
-//                                 height: 8,
-//                               ),
-//                               Text(
-//                                   '$currency ${relatedProducts[index].price ?? ""}',
-//                                   style:
-//                                       AppTheme.lightTheme.textTheme.bodyMedium),
-//                             ],
-//                           ),
-//                         ),
-//                       )),
-//                   SizedBox(
-//                     height: 12.sp,
-//                   )
-//                 ],
-//               ));
-//         },
-//       ),
-//     );
-//   }
-// }
+  void toggleSelection(int index) {
+    state = List.from(state)
+      ..[index] = state[index].copyWith(isSelected: !state[index].isSelected);
+  }
+
+  void resetSelection() {
+    state = state.map((e) => e.copyWith(isSelected: true)).toList();
+  }
+}
+
+// Define the Provider
+final ratingProvider =
+    StateNotifierProvider<RatingNotifier, List<FilterRatingModel>>((ref) {
+  return RatingNotifier();
+});

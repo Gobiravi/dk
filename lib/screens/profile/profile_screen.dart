@@ -13,6 +13,7 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:intl/intl.dart';
 
 class MyProfileScreen extends HookConsumerWidget {
   MyProfileScreen({super.key});
@@ -1021,13 +1022,14 @@ class MyProfileScreen extends HookConsumerWidget {
                         alignment: Alignment.bottomCenter,
                         child: InkWell(
                           onTap: () {
+                            final selectedDOB = ref.watch(dobProvider);
                             ref
-                                .read(updateProfileApiProvider(
+                                .watch(updateProfileApiProvider(
                                         UpdateProfileParams(
                                             firstName: fNameController.text,
                                             lastName: lNameController.text,
                                             phone: phoneController.text,
-                                            dob: dobController.text,
+                                            dob: selectedDOB ?? "",
                                             countryName: selectedCountry.name,
                                             countryCode: selectedCountry.code,
                                             dialCode: selectedCountry.dialCode,
@@ -1042,7 +1044,6 @@ class MyProfileScreen extends HookConsumerWidget {
                               if (context.mounted) {
                                 if (onValue.statusCode != 402) {
                                   if (onValue.status!) {
-                                    context.pop();
                                     ConstantMethods.showSnackbar(
                                       context,
                                       onValue.message ?? "",
@@ -1192,7 +1193,7 @@ class MyProfileScreen extends HookConsumerWidget {
       controller: TextEditingController(text: selectedDOB ?? ""),
       onTap: () async {
         FocusScope.of(context).unfocus();
-        final pickedDate = await _showDatePicker(context, ref);
+        final pickedDate = await _showDatePicker(context, ref, selectedDOB);
         if (pickedDate != null) {
           ref.read(dobProvider.notifier).state =
               "${pickedDate.day}-${pickedDate.month}-${pickedDate.year}";
@@ -1210,9 +1211,20 @@ class MyProfileScreen extends HookConsumerWidget {
   final dobProvider = StateProvider<String?>((ref) => null);
 
   /// Function to show Cupertino-style spinning wheel date picker inside a modal
-  Future<DateTime?> _showDatePicker(BuildContext context, WidgetRef ref) async {
-    DateTime selectedDate = DateTime.now().subtract(Duration(days: 365 * 18));
-    DateTime? pickedDate = selectedDate;
+  Future<DateTime?> _showDatePicker(
+    BuildContext context,
+    WidgetRef ref,
+    String? defaultDateStr,
+  ) async {
+    DateTime fallbackDate = DateTime.now().subtract(Duration(days: 365 * 18));
+
+    DateTime selectedDate;
+
+    try {
+      selectedDate = DateFormat("dd-MM-yyyy").parse(defaultDateStr ?? "");
+    } catch (_) {
+      selectedDate = fallbackDate;
+    }
 
     await showModalBottomSheet(
       context: context,
@@ -1264,7 +1276,7 @@ class MyProfileScreen extends HookConsumerWidget {
                   maximumDate: DateTime.now(),
                   minimumDate: DateTime(1930),
                   onDateTimeChanged: (DateTime date) {
-                    pickedDate = date;
+                    selectedDate = date;
                   },
                 ),
               ),
@@ -1299,7 +1311,7 @@ class MyProfileScreen extends HookConsumerWidget {
                   ),
                   onPressed: () {
                     ref.read(dobProvider.notifier).state =
-                        "${pickedDate!.day} ${pickedDate!.month} ${pickedDate!.year}";
+                        "${selectedDate.day} ${selectedDate.month} ${selectedDate.year}";
                     Navigator.pop(context);
                   },
                   child: Text(
@@ -1314,7 +1326,7 @@ class MyProfileScreen extends HookConsumerWidget {
       },
     );
 
-    return pickedDate;
+    return selectedDate;
   }
 }
 

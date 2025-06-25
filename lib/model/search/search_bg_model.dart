@@ -76,6 +76,7 @@ class SearchBgModelCategories {
   String? title;
   dynamic id;
   String? slug;
+  String? image;
 
   SearchBgModelCategories({this.title, this.id, this.slug});
 
@@ -83,6 +84,7 @@ class SearchBgModelCategories {
     title = json['title'];
     id = json['id'];
     slug = json['slug'];
+    image = json['image'];
   }
 
   Map<String, dynamic> toJson() {
@@ -90,6 +92,7 @@ class SearchBgModelCategories {
     data['title'] = title;
     data['id'] = id;
     data['slug'] = slug;
+    data['image'] = image;
     return data;
   }
 }

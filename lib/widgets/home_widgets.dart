@@ -65,8 +65,8 @@ class HomeMenuWidget extends StatelessWidget {
 }
 
 class HomeBestSellingWidget extends ConsumerStatefulWidget {
-  List<DashboardModeTopbanner> bestSellingModel;
-  HomeBestSellingWidget(this.bestSellingModel, {super.key});
+  final List<DashboardModeTopbanner> bestSellingModel;
+  const HomeBestSellingWidget(this.bestSellingModel, {super.key});
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() {
@@ -138,29 +138,39 @@ class _HomeBestSellingWidget extends ConsumerState<HomeBestSellingWidget> {
                       child: Column(children: [
                         Expanded(
                           flex: 2,
-                          child: SizedBox.expand(
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.only(
-                                  topLeft: Radius.circular(12.sp),
-                                  topRight: Radius.circular(12.sp)),
-                              child: CachedNetworkImage(
-                                fit: BoxFit.cover,
-                                imageUrl:
-                                    widget.bestSellingModel[index].imageUrl ??
-                                        "",
-                                progressIndicatorBuilder:
-                                    (context, url, downloadProgress) => Center(
-                                  child: SizedBox(
-                                    height: ScreenUtil().setHeight(20),
-                                    width: ScreenUtil().setWidth(20),
-                                    child: CircularProgressIndicator(
-                                      value: downloadProgress.progress,
-                                      strokeWidth: 1.0,
+                          child: InkWell(
+                            onTap: () {
+                              context.go("/product", extra: {
+                                "id": widget.bestSellingModel[index].redirect,
+                                "name":
+                                    widget.bestSellingModel[index].heading ?? ""
+                              });
+                            },
+                            child: SizedBox.expand(
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.only(
+                                    topLeft: Radius.circular(12.sp),
+                                    topRight: Radius.circular(12.sp)),
+                                child: CachedNetworkImage(
+                                  fit: BoxFit.cover,
+                                  imageUrl:
+                                      widget.bestSellingModel[index].imageUrl ??
+                                          "",
+                                  progressIndicatorBuilder:
+                                      (context, url, downloadProgress) =>
+                                          Center(
+                                    child: SizedBox(
+                                      height: ScreenUtil().setHeight(20),
+                                      width: ScreenUtil().setWidth(20),
+                                      child: CircularProgressIndicator(
+                                        value: downloadProgress.progress,
+                                        strokeWidth: 1.0,
+                                      ),
                                     ),
                                   ),
+                                  errorWidget: (context, url, error) =>
+                                      const Icon(Icons.error),
                                 ),
-                                errorWidget: (context, url, error) =>
-                                    const Icon(Icons.error),
                               ),
                             ),
                           ),
@@ -1010,8 +1020,8 @@ class _HomeReviewListWidget extends ConsumerState<HomeReviewListWidget> {
 }
 
 class HomeQuickSolutionstsWidget extends ConsumerWidget {
-  List<DashboardModelFastResult> quickSolutions;
-  HomeQuickSolutionstsWidget(this.quickSolutions, {super.key});
+  final List<DashboardModelFastResult> quickSolutions;
+  const HomeQuickSolutionstsWidget(this.quickSolutions, {super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -1023,7 +1033,7 @@ class HomeQuickSolutionstsWidget extends ConsumerWidget {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16.0.sp),
       child: SizedBox(
-        height: ScreenUtil().setHeight(266.0),
+        height: ScreenUtil().setHeight(270.0),
         width: ScreenUtil().screenWidth,
         child: ListView.builder(
           scrollDirection: Axis.horizontal,

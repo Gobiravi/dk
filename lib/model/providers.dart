@@ -14,15 +14,16 @@ import 'package:dikla_spirit/model/auth/signup_model.dart';
 import 'package:dikla_spirit/model/auth/user_app_setting_model.dart';
 import 'package:dikla_spirit/model/cart_list_model.dart';
 import 'package:dikla_spirit/model/check_out/add_ship_addr_model.dart';
+import 'package:dikla_spirit/model/check_out/checkout_model.dart';
 import 'package:dikla_spirit/model/check_out/order_summary_model.dart';
 import 'package:dikla_spirit/model/check_out/shipping_address_list_model.dart';
-import 'package:dikla_spirit/model/dashboard_model.dart';
 import 'package:dikla_spirit/model/help/faq_model.dart';
 import 'package:dikla_spirit/model/locale_model.dart';
 import 'package:dikla_spirit/model/orders/my_orders_model.dart';
 import 'package:dikla_spirit/model/orders/order_details_model.dart';
 import 'package:dikla_spirit/model/our_reviews_model.dart';
 import 'package:dikla_spirit/model/product_details_model.dart';
+import 'package:dikla_spirit/model/product_filter_opt_model.dart';
 import 'package:dikla_spirit/model/profile_model.dart';
 import 'package:dikla_spirit/model/shop_list_model.dart';
 import 'package:dikla_spirit/model/wishlist_model.dart';
@@ -31,6 +32,7 @@ import 'package:dikla_spirit/screens/dashboard/notifier/dashboard_notifier.dart'
 import 'package:dikla_spirit/screens/dashboard/repository/dashboard_repo.dart';
 import 'package:dikla_spirit/screens/auth/app_settings.dart';
 import 'package:dikla_spirit/screens/dashboard/state/dashboard_state.dart';
+import 'package:dikla_spirit/screens/orders/my_orders_screen.dart';
 import 'package:fl_country_code_picker/fl_country_code_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -59,6 +61,19 @@ final loginApiProvider =
       json.encode({"email": params.email, "password": params.password});
   final data = await ApiUtils.makeRequest(
       Constants.baseUrl + Constants.loginUrl,
+      jsonParams: encodedParam,
+      method: "POST",
+      isRaw: true);
+  return LoginModel.fromJson(data);
+});
+// ==============================================================
+
+// ================= Social Login Api Provider ======================
+final socialLoginApiProvider =
+    FutureProvider.family<LoginModel, SocialLoginParams>((ref, params) async {
+  var encodedParam = json.encode({"email": params.email, "id": params.id});
+  final data = await ApiUtils.makeRequest(
+      Constants.baseUrl + Constants.socialLoginUrl,
       jsonParams: encodedParam,
       method: "POST",
       isRaw: true);
@@ -204,6 +219,32 @@ FutureProvider<WishlistModel> wishListApiProvider =
 // });
 // // ==============================================================
 
+// ================= Move to Wish List Api Provider ======================
+final moveTowishListApiProvider =
+    FutureProvider.family<CommonModel, MoveToWishlistParam>((ref, param) async {
+  final encodedParam = json.encode(
+      {"product_id": param.productId, "cart_item_key": param.cartItemId});
+  final data = await ApiUtils.makeRequest(
+      Constants.baseUrl + Constants.moveToWishList,
+      method: "POST",
+      jsonParams: encodedParam,
+      isRaw: true,
+      useAuth: true);
+  // final productDetail = CommonModel.fromJson(data["data"]);
+  if (data["status_code"] == 402) {
+    await ApiUtils.refreshToken();
+    final data = await ApiUtils.makeRequest(
+        Constants.baseUrl + Constants.addToWishList,
+        useAuth: true,
+        method: "POST",
+        jsonParams: encodedParam,
+        isRaw: true);
+    return CommonModel.fromJson(data);
+  }
+  return CommonModel.fromJson(data);
+});
+// ==============================================================
+
 // ================= Wish List Api Provider ======================
 FutureProvider<CartListModel> myCartApiProvider =
     FutureProvider<CartListModel>((ref) async {
@@ -224,17 +265,17 @@ FutureProvider<CartListModel> myCartApiProvider =
 // });
 // // ==============================================================
 
-// // ================= Product Category List Api Provider ======================
-// final productFilterOptionsApiProvider =
-//     FutureProvider.family<ProductFilterOptionsModel, String>(
-//         (ref, productId) async {
-//   final data = await ApiUtils.makeRequest(
-//     Constants.baseUrl + Constants.productFilterOptionsUrl + productId,
-//   );
-//   return ProductFilterOptionsModel.fromJson(data);
-// });
+// ================= Product Category List Api Provider ======================
+final productFilterOptionsApiProvider =
+    FutureProvider.family<ProductFilterOptionsModel, String>(
+        (ref, productId) async {
+  final data = await ApiUtils.makeRequest(
+    Constants.baseUrl + Constants.productFilterOptionsUrl + productId,
+  );
+  return ProductFilterOptionsModel.fromJson(data);
+});
 
-// // ==============================================================
+// ==============================================================
 
 // ================= Product Category List Api Provider ======================
 final productDetailsApiProvider =
@@ -251,6 +292,29 @@ final productDetailsApiProvider =
     return ProductDetailsModel.fromJson(data);
   }
   return ProductDetailsModel.fromJson(data);
+});
+
+// ================= Product Notify Me Api Provider ======================
+final productNotifyMeApiProvider =
+    FutureProvider.family<CommonModel, String>((ref, productId) async {
+  final data = await ApiUtils.makeRequest(
+      Constants.baseUrl + Constants.notifyMe,
+      jsonParams: json.encode({"product_id": productId}),
+      method: "POST",
+      isRaw: true,
+      useAuth: true);
+  final productDetail = CommonModel.fromJson(data);
+  if (productDetail.statusCode == 402) {
+    await ApiUtils.refreshToken();
+    final data = await ApiUtils.makeRequest(
+        Constants.baseUrl + Constants.notifyMe,
+        jsonParams: json.encode({"product_id": productId}),
+        method: "POST",
+        isRaw: true,
+        useAuth: true);
+    return CommonModel.fromJson(data);
+  }
+  return CommonModel.fromJson(data);
 });
 
 // ==============================================================
@@ -317,12 +381,40 @@ final setAppSettingsApiProvider =
 
 // ==============================================================
 
+// ================= Add Review Api Provider ======================
+final addReviewApiProvider =
+    FutureProvider.family<CommonModel, AddReviewParams>((ref, params) async {
+  var encodedParam = json.encode({
+    "product_id": params.productId,
+    "title": params.title,
+    "user_id": params.userId,
+    "description": params.desc,
+    "rating": params.rating,
+    "review_email": params.email,
+    "review_photos": params.photos
+  });
+  final data = await ApiUtils.makeRequest(
+      Constants.baseUrl + Constants.addReviewUrl,
+      method: "POST",
+      jsonParams: encodedParam,
+      isRaw: true,
+      useAuth: true);
+  return CommonModel.fromJson(data);
+});
+
+// ==============================================================
+
 // ================= Add To Cart Api Provider ======================
 final addToCartApiProvider =
-    FutureProvider.family<AddToCartModel, String>((ref, id) async {
-  var encodedParam = json.encode({
-    "product_id": id,
-  });
+    FutureProvider.family<AddToCartModel, AddtoCartParam>((ref, id) async {
+  var encodedParam;
+  if (id.suggestedPrice != null) {
+    encodedParam = json.encode(
+        {"product_id": id.productId, "suggested_price": id.suggestedPrice});
+  } else {
+    encodedParam = json
+        .encode({"product_id": id.productId, "variation_id": id.variationId});
+  }
   final data = await ApiUtils.makeRequest(
       Constants.baseUrl + Constants.addToCart,
       method: "POST",
@@ -384,7 +476,7 @@ final updateProfileApiProvider =
     "last_name": params.lastName,
     "phone_number": params.phone,
     "gender": params.gender,
-    "date_of_birth": params.gender,
+    "date_of_birth": params.dob,
     "zodiac": params.zodiac
   });
   final data = await ApiUtils.makeRequest(
@@ -439,6 +531,41 @@ final getOrderSummaryApiProvider =
       useAuth: true);
   return OrderSummaryModel.fromJson(data);
 });
+
+// ==============================================================
+
+// ================= Checkout Api Provider ======================
+final checkOutApiProvider =
+    FutureProvider.family<CheckoutModel, CheckoutParams>((ref, params) async {
+  var encodedParam = json.encode({
+    "payment_method": params.paymentMethod,
+    "address_id": params.addressId,
+    "payment_status": params.paymentStatus,
+    "payment_intent": params.paymentIntent,
+    "charge": params.charge,
+  });
+  final data = await ApiUtils.makeRequest(
+      Constants.baseUrl + Constants.checkout,
+      method: "POST",
+      jsonParams: encodedParam,
+      isRaw: true,
+      useAuth: true);
+  return CheckoutModel.fromJson(data);
+});
+
+class CheckoutParams {
+  String? paymentMethod;
+  String? addressId;
+  String? paymentStatus;
+  String? paymentIntent;
+  String? charge;
+  CheckoutParams(
+      {this.paymentMethod,
+      this.addressId,
+      this.paymentStatus,
+      this.paymentIntent,
+      this.charge});
+}
 
 // ==============================================================
 
@@ -571,6 +698,18 @@ final putShippingAddressApiProvider =
       isRaw: true,
       useAuth: true);
   return AddShippingAddressModel.fromJson(data);
+});
+
+// ==============================================================
+
+// ================= Delete Address Api Provider ======================
+final deleteShippingAddressApiProvider =
+    FutureProvider.family<CommonModel, String>((ref, id) async {
+  final data = await ApiUtils.makeRequest(
+      "${Constants.baseUrl}${Constants.shippingAddress}/$id",
+      method: "DELETE",
+      useAuth: true);
+  return CommonModel.fromJson(data);
 });
 
 // ==============================================================

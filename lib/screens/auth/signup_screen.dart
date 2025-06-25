@@ -717,7 +717,9 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                                               BorderRadius.circular(12.sp),
                                           side: BorderSide(
                                               color: AppTheme.subTextColor))),
-                                  onPressed: () {},
+                                  onPressed: () {
+                                    ConstantMethods.signInWithFacebook(ref);
+                                  },
                                   child: Row(
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
@@ -797,7 +799,9 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                                     borderRadius: BorderRadius.circular(12.sp),
                                     side: BorderSide(
                                         color: AppTheme.subTextColor))),
-                            onPressed: () {},
+                            onPressed: () {
+                              ConstantMethods.googleSignIn(ref);
+                            },
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [

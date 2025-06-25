@@ -25,6 +25,7 @@ class MyOrdersScreen extends HookConsumerWidget {
     final myOrderList = ref.watch(getMyOrdersApiProvider);
     final localization = AppLocalizations.of(context);
     final selectedSortBy = ref.watch(selectedMyOrderSortProvider);
+
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -175,218 +176,244 @@ class MyOrdersScreen extends HookConsumerWidget {
                       Expanded(
                         child: SizedBox(
                             // height: 237.sp * datum.length,
-                            child: ListView.builder(
-                          itemBuilder: (context, index) {
-                            return Padding(
-                              padding: EdgeInsets.only(bottom: 14.sp),
-                              child: Container(
-                                width: ScreenUtil().screenWidth,
-                                // height: 215.sp,
-                                decoration: ShapeDecoration(
-                                  color: AppTheme.appBarAndBottomBarColor,
-                                  shape: RoundedRectangleBorder(
-                                    side: BorderSide(
-                                        width: 1, color: AppTheme.strokeColor),
-                                    borderRadius: BorderRadius.circular(10.sp),
-                                  ),
-                                ),
-                                child: Padding(
-                                  padding: EdgeInsets.symmetric(
-                                      horizontal: 14.sp, vertical: 16.sp),
-                                  child: Column(
-                                    children: [
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Row(
-                                            children: [
-                                              SvgPicture.asset(
-                                                datum[index].itemStatus ==
-                                                        "processing"
-                                                    ? "${Constants.imagePathOrders}order_processing.svg"
-                                                    : "${Constants.imagePathOrders}order_completed.svg",
-                                                height: 28.sp,
-                                              ),
-                                              SizedBox(
-                                                width: 10.w,
-                                              ),
-                                              Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    datum[index].itemStatus ??
-                                                        "Status",
-                                                    style: AppTheme.lightTheme
-                                                        .textTheme.titleMedium
-                                                        ?.copyWith(
-                                                            fontWeight:
-                                                                FontWeight.w500,
-                                                            fontSize: 13.sp),
-                                                  ),
-                                                  SizedBox(
-                                                    height: 2.h,
-                                                  ),
-                                                  Text(
-                                                      datum[index].orderDate ??
-                                                          "",
-                                                      style: AppTheme.lightTheme
-                                                          .textTheme.bodySmall),
-                                                ],
-                                              ),
-                                            ],
-                                          ),
-                                          InkWell(
-                                            onTap: () {
-                                              if (datum[index]
-                                                          .requirementForm !=
-                                                      null &&
-                                                  !datum[index]
-                                                      .requirementForm!) {
-                                                context.pushNamed(
-                                                    "requirement_form",
-                                                    extra: RequirementFormParam(
-                                                        id: datum[index]
-                                                            .orderId
-                                                            .toString(),
-                                                        template: datum[index]
-                                                                .template ??
-                                                            "",
-                                                        name:
-                                                            datum[index].name ??
-                                                                ""));
-                                              }
-                                            },
-                                            child: Container(
-                                              // width: 96.w,
-                                              padding: EdgeInsets.symmetric(
-                                                  horizontal: 15.sp),
-                                              height: 32.h,
-                                              decoration: ShapeDecoration(
-                                                shape: RoundedRectangleBorder(
-                                                  side: BorderSide(
-                                                      width: 1,
-                                                      color: AppTheme
-                                                          .subTextColor),
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          8.sp),
-                                                ),
-                                              ),
-                                              child: Center(
-                                                child: Text(
-                                                  datum[index].requirementForm !=
-                                                              null &&
-                                                          datum[index]
-                                                              .requirementForm!
-                                                      ? 'Order Again'
-                                                      : "Complete Your Order",
-                                                  style: AppTheme.lightTheme
-                                                      .textTheme.bodySmall,
-                                                ),
-                                              ),
-                                            ),
-                                          )
-                                        ],
+                            child: SingleChildScrollView(
+                          child: Column(
+                            children: [
+                              ListView.builder(
+                                itemBuilder: (context, index) {
+                                  return Padding(
+                                    padding: EdgeInsets.only(bottom: 14.sp),
+                                    child: Container(
+                                      width: ScreenUtil().screenWidth,
+                                      // height: 215.sp,
+                                      decoration: ShapeDecoration(
+                                        color: AppTheme.appBarAndBottomBarColor,
+                                        shape: RoundedRectangleBorder(
+                                          side: BorderSide(
+                                              width: 1,
+                                              color: AppTheme.strokeColor),
+                                          borderRadius:
+                                              BorderRadius.circular(10.sp),
+                                        ),
                                       ),
-                                      SizedBox(
-                                        height: 12.h,
-                                      ),
-                                      ConstantMethods.customDivider(),
-                                      SizedBox(
-                                        height: 12.h,
-                                      ),
-                                      InkWell(
-                                        onTap: () {
-                                          context.go("/order_details",
-                                              extra: datum[index]
-                                                  .itemId
-                                                  .toString());
-                                        },
-                                        child: Row(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.center,
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
+                                      child: Padding(
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: 14.sp, vertical: 16.sp),
+                                        child: Column(
                                           children: [
                                             Row(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
                                               children: [
-                                                ClipRRect(
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          6.sp),
-                                                  child: CachedNetworkImage(
-                                                    imageUrl:
-                                                        datum[index].image ??
-                                                            "",
-                                                    height: 72.sp,
-                                                    width: 72.sp,
+                                                Row(
+                                                  children: [
+                                                    SvgPicture.asset(
+                                                      datum[index].itemStatus ==
+                                                              "processing"
+                                                          ? "${Constants.imagePathOrders}order_processing.svg"
+                                                          : "${Constants.imagePathOrders}order_completed.svg",
+                                                      height: 28.sp,
+                                                    ),
+                                                    SizedBox(
+                                                      width: 10.w,
+                                                    ),
+                                                    Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        Text(
+                                                          datum[index]
+                                                                  .itemStatus ??
+                                                              "Status",
+                                                          style: AppTheme
+                                                              .lightTheme
+                                                              .textTheme
+                                                              .titleMedium
+                                                              ?.copyWith(
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w500,
+                                                                  fontSize:
+                                                                      13.sp),
+                                                        ),
+                                                        SizedBox(
+                                                          height: 2.h,
+                                                        ),
+                                                        Text(
+                                                            datum[index]
+                                                                    .orderDate ??
+                                                                "",
+                                                            style: AppTheme
+                                                                .lightTheme
+                                                                .textTheme
+                                                                .bodySmall),
+                                                      ],
+                                                    ),
+                                                  ],
+                                                ),
+                                                InkWell(
+                                                  onTap: () {
+                                                    if (datum[index]
+                                                                .requirementForm !=
+                                                            null &&
+                                                        !datum[index]
+                                                            .requirementForm!) {
+                                                      context.pushNamed(
+                                                          "requirement_form",
+                                                          extra: RequirementFormParam(
+                                                              id: datum[index]
+                                                                  .orderId
+                                                                  .toString(),
+                                                              template: datum[
+                                                                          index]
+                                                                      .template ??
+                                                                  "",
+                                                              name: datum[index]
+                                                                      .name ??
+                                                                  ""));
+                                                    }
+                                                  },
+                                                  child: Container(
+                                                    // width: 96.w,
+                                                    padding:
+                                                        EdgeInsets.symmetric(
+                                                            horizontal: 15.sp),
+                                                    height: 32.h,
+                                                    decoration: ShapeDecoration(
+                                                      shape:
+                                                          RoundedRectangleBorder(
+                                                        side: BorderSide(
+                                                            width: 1,
+                                                            color: AppTheme
+                                                                .subTextColor),
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(8.sp),
+                                                      ),
+                                                    ),
+                                                    child: Center(
+                                                      child: Text(
+                                                        datum[index].requirementForm !=
+                                                                    null &&
+                                                                datum[index]
+                                                                    .requirementForm!
+                                                            ? 'Order Again'
+                                                            : "Complete Your Order",
+                                                        style: AppTheme
+                                                            .lightTheme
+                                                            .textTheme
+                                                            .bodySmall,
+                                                      ),
+                                                    ),
                                                   ),
-                                                ),
-                                                SizedBox(
-                                                  width: 12.sp,
-                                                ),
-                                                SizedBox(
-                                                  width: ScreenUtil()
-                                                      .setWidth(200),
-                                                  child: Column(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment.start,
+                                                )
+                                              ],
+                                            ),
+                                            SizedBox(
+                                              height: 12.h,
+                                            ),
+                                            ConstantMethods.customDivider(),
+                                            SizedBox(
+                                              height: 12.h,
+                                            ),
+                                            InkWell(
+                                              onTap: () {
+                                                context.push("/order_details",
+                                                    extra: datum[index]
+                                                        .itemId
+                                                        .toString());
+                                              },
+                                              child: Row(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.center,
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                children: [
+                                                  Row(
                                                     crossAxisAlignment:
                                                         CrossAxisAlignment
                                                             .start,
                                                     children: [
-                                                      Text(
-                                                        datum[index].name ?? "",
-                                                        style: AppTheme
-                                                            .lightTheme
-                                                            .textTheme
-                                                            .bodySmall
-                                                            ?.copyWith(
-                                                                fontSize:
-                                                                    14.sp),
-                                                        maxLines: 2,
-                                                        overflow: TextOverflow
-                                                            .ellipsis,
+                                                      ClipRRect(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(6.sp),
+                                                        child:
+                                                            CachedNetworkImage(
+                                                          imageUrl: datum[index]
+                                                                  .image ??
+                                                              "",
+                                                          height: 72.sp,
+                                                          width: 72.sp,
+                                                        ),
                                                       ),
-                                                      Text(
-                                                        datum[index]
-                                                            .price
-                                                            .toString(),
-                                                        style: AppTheme
-                                                            .lightTheme
-                                                            .textTheme
-                                                            .labelMedium
-                                                            ?.copyWith(
-                                                                fontSize:
-                                                                    16.sp),
+                                                      SizedBox(
+                                                        width: 12.sp,
+                                                      ),
+                                                      SizedBox(
+                                                        width: ScreenUtil()
+                                                            .setWidth(200),
+                                                        child: Column(
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .start,
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .start,
+                                                          children: [
+                                                            Text(
+                                                              datum[index]
+                                                                      .name ??
+                                                                  "",
+                                                              style: AppTheme
+                                                                  .lightTheme
+                                                                  .textTheme
+                                                                  .bodySmall
+                                                                  ?.copyWith(
+                                                                      fontSize:
+                                                                          14.sp),
+                                                              maxLines: 2,
+                                                              overflow:
+                                                                  TextOverflow
+                                                                      .ellipsis,
+                                                            ),
+                                                            Text(
+                                                              "${CurrencySymbol.fromString(datum[index].orderCurrency ?? "").symbol} ${datum[index].price.toString()}",
+                                                              style: AppTheme
+                                                                  .lightTheme
+                                                                  .textTheme
+                                                                  .labelMedium
+                                                                  ?.copyWith(
+                                                                      fontSize:
+                                                                          16.sp),
+                                                            ),
+                                                          ],
+                                                        ),
                                                       ),
                                                     ],
                                                   ),
-                                                ),
-                                              ],
+                                                  InkWell(
+                                                    child: Icon(Icons
+                                                        .keyboard_arrow_right),
+                                                    onTap: () {},
+                                                  )
+                                                ],
+                                              ),
                                             ),
-                                            InkWell(
-                                              child: Icon(
-                                                  Icons.keyboard_arrow_right),
-                                              onTap: () {},
-                                            )
-                                          ],
-                                        ),
-                                      ),
-                                      SizedBox(
-                                        height: 12.h,
-                                      ),
-                                      ConstantMethods.customDivider(),
-                                      SizedBox(
-                                        height: 12.h,
-                                      ),
-                                      datum[index].requirementForm != null &&
-                                              datum[index].requirementForm!
-                                          ? Row(
+                                            SizedBox(
+                                              height: 12.h,
+                                            ),
+                                            ConstantMethods.customDivider(),
+                                            SizedBox(
+                                              height: 12.h,
+                                            ),
+                                            // datum[index].requirementForm != null &&
+                                            //         datum[index].requirementForm!
+                                            //     ?
+                                            Row(
                                               children: [
                                                 Text('Rate this Product:',
                                                     style: AppTheme.lightTheme
@@ -397,7 +424,10 @@ class MyOrdersScreen extends HookConsumerWidget {
                                                 RatingStars(
                                                   value: 0.0,
                                                   onValueChanged: (v) {
-                                                    //
+                                                    ConstantMethods
+                                                        .showFeedbackPopup(
+                                                            context,
+                                                            datum[index]);
                                                   },
                                                   starBuilder: (index, color) =>
                                                       SvgPicture.asset(
@@ -417,24 +447,42 @@ class MyOrdersScreen extends HookConsumerWidget {
                                                 ),
                                               ],
                                             )
-                                          : Text(
-                                              "Please fill out your requirement form to move the product to 'in progress'.",
-                                              style: AppTheme.lightTheme
-                                                  .textTheme.bodySmall
-                                                  ?.copyWith(
-                                                      color: AppTheme
-                                                          .teritiaryTextColor,
-                                                      fontSize: 11.sp),
-                                            )
-                                    ],
-                                  ),
-                                ),
+                                            // : Text(
+                                            //     "Please fill out your requirement form to move the product to 'in progress'.",
+                                            //     style: AppTheme.lightTheme
+                                            //         .textTheme.bodySmall
+                                            //         ?.copyWith(
+                                            //             color: AppTheme
+                                            //                 .teritiaryTextColor,
+                                            //             fontSize: 11.sp),
+                                            //   )
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                },
+                                itemCount: datum.length,
+                                shrinkWrap: true,
+                                physics: NeverScrollableScrollPhysics(),
                               ),
-                            );
-                          },
-                          itemCount: datum.length,
-                          shrinkWrap: true,
-                          // physics: NeverScrollableScrollPhysics(),
+                              SizedBox(
+                                height: 29.h,
+                              ),
+                              Text(
+                                "DIKLA SPIRIT",
+                                style: AppTheme.lightTheme.textTheme.titleLarge
+                                    ?.copyWith(
+                                        color: AppTheme.primaryColor,
+                                        fontSize: 20.sp,
+                                        fontWeight: FontWeight.w700,
+                                        letterSpacing: -0.60),
+                              ),
+                              SizedBox(
+                                height: 39.h,
+                              ),
+                            ],
+                          ),
                         )),
                       )
                     else
@@ -501,20 +549,6 @@ class MyOrdersScreen extends HookConsumerWidget {
                           ),
                         ],
                       ),
-                    SizedBox(
-                      height: 29.h,
-                    ),
-                    Text(
-                      "DIKLA SPIRIT",
-                      style: AppTheme.lightTheme.textTheme.titleLarge?.copyWith(
-                          color: AppTheme.primaryColor,
-                          fontSize: 20.sp,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: -0.60),
-                    ),
-                    SizedBox(
-                      height: 39.h,
-                    ),
                   ],
                 ),
               );
@@ -540,10 +574,9 @@ class MyOrdersScreen extends HookConsumerWidget {
               },
             );
           }
-          return ConstantMethods.buildErrorUI(
-            ref,
-            onPressed: () => ref.refresh(getMyOrdersApiProvider),
-          );
+          return ConstantMethods.buildErrorUI(ref, onPressed: () {
+            ref.refresh(getMyOrdersApiProvider);
+          });
         },
         loading: () => _buildShimmerLoading(context),
       ),
@@ -589,4 +622,22 @@ class MyOrdersScreen extends HookConsumerWidget {
       ),
     );
   }
+}
+
+class AddReviewParams {
+  String? productId;
+  String? userId;
+  String? title;
+  String? desc;
+  String? rating;
+  String? email;
+  String? photos;
+  AddReviewParams(
+      {this.productId,
+      this.userId,
+      this.title,
+      this.desc,
+      this.rating,
+      this.email,
+      this.photos});
 }

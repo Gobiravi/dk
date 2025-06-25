@@ -67,6 +67,18 @@ class ProductCategoryModelData {
         "category_banner": categoryBanner,
       };
 
+  ProductCategoryModelData copyWith({
+    List<DashboardModelFastResult>? products,
+    CategoryProductPagination? pagination,
+    String? categoryBanner,
+  }) {
+    return ProductCategoryModelData(
+      products: products ?? this.products,
+      pagination: pagination ?? this.pagination,
+      categoryBanner: categoryBanner ?? this.categoryBanner,
+    );
+  }
+
   @override
   String toString() {
     return "$products, $pagination, $categoryBanner, ";
@@ -107,49 +119,3 @@ class CategoryProductPagination {
     return "$currentPage, $totalPages, $totalProducts, $perPage, ";
   }
 }
-
-// class ProductCategoryModelDataProduct {
-//   ProductCategoryModelDataProduct(
-//       {required this.title,
-//       required this.price,
-//       required this.image,
-//       required this.type,
-//       required this.rating,
-//       required this.ratingCount,
-//       this.id});
-
-//   final String? title;
-//   final dynamic price;
-//   final String? image;
-//   final String? type;
-//   final String? rating;
-//   final String? ratingCount;
-//   final dynamic id;
-
-//   factory ProductCategoryModelDataProduct.fromJson(Map<String, dynamic> json) {
-//     return ProductCategoryModelDataProduct(
-//       title: json["title"],
-//       price: json["price"],
-//       image: json["image"],
-//       type: json["type"],
-//       rating: json["rating"],
-//       ratingCount: json["rating_count"],
-//       id: json["id"],
-//     );
-//   }
-
-//   Map<String, dynamic> toJson() => {
-//         "title": title,
-//         "price": price,
-//         "image": image,
-//         "type": type,
-//         "rating": rating,
-//         "rating_count": ratingCount,
-//         "id": id,
-//       };
-
-//   @override
-//   String toString() {
-//     return "$title, $price, $image, $type, $rating, $ratingCount, $id,";
-//   }
-// }

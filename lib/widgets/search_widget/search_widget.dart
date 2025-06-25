@@ -62,6 +62,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                           child: SvgPicture.asset(
                               "${Constants.imagePathAppBar}back.svg"),
                           onTap: () {
+                            ref.read(searchProvider.notifier).clearSearch();
                             context.pop();
                           },
                         ),
@@ -198,75 +199,184 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                                       SizedBox(
                                         height: 18.h,
                                       ),
+                                      // Padding(
+                                      //   padding: EdgeInsets.symmetric(
+                                      //       horizontal: 16.0.w),
+                                      //   child: Wrap(
+                                      //     children: data.data?.categories
+                                      //             ?.map((e) => Padding(
+                                      //                   padding:
+                                      //                       EdgeInsets.only(
+                                      //                           right: 8.0.w,
+                                      //                           bottom: 8.h),
+                                      //                   child: InkWell(
+                                      //                     onTap: () {
+                                      //                       context.go(
+                                      //                           "/product",
+                                      //                           extra: {
+                                      //                             "id": e.id,
+                                      //                             "name":
+                                      //                                 e.title ??
+                                      //                                     ""
+                                      //                           });
+                                      //                     },
+                                      //                     child: Container(
+                                      //                       width: 186.w,
+                                      //                       height: 95.h,
+                                      //                       decoration:
+                                      //                           ShapeDecoration(
+                                      //                         color: AppTheme
+                                      //                             .appBarAndBottomBarColor,
+                                      //                         shape:
+                                      //                             RoundedRectangleBorder(
+                                      //                           side: BorderSide(
+                                      //                               width: 0.20,
+                                      //                               color: AppTheme
+                                      //                                   .strokeColor),
+                                      //                           borderRadius:
+                                      //                               BorderRadius
+                                      //                                   .circular(
+                                      //                                       10.r),
+                                      //                         ),
+                                      //                       ),
+                                      //                       child: Padding(
+                                      //                         padding: EdgeInsets
+                                      //                             .symmetric(
+                                      //                                 horizontal:
+                                      //                                     18.0
+                                      //                                         .w,
+                                      //                                 vertical:
+                                      //                                     10.h),
+                                      //                         child: Text(
+                                      //                           e.title ?? "",
+                                      //                           textAlign:
+                                      //                               TextAlign
+                                      //                                   .center,
+                                      //                           style: AppTheme
+                                      //                               .lightTheme
+                                      //                               .textTheme
+                                      //                               .bodySmall
+                                      //                               ?.copyWith(
+                                      //                                   fontSize: 14
+                                      //                                       .sp,
+                                      //                                   letterSpacing:
+                                      //                                       -0.30),
+                                      //                         ),
+                                      //                       ),
+                                      //                     ),
+                                      //                   ),
+                                      //                 ))
+                                      //             .toList() ??
+                                      //         [], // ✅ Provide an empty list if null
+                                      //   ),
+                                      // ),
                                       Padding(
                                         padding: EdgeInsets.symmetric(
                                             horizontal: 16.0.w),
-                                        child: Wrap(
-                                          children: data.data?.categories
-                                                  ?.map((e) => Padding(
-                                                        padding:
-                                                            EdgeInsets.only(
-                                                                right: 8.0.w,
-                                                                bottom: 8.h),
-                                                        child: InkWell(
-                                                          onTap: () {
-                                                            context.go(
-                                                                "/product",
-                                                                extra: {
-                                                                  "id": e.id,
-                                                                  "name":
-                                                                      e.title ??
-                                                                          ""
-                                                                });
-                                                          },
-                                                          child: Container(
-                                                            decoration:
-                                                                ShapeDecoration(
-                                                              color: AppTheme
-                                                                  .appBarAndBottomBarColor,
-                                                              shape:
-                                                                  RoundedRectangleBorder(
-                                                                side: BorderSide(
-                                                                    width: 0.20,
-                                                                    color: AppTheme
-                                                                        .strokeColor),
-                                                                borderRadius:
-                                                                    BorderRadius
-                                                                        .circular(
-                                                                            3.r),
-                                                              ),
-                                                            ),
-                                                            child: Padding(
-                                                              padding: EdgeInsets
-                                                                  .symmetric(
-                                                                      horizontal:
-                                                                          18.0
-                                                                              .w,
-                                                                      vertical:
-                                                                          10.h),
-                                                              child: Text(
-                                                                e.title ?? "",
-                                                                textAlign:
-                                                                    TextAlign
-                                                                        .center,
-                                                                style: AppTheme
-                                                                    .lightTheme
-                                                                    .textTheme
-                                                                    .bodySmall
-                                                                    ?.copyWith(
-                                                                        fontSize: 14
-                                                                            .sp,
-                                                                        letterSpacing:
-                                                                            -0.30),
-                                                              ),
+                                        child: SizedBox(
+                                          height: 95.h * 2,
+                                          child: GridView.builder(
+                                            scrollDirection: Axis.horizontal,
+                                            itemCount:
+                                                data.data?.categories?.length ??
+                                                    0,
+                                            gridDelegate:
+                                                SliverGridDelegateWithFixedCrossAxisCount(
+                                              crossAxisCount: 2,
+                                              mainAxisSpacing: 8.h,
+                                              crossAxisSpacing: 8.w,
+                                              childAspectRatio: 186.w /
+                                                  ScreenUtil().screenWidth *
+                                                  1.1, // Aspect ratio = width / height
+                                            ),
+                                            itemBuilder: (context, index) {
+                                              final e =
+                                                  data.data!.categories![index];
+                                              return InkWell(
+                                                onTap: () {
+                                                  context
+                                                      .go("/product", extra: {
+                                                    "id": e.id,
+                                                    "name": e.title ?? "",
+                                                  });
+                                                },
+                                                child: ClipRRect(
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          11.r),
+                                                  child: Container(
+                                                    // width: 186.w,
+                                                    // height: 95.h,
+                                                    decoration: ShapeDecoration(
+                                                      color: AppTheme
+                                                          .appBarAndBottomBarColor,
+                                                      shape:
+                                                          RoundedRectangleBorder(
+                                                        side: BorderSide(
+                                                          width: 0.20,
+                                                          color: AppTheme
+                                                              .strokeColor,
+                                                        ),
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(11.r),
+                                                      ),
+                                                      image: e.image != null &&
+                                                              e.image!
+                                                                  .isNotEmpty
+                                                          ? DecorationImage(
+                                                              image:
+                                                                  NetworkImage(
+                                                                      e.image!),
+                                                              fit: BoxFit.cover,
+                                                            )
+                                                          : null,
+                                                    ),
+                                                    child: Container(
+                                                      alignment:
+                                                          Alignment.center,
+                                                      color: Colors.black
+                                                          .withOpacity(
+                                                              0.4), // optional overlay for text visibility
+                                                      child: Padding(
+                                                        padding: EdgeInsets
+                                                            .symmetric(
+                                                          horizontal: 18.0.w,
+                                                          vertical: 10.h,
+                                                        ),
+                                                        child: Align(
+                                                          alignment: Alignment
+                                                              .bottomLeft,
+                                                          child: Text(
+                                                            e.title ?? "",
+                                                            textAlign: TextAlign
+                                                                .center,
+                                                            style: AppTheme
+                                                                .lightTheme
+                                                                .textTheme
+                                                                .bodySmall
+                                                                ?.copyWith(
+                                                              fontSize: 16.sp,
+                                                              letterSpacing:
+                                                                  -0.30,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w700,
+                                                              color:
+                                                                  Colors.white,
                                                             ),
                                                           ),
                                                         ),
-                                                      ))
-                                                  .toList() ??
-                                              [], // ✅ Provide an empty list if null
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              );
+                                            },
+                                          ),
                                         ),
                                       ),
+
                                       data.data != null &&
                                               data.data!.youMayAlsoLike !=
                                                   null &&
@@ -289,7 +399,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                                                             horizontal: 16.0.w),
                                                     child: Text(
                                                       localization
-                                                          .popular_categories,
+                                                          .youMayAlsoLikeThis,
                                                       style: AppTheme.lightTheme
                                                           .textTheme.bodyLarge,
                                                     ),
@@ -384,9 +494,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                                                                       ),
                                                                     ),
                                                                   ),
-                                                                  const SizedBox(
+                                                                  SizedBox(
                                                                       width:
-                                                                          16), // Add spacing between the icon and text
+                                                                          16.w),
                                                                   Expanded(
                                                                     flex: 3,
                                                                     child:
@@ -449,19 +559,32 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                                                                         ),
                                                                         SizedBox(
                                                                           height:
-                                                                              11.h,
+                                                                              10.h,
                                                                         ),
                                                                         SizedBox(
+                                                                          // width:
+                                                                          //     300.w,
                                                                           child:
                                                                               Text(
-                                                                            data.data?.youMayAlsoLike?[index].symbol ??
+                                                                            data.data?.youMayAlsoLike?[index].shortDesc ??
                                                                                 "",
                                                                             style:
-                                                                                AppTheme.lightTheme.textTheme.bodySmall?.copyWith(fontSize: 12.sp, color: AppTheme.textColor),
+                                                                                AppTheme.lightTheme.textTheme.bodySmall,
                                                                             maxLines:
-                                                                                3,
+                                                                                1,
                                                                           ),
                                                                         ),
+                                                                        // SizedBox(
+                                                                        //   child:
+                                                                        //       Text(
+                                                                        //     data.data?.youMayAlsoLike?[index].symbol ??
+                                                                        //         "",
+                                                                        //     style:
+                                                                        //         AppTheme.lightTheme.textTheme.bodySmall?.copyWith(fontSize: 12.sp, color: AppTheme.textColor),
+                                                                        //     maxLines:
+                                                                        //         3,
+                                                                        //   ),
+                                                                        // ),
                                                                         SizedBox(
                                                                           height:
                                                                               14.h,

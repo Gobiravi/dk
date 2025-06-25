@@ -5,18 +5,15 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'product_cat_list_state.freezed.dart';
 
 @freezed
-class ProductCategoryState with _$ProductCategoryState {
-  const factory ProductCategoryState.loading() = ProductCategoryStateLoading;
-  const factory ProductCategoryState.loaded({
-    required ProductCategoryModel item,
-  }) = ProductCategoryStateLoaded;
-  const factory ProductCategoryState.error(String message) =
-      ProductCategoryStateError;
-  const factory ProductCategoryState.noInternet() = NoInternetState;
-  const factory ProductCategoryState.paginating({
-    required List<DashboardModelFastResult> items,
-  }) = PaginatingState;
-  const factory ProductCategoryState.reachedEnd({
-    required List<DashboardModelFastResult> items,
-  }) = ReachedEndState;
+class ProductCategoryListState with _$ProductCategoryListState {
+  const factory ProductCategoryListState.loading() = _Loading;
+  const factory ProductCategoryListState.loaded({
+    required ProductCategoryModelData data,
+    required bool status,
+    required int statusCode,
+  }) = _Loaded;
+  const factory ProductCategoryListState.error(String error) = _Error;
+  const factory ProductCategoryListState.noInternet() = _NoInternet;
+  const factory ProductCategoryListState.reachedEnd(
+      List<DashboardModelFastResult> items) = _ReachedEnd;
 }

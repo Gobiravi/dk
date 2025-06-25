@@ -1,8 +1,7 @@
-import 'dart:io';
-
 import 'package:dikla_spirit/custom/app_theme.dart';
 import 'package:dikla_spirit/custom/constants.dart';
 import 'package:dikla_spirit/custom/secure_storage.dart';
+import 'package:dikla_spirit/widgets/push_notification_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
@@ -20,16 +19,21 @@ class _SplashScreen extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
+
+    PushNotificationService.initialize(context);
+
     // print(Platform.localeName.substring(0, 2));
     Future.delayed(const Duration(seconds: 3)).then((onValue) async {
       String? isOnboardDone = await SecureStorage.get("isOnboardDone");
       if (mounted) {
         if (isOnboardDone != null && isOnboardDone.toLowerCase() == "true") {
           final id = await SecureStorage.get('user_id');
-          if (id != null && id.isNotEmpty) {
-            context.goNamed("dashboard");
-          } else {
+          if (context.mounted) {
+            // if (id != null && id.isNotEmpty) {
+            //   context.goNamed("dashboard");
+            // } else {
             context.goNamed("login_options");
+            // }
           }
         } else {
           context.goNamed("onboarding");

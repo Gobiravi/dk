@@ -386,6 +386,29 @@ class OurReviewsScreen extends HookConsumerWidget {
                                       SizedBox(
                                         height: 8.sp,
                                       ),
+                                      datum.reviews![index].title!.isNotEmpty
+                                          ? Column(
+                                              children: [
+                                                SizedBox(
+                                                  width:
+                                                      ScreenUtil().screenWidth *
+                                                          0.7,
+                                                  child: Text(
+                                                    datum.reviews![index]
+                                                            .title ??
+                                                        "",
+                                                    style: AppTheme.lightTheme
+                                                        .textTheme.bodySmall
+                                                        ?.copyWith(
+                                                            fontSize: 15.sp),
+                                                  ),
+                                                ),
+                                                SizedBox(
+                                                  height: 8.sp,
+                                                ),
+                                              ],
+                                            )
+                                          : SizedBox.shrink(),
                                       SizedBox(
                                         width: ScreenUtil().screenWidth * 0.7,
                                         child: Text(

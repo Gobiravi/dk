@@ -25,6 +25,7 @@ class DashboardScreen extends HookConsumerWidget {
     final notifier = ref.read(dashboardNotifierProvider.notifier);
     useEffect(() {
       notifier.fetchDashboardData();
+      notifier.uploadFcmToken();
       return null;
     }, const []);
     return dashboardState.when(

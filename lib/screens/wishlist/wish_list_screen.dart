@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dikla_spirit/custom/app_theme.dart';
 import 'package:dikla_spirit/custom/constants.dart';
+import 'package:dikla_spirit/model/add_to_cart_model.dart';
 import 'package:dikla_spirit/model/dashboard_model.dart';
 import 'package:dikla_spirit/model/providers.dart';
 import 'package:dikla_spirit/screens/wishlist/state/wishlist_state.dart';
@@ -19,6 +20,7 @@ class WishListScreen extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final wishListData = ref.watch(wishListApiProvider);
+    final currency = ref.watch(currentCurrencySymbolProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -180,7 +182,7 @@ class WishListScreen extends HookConsumerWidget {
                                             crossAxisCount: 2,
                                             mainAxisSpacing: 18.sp,
                                             crossAxisSpacing: 19.sp,
-                                            childAspectRatio: 0.65),
+                                            childAspectRatio: 0.62),
                                     scrollDirection: Axis.vertical,
                                     itemCount: data.data?.wishlist?.length ?? 0,
                                     itemBuilder: (context, index) {
@@ -280,10 +282,13 @@ class WishListScreen extends HookConsumerWidget {
                                                               Row(
                                                                 children: [
                                                                   RatingStars(
-                                                                    value: double.parse(wishList
-                                                                            ?.rating
-                                                                            .toString() ??
-                                                                        "0.0"),
+                                                                    value: wishList!.rating !=
+                                                                                null &&
+                                                                            wishList
+                                                                                .rating!.isNotEmpty
+                                                                        ? double.parse(wishList.rating.toString() ??
+                                                                            "0.0")
+                                                                        : 0.0,
                                                                     onValueChanged:
                                                                         (v) {
                                                                       //
@@ -388,29 +393,33 @@ class WishListScreen extends HookConsumerWidget {
                                                             TextButton(
                                                               onPressed: () {
                                                                 if (wishList
-                                                                        ?.type ==
+                                                                        .type ==
                                                                     "variable") {
                                                                   if (wishList
-                                                                          ?.variation !=
+                                                                          .variation !=
                                                                       null) {
                                                                     ConstantMethods.showVariation(
                                                                         context,
-                                                                        wishList?.variation ??
+                                                                        wishList.variation ??
                                                                             [],
-                                                                        wishList?.template ==
+                                                                        wishList.template ==
                                                                                 3
                                                                             ? "Select Color"
                                                                             : "Strength level to choose form",
-                                                                        wishList?.template ??
+                                                                        wishList.template ??
                                                                             0,
-                                                                        wishList?.title ??
-                                                                            "");
+                                                                        wishList.title ??
+                                                                            "",
+                                                                        currency,
+                                                                        wishList
+                                                                            .id
+                                                                            .toString());
                                                                   }
                                                                 } else {
                                                                   ref
-                                                                      .refresh(addToCartApiProvider(wishList?.id.toString() ??
-                                                                              "0")
-                                                                          .future)
+                                                                      .refresh(
+                                                                          addToCartApiProvider(AddtoCartParam(productId: wishList.id.toString() ?? "0"))
+                                                                              .future)
                                                                       .then(
                                                                           (value) {
                                                                     if (value

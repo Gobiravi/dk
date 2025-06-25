@@ -44,3 +44,11 @@ class AddToCartModelData {
     return data;
   }
 }
+
+class AddtoCartParam {
+  String productId;
+  String? suggestedPrice;
+  String? variationId;
+  AddtoCartParam(
+      {required this.productId, this.suggestedPrice, this.variationId});
+}

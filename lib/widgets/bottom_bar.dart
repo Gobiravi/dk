@@ -29,6 +29,19 @@ class _CustomBottomBarState extends ConsumerState<CustomBottomBar> {
     final localization = AppLocalizations.of(context);
     final indexOfBottomNavbar = ref.watch(indexOfBottomNavbarProvider);
     final shopListModel = ref.watch(shopListApiProvider);
+    final cartAsyncValue = ref.watch(myCartApiProvider);
+    int cartCount = 0;
+    cartAsyncValue.when(
+      data: (cartData) {
+        cartCount = cartData.data?.cart?.length ?? 0;
+      },
+      loading: () {
+        cartCount = 0;
+      },
+      error: (_, __) {
+        cartCount = 0;
+      },
+    );
     return ClipRRect(
       borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(12), topRight: Radius.circular(12)),
@@ -64,7 +77,21 @@ class _CustomBottomBarState extends ConsumerState<CustomBottomBar> {
               BottomNavigationBarItem(
                   icon: Padding(
                     padding: EdgeInsets.only(top: 4.sp, bottom: 3.sp),
-                    child: SvgPicture.asset("${Constants.imagePath}cart.svg"),
+                    child: Badge(
+                      label: Text("$cartCount"), // or your dynamic value
+                      largeSize: 13.sp,
+                      smallSize: 13.sp,
+                      textColor: AppTheme.textColor,
+                      backgroundColor: AppTheme.secondaryColor,
+                      textStyle: AppTheme.lightTheme.textTheme.bodySmall
+                          ?.copyWith(fontSize: 9.sp),
+                      isLabelVisible:
+                          cartCount > 0, // hides badge when count is 0
+                      child: SvgPicture.asset(
+                        "${Constants.imagePath}cart.svg",
+                        height: 18.sp,
+                      ),
+                    ),
                   ),
                   label: localization.cart,
                   activeIcon: Padding(
@@ -138,6 +165,7 @@ class _CustomBottomBarState extends ConsumerState<CustomBottomBar> {
         scaffoldKey.currentState?.openDrawer();
         break;
       case 4:
+        context.push("/horoscope_chat");
         break;
     }
   }
@@ -866,59 +894,100 @@ class _CustomBottomBarState extends ConsumerState<CustomBottomBar> {
                             children: [
                               /// Subcategory List
                               Padding(
-                                padding: const EdgeInsets.only(top: 10.0),
-                                child: ListView.separated(
+                                padding: EdgeInsets.only(
+                                    top: 10.0.h, left: 16.w, right: 16.w),
+                                child: ListView.builder(
                                   shrinkWrap: true,
                                   physics: const NeverScrollableScrollPhysics(),
-                                  separatorBuilder: (context, index) {
-                                    return const Padding(
-                                      padding: EdgeInsets.only(bottom: 8.0),
-                                      child: Divider(),
-                                    );
-                                  },
+                                  // separatorBuilder: (context, index) {
+                                  //   return const Padding(
+                                  //     padding: EdgeInsets.only(bottom: 8.0),
+                                  //     child: Divider(),
+                                  //   );
+                                  // },
                                   itemCount: subCats.length,
                                   itemBuilder: (context, index) {
                                     return Padding(
-                                      padding:
-                                          const EdgeInsets.only(bottom: 8.0),
-                                      child: GestureDetector(
-                                        onTap: () {
-                                          ref
-                                              .read(indexOfBottomNavbarProvider
-                                                  .notifier)
-                                              .state = 0;
-                                          context.pop();
-                                          context.push("/product", extra: {
-                                            "id": subCats[index].id ?? "",
-                                            "name": subCats[index].title ?? ""
-                                          });
-                                        },
-                                        child: Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 8.0),
-                                          child: Row(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              CustomText(
-                                                subCats[index].title ?? "",
-                                                ThemeData.light()
-                                                    .textTheme
-                                                    .labelSmall!
-                                                    .copyWith(fontSize: 16.sp),
+                                        padding:
+                                            EdgeInsets.only(bottom: 16.0.h),
+                                        child: GestureDetector(
+                                            onTap: () {
+                                              ref
+                                                  .read(
+                                                      indexOfBottomNavbarProvider
+                                                          .notifier)
+                                                  .state = 0;
+                                              context.pop();
+                                              context.push("/product", extra: {
+                                                "id": subCats[index].id ?? "",
+                                                "name":
+                                                    subCats[index].title ?? ""
+                                              });
+                                            },
+                                            child: Container(
+                                              height: 55.h,
+                                              decoration: ShapeDecoration(
+                                                shape: RoundedRectangleBorder(
+                                                  side: BorderSide(
+                                                    width: 1,
+                                                    color:
+                                                        const Color(0xFFF0D3E2),
+                                                  ),
+                                                  borderRadius:
+                                                      BorderRadius.circular(10),
+                                                ),
                                               ),
-                                              Icon(
-                                                Icons.arrow_forward_ios_sharp,
-                                                color: AppTheme.textColor,
-                                                size: 9.sp,
+                                              child: Center(
+                                                child: Padding(
+                                                  padding: EdgeInsets.symmetric(
+                                                      horizontal: 14.0.w),
+                                                  child: Row(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .center,
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .spaceBetween,
+                                                    children: [
+                                                      Text(
+                                                        subCats[index].title ??
+                                                            "",
+                                                        style: AppTheme
+                                                            .lightTheme
+                                                            .textTheme
+                                                            .bodySmall!
+                                                            .copyWith(
+                                                                fontSize: 16.sp,
+                                                                color: AppTheme
+                                                                    .textColor),
+                                                      ),
+                                                      Image.network(
+                                                        subCats[index].icon ??
+                                                            "",
+                                                        height: 27.h,
+                                                        errorBuilder: (context,
+                                                                error,
+                                                                stackTrace) =>
+                                                            Icon(
+                                                          Icons
+                                                              .arrow_forward_ios_sharp,
+                                                          color: AppTheme
+                                                              .textColor,
+                                                          size: 9.sp,
+                                                        ),
+                                                      )
+                                                      // Icon(
+                                                      //   Icons
+                                                      //       .arrow_forward_ios_sharp,
+                                                      //   color:
+                                                      //       AppTheme.textColor,
+                                                      //   size: 9.sp,
+                                                      // ),
+                                                    ],
+                                                  ),
+                                                ),
                                               ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    );
+                                            )));
                                   },
                                 ),
                               ),

@@ -7,7 +7,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   Stripe.publishableKey =
       "pk_test_51PsAs8FUDgzMNUwFE0fdriiCfG0Zy5qEm1dbphRWAijVqINVt8OYVL8IUtkAopfp8TSBUXukI6OHUq9vVrnu6BbS00gDBQzQyc";
@@ -36,6 +36,7 @@ class MyApp extends ConsumerWidget {
     final loc = ref.watch(changeLocaleProvider);
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
+      scaffoldMessengerKey: scaffoldMessengerKey,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       theme: AppTheme.lightTheme,
@@ -47,3 +48,6 @@ class MyApp extends ConsumerWidget {
     );
   }
 }
+
+final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
+    GlobalKey<ScaffoldMessengerState>();

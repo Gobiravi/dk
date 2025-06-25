@@ -71,98 +71,98 @@ class _AppSettingsScreenState extends ConsumerState<AppSettingsScreen> {
                         SizedBox(
                           height: 40.sp,
                         ),
-                        // Language Container
-                        Container(
-                          width: ScreenUtil().screenWidth,
-                          // height: ScreenUtil().setHeight(224),
-                          decoration: ShapeDecoration(
-                            color: AppTheme.appBarAndBottomBarColor,
-                            shape: RoundedRectangleBorder(
-                              side: BorderSide(
-                                  width: 1, color: AppTheme.strokeColor),
-                              borderRadius: BorderRadius.circular(10.sp),
-                            ),
-                          ),
-                          child: Padding(
-                            padding: EdgeInsets.only(
-                                left: 16.0.sp,
-                                right: 16.sp,
-                                top: 21.sp,
-                                bottom: 30.sp),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  localization.choose_language,
-                                  style: AppTheme
-                                      .lightTheme.textTheme.labelMedium
-                                      ?.copyWith(fontWeight: FontWeight.w600),
-                                ),
-                                ConstantMethods.sidemenuItem(
-                                    "${Constants.imagePathAppSettings}israel.svg",
-                                    "עִברִית",
-                                    subtitle: "Hebrew", onTap: () {
-                                  ref
-                                      .read(indexOfSelectedLanguage.notifier)
-                                      .state = 0;
-                                  // ref
-                                  //     .read(changeLocaleProvider.notifier)
-                                  //     .set(Locale("he"));
-                                },
-                                    trailing: indexOfLanguage == 0
-                                        ? Icon(
-                                            Icons.check,
-                                            color: AppTheme.primaryColor,
-                                          )
-                                        : SizedBox()),
-                                ConstantMethods.customDivider(),
-                                // SizedBox(
-                                //   height: 8.sp,
-                                // ),
-                                ConstantMethods.sidemenuItem(
-                                    "${Constants.imagePathAppSettings}us.svg",
-                                    "English (United State)",
-                                    subtitle: "English (United State)",
-                                    onTap: () {
-                                  // ref
-                                  //     .read(changeLocaleProvider.notifier)
-                                  //     .set(Locale("en"));
-                                  ref
-                                      .read(indexOfSelectedLanguage.notifier)
-                                      .state = 1;
-                                },
-                                    trailing: indexOfLanguage == 1
-                                        ? Icon(
-                                            Icons.check,
-                                            color: AppTheme.primaryColor,
-                                          )
-                                        : SizedBox()),
-                                ConstantMethods.customDivider(),
-                                // SizedBox(
-                                //   height: 8.sp,
-                                // ),
-                                ConstantMethods.sidemenuItem(
-                                    "${Constants.imagePathAppSettings}spain.svg",
-                                    "Español",
-                                    subtitle: "Spanish", onTap: () {
-                                  ref
-                                      .read(indexOfSelectedLanguage.notifier)
-                                      .state = 2;
-                                },
-                                    trailing: indexOfLanguage == 2
-                                        ? Icon(
-                                            Icons.check,
-                                            color: AppTheme.primaryColor,
-                                          )
-                                        : SizedBox()),
-                                ConstantMethods.customDivider()
-                              ],
-                            ),
-                          ),
-                        ),
-                        SizedBox(
-                          height: 14.sp,
-                        ),
+                        // // Language Container
+                        // Container(
+                        //   width: ScreenUtil().screenWidth,
+                        //   // height: ScreenUtil().setHeight(224),
+                        //   decoration: ShapeDecoration(
+                        //     color: AppTheme.appBarAndBottomBarColor,
+                        //     shape: RoundedRectangleBorder(
+                        //       side: BorderSide(
+                        //           width: 1, color: AppTheme.strokeColor),
+                        //       borderRadius: BorderRadius.circular(10.sp),
+                        //     ),
+                        //   ),
+                        //   child: Padding(
+                        //     padding: EdgeInsets.only(
+                        //         left: 16.0.sp,
+                        //         right: 16.sp,
+                        //         top: 21.sp,
+                        //         bottom: 30.sp),
+                        //     child: Column(
+                        //       crossAxisAlignment: CrossAxisAlignment.start,
+                        //       children: [
+                        //         Text(
+                        //           localization.choose_language,
+                        //           style: AppTheme
+                        //               .lightTheme.textTheme.labelMedium
+                        //               ?.copyWith(fontWeight: FontWeight.w600),
+                        //         ),
+                        //         ConstantMethods.sidemenuItem(
+                        //             "${Constants.imagePathAppSettings}israel.svg",
+                        //             "עִברִית",
+                        //             subtitle: "Hebrew", onTap: () {
+                        //           ref
+                        //               .read(indexOfSelectedLanguage.notifier)
+                        //               .state = 0;
+                        //           // ref
+                        //           //     .read(changeLocaleProvider.notifier)
+                        //           //     .set(Locale("he"));
+                        //         },
+                        //             trailing: indexOfLanguage == 0
+                        //                 ? Icon(
+                        //                     Icons.check,
+                        //                     color: AppTheme.primaryColor,
+                        //                   )
+                        //                 : SizedBox()),
+                        //         ConstantMethods.customDivider(),
+                        //         // SizedBox(
+                        //         //   height: 8.sp,
+                        //         // ),
+                        //         ConstantMethods.sidemenuItem(
+                        //             "${Constants.imagePathAppSettings}us.svg",
+                        //             "English (United State)",
+                        //             subtitle: "English (United State)",
+                        //             onTap: () {
+                        //           // ref
+                        //           //     .read(changeLocaleProvider.notifier)
+                        //           //     .set(Locale("en"));
+                        //           ref
+                        //               .read(indexOfSelectedLanguage.notifier)
+                        //               .state = 1;
+                        //         },
+                        //             trailing: indexOfLanguage == 1
+                        //                 ? Icon(
+                        //                     Icons.check,
+                        //                     color: AppTheme.primaryColor,
+                        //                   )
+                        //                 : SizedBox()),
+                        //         ConstantMethods.customDivider(),
+                        //         // SizedBox(
+                        //         //   height: 8.sp,
+                        //         // ),
+                        //         ConstantMethods.sidemenuItem(
+                        //             "${Constants.imagePathAppSettings}spain.svg",
+                        //             "Español",
+                        //             subtitle: "Spanish", onTap: () {
+                        //           ref
+                        //               .read(indexOfSelectedLanguage.notifier)
+                        //               .state = 2;
+                        //         },
+                        //             trailing: indexOfLanguage == 2
+                        //                 ? Icon(
+                        //                     Icons.check,
+                        //                     color: AppTheme.primaryColor,
+                        //                   )
+                        //                 : SizedBox()),
+                        //         ConstantMethods.customDivider()
+                        //       ],
+                        //     ),
+                        //   ),
+                        // ),
+                        // SizedBox(
+                        //   height: 14.sp,
+                        // ),
                         // Currency Container
                         Container(
                           width: ScreenUtil().screenWidth,
@@ -262,11 +262,12 @@ class _AppSettingsScreenState extends ConsumerState<AppSettingsScreen> {
                                       : indexOfCurrency == 1
                                           ? "ILS"
                                           : "INR",
-                                  lang: indexOfLanguage == 1
-                                      ? "en"
-                                      : indexOfLanguage == 0
-                                          ? "he"
-                                          : "es",
+                                  lang: "en",
+                                  // indexOfLanguage == 1
+                                  //     ? "en"
+                                  //     : indexOfLanguage == 0
+                                  //         ? "he"
+                                  //         : "es",
                                   userId: userId))
                               .future)
                           .then(
@@ -287,11 +288,13 @@ class _AppSettingsScreenState extends ConsumerState<AppSettingsScreen> {
                                     Constants.isAppSettingsDone, "true");
                                 ref
                                     .read(changeLocaleProvider.notifier)
-                                    .set(Locale(indexOfLanguage == 1
-                                        ? "en"
-                                        : indexOfLanguage == 0
-                                            ? "he"
-                                            : "es"));
+                                    .set(Locale("en"
+                                        // indexOfLanguage == 1
+                                        //   ? "en"
+                                        //   : indexOfLanguage == 0
+                                        //       ? "he"
+                                        //       : "es"
+                                        ));
                                 context.go("/dashboard");
                               },
                             );

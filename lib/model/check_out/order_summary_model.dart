@@ -117,6 +117,7 @@ class OrderSummaryModelDataProduct {
   String? name;
   dynamic price;
   dynamic image;
+  dynamic quantity;
 
   OrderSummaryModelDataProduct(
       {this.productId, this.variationId, this.name, this.price});
@@ -126,6 +127,7 @@ class OrderSummaryModelDataProduct {
     variationId = json['variation_id'];
     name = json['name'];
     image = json['product_image'];
+    quantity = json['quantity'];
     price = json['price'];
   }
 
@@ -136,6 +138,7 @@ class OrderSummaryModelDataProduct {
     data['name'] = name;
     data['price'] = price;
     data['product_image'] = image;
+    data['quantity'] = quantity;
     return data;
   }
 }

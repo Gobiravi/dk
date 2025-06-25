@@ -100,12 +100,6 @@ class AddressListScreen extends HookConsumerWidget {
                                                       .state = datum[index];
                                                 },
                                                 child: Container(
-                                                  width:
-                                                      ScreenUtil().screenWidth,
-                                                  padding: EdgeInsets.symmetric(
-                                                      horizontal: 20.sp,
-                                                      vertical: 16.sp),
-                                                  clipBehavior: Clip.antiAlias,
                                                   decoration: ShapeDecoration(
                                                     color: AppTheme
                                                         .appBarAndBottomBarColor,
@@ -120,30 +114,40 @@ class AddressListScreen extends HookConsumerWidget {
                                                               10.sp),
                                                     ),
                                                   ),
-                                                  child: Row(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .spaceBetween,
-                                                    children: [
-                                                      Row(
-                                                        children: [
-                                                          SvgPicture.asset(
-                                                            "${Constants.imagePathCheckOut}map.svg",
-                                                            height: 22.sp,
-                                                          ),
-                                                          SizedBox(
-                                                              width: 14.sp),
-                                                          SizedBox(
-                                                            width: ScreenUtil()
-                                                                    .screenWidth *
-                                                                0.6,
-                                                            child: Column(
+                                                  child: ExpansionTile(
+                                                    trailing: SizedBox.shrink(),
+                                                    tilePadding:
+                                                        EdgeInsets.symmetric(
+                                                            horizontal: 16.w),
+                                                    collapsedShape:
+                                                        RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              10.sp),
+                                                    ),
+                                                    shape:
+                                                        RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              10.sp),
+                                                    ),
+                                                    title: Row(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .spaceBetween,
+                                                      children: [
+                                                        Row(
+                                                          children: [
+                                                            SvgPicture.asset(
+                                                              "${Constants.imagePathCheckOut}map.svg",
+                                                              height: 22.sp,
+                                                            ),
+                                                            SizedBox(
+                                                                width: 14.sp),
+                                                            Column(
                                                               crossAxisAlignment:
                                                                   CrossAxisAlignment
                                                                       .start,
-                                                              mainAxisAlignment:
-                                                                  MainAxisAlignment
-                                                                      .center,
                                                               children: [
                                                                 Text(
                                                                   datum[index]
@@ -154,12 +158,13 @@ class AddressListScreen extends HookConsumerWidget {
                                                                       .textTheme
                                                                       .headlineLarge
                                                                       ?.copyWith(
-                                                                          fontSize:
-                                                                              14.sp),
+                                                                    fontSize:
+                                                                        14.sp,
+                                                                  ),
                                                                 ),
                                                                 SizedBox(
                                                                     height:
-                                                                        5.sp),
+                                                                        4.sp),
                                                                 Text(
                                                                   "${datum[index].address1 != null ? '${datum[index].address1}, ' : ''}"
                                                                   "${datum[index].address2 != null ? '${datum[index].address2}, ' : ''}"
@@ -182,114 +187,477 @@ class AddressListScreen extends HookConsumerWidget {
                                                                 ),
                                                               ],
                                                             ),
-                                                          ),
-                                                        ],
+                                                          ],
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    children: [
+                                                      Padding(
+                                                        padding: EdgeInsets
+                                                            .symmetric(
+                                                                horizontal:
+                                                                    16.w),
+                                                        child: Column(
+                                                          children: [
+                                                            Row(
+                                                              children: [
+                                                                SizedBox(
+                                                                  width: 35.w,
+                                                                ),
+                                                                Text.rich(
+                                                                  TextSpan(
+                                                                    children: [
+                                                                      TextSpan(
+                                                                        text:
+                                                                            'Mobile: ',
+                                                                        style: AppTheme
+                                                                            .lightTheme
+                                                                            .textTheme
+                                                                            .bodySmall
+                                                                            ?.copyWith(fontSize: 11.sp),
+                                                                      ),
+                                                                      TextSpan(
+                                                                        text: datum[index].phone ??
+                                                                            "",
+                                                                        style: AppTheme
+                                                                            .lightTheme
+                                                                            .textTheme
+                                                                            .bodySmall
+                                                                            ?.copyWith(
+                                                                                fontSize: 11.sp,
+                                                                                fontWeight: FontWeight.w600),
+                                                                      ),
+                                                                    ],
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                            SizedBox(
+                                                                height: 12.h),
+                                                            Row(
+                                                              children: [
+                                                                SizedBox(
+                                                                  width: 35.w,
+                                                                ),
+                                                                InkWell(
+                                                                  onTap: () {
+                                                                    ref
+                                                                        .read(selectedAddresId
+                                                                            .notifier)
+                                                                        .state = datum[index]
+                                                                            .id ??
+                                                                        0;
+                                                                    ref
+                                                                        .read(selectedAddresObject
+                                                                            .notifier)
+                                                                        .update((_) =>
+                                                                            datum[index]);
+                                                                    ref
+                                                                        .read(currentDefaultAddressProvider
+                                                                            .notifier)
+                                                                        .update((_) =>
+                                                                            datum[index]);
+                                                                    ConstantMethods.showSnackbar(
+                                                                        context,
+                                                                        "Delivery Address changed to default");
+                                                                  },
+                                                                  child:
+                                                                      Container(
+                                                                    width: 94.w,
+                                                                    height:
+                                                                        29.h,
+                                                                    decoration:
+                                                                        ShapeDecoration(
+                                                                      color: AppTheme
+                                                                          .subTextColor,
+                                                                      shape: RoundedRectangleBorder(
+                                                                          borderRadius:
+                                                                              BorderRadius.circular(8.r)),
+                                                                    ),
+                                                                    child:
+                                                                        Center(
+                                                                      child:
+                                                                          Text(
+                                                                        'Deliver Here',
+                                                                        style: AppTheme
+                                                                            .lightTheme
+                                                                            .textTheme
+                                                                            .bodyMedium
+                                                                            ?.copyWith(
+                                                                          color:
+                                                                              AppTheme.appBarAndBottomBarColor,
+                                                                          fontSize:
+                                                                              10.sp,
+                                                                        ),
+                                                                      ),
+                                                                    ),
+                                                                  ),
+                                                                ),
+                                                                SizedBox(
+                                                                  width: 10.w,
+                                                                ),
+                                                                InkWell(
+                                                                  onTap: () {
+                                                                    ref
+                                                                        .read(firstNameProviderAddress
+                                                                            .notifier)
+                                                                        .state = datum[index]
+                                                                            .firstName ??
+                                                                        "";
+                                                                    ref
+                                                                        .read(lastNameProviderAddress
+                                                                            .notifier)
+                                                                        .state = datum[index]
+                                                                            .lastName ??
+                                                                        "";
+                                                                    ref
+                                                                        .read(emailProviderAddress
+                                                                            .notifier)
+                                                                        .state = datum[index]
+                                                                            .firstName ??
+                                                                        "";
+                                                                    ref
+                                                                        .read(phoneProviderAddress
+                                                                            .notifier)
+                                                                        .state = datum[index]
+                                                                            .phone ??
+                                                                        "";
+                                                                    // ref.read(selectedCountryProvider);
+                                                                    ref
+                                                                        .read(countryRegionProvider
+                                                                            .notifier)
+                                                                        .state = datum[index]
+                                                                            .country ??
+                                                                        "";
+                                                                    ref
+                                                                        .read(streetAddressProvider
+                                                                            .notifier)
+                                                                        .state = datum[index]
+                                                                            .address1 ??
+                                                                        "";
+                                                                    ref
+                                                                        .read(appartmentProvider
+                                                                            .notifier)
+                                                                        .state = datum[index]
+                                                                            .address2 ??
+                                                                        "";
+                                                                    ref
+                                                                        .read(postalCodeProvider
+                                                                            .notifier)
+                                                                        .state = datum[index]
+                                                                            .postcode ??
+                                                                        "";
+                                                                    ref
+                                                                        .read(townCityProvider
+                                                                            .notifier)
+                                                                        .state = datum[index]
+                                                                            .city ??
+                                                                        "";
+                                                                    context.push(
+                                                                        "/address_widget");
+                                                                  },
+                                                                  child:
+                                                                      Container(
+                                                                          height:
+                                                                              29,
+                                                                          padding: const EdgeInsets
+                                                                              .symmetric(
+                                                                              horizontal:
+                                                                                  14,
+                                                                              vertical:
+                                                                                  8),
+                                                                          decoration:
+                                                                              ShapeDecoration(
+                                                                            shape:
+                                                                                RoundedRectangleBorder(
+                                                                              side: BorderSide(
+                                                                                width: 1,
+                                                                                color: const Color(0xFF393939),
+                                                                              ),
+                                                                              borderRadius: BorderRadius.circular(6),
+                                                                            ),
+                                                                          ),
+                                                                          child:
+                                                                              Center(
+                                                                            child: Text('Edit',
+                                                                                style: AppTheme.lightTheme.textTheme.bodySmall?.copyWith(
+                                                                                  fontSize: 10.sp,
+                                                                                )),
+                                                                          )),
+                                                                ),
+                                                                Spacer(),
+                                                                InkWell(
+                                                                  onTap: () {
+                                                                    ref
+                                                                        .read(deleteShippingAddressApiProvider(datum[index].id.toString())
+                                                                            .future)
+                                                                        .then(
+                                                                            (onValue) {
+                                                                      if (onValue
+                                                                          .status!) {
+                                                                        ConstantMethods.showSnackbar(
+                                                                            context,
+                                                                            onValue.message ??
+                                                                                "Shipping address deleted successfully.");
+                                                                        ref.refresh(
+                                                                            getShippingAddressApiProvider);
+                                                                      } else {
+                                                                        if (context
+                                                                            .mounted) {
+                                                                          ConstantMethods.showSnackbar(
+                                                                              context,
+                                                                              onValue.message ?? "");
+                                                                        }
+                                                                      }
+                                                                    });
+                                                                  },
+                                                                  child:
+                                                                      Container(
+                                                                    width: 29.h,
+                                                                    height:
+                                                                        29.h,
+                                                                    decoration:
+                                                                        ShapeDecoration(
+                                                                      shape:
+                                                                          RoundedRectangleBorder(
+                                                                        side:
+                                                                            BorderSide(
+                                                                          width:
+                                                                              1,
+                                                                          color:
+                                                                              AppTheme.subTextColor,
+                                                                        ),
+                                                                        borderRadius:
+                                                                            BorderRadius.circular(4.r),
+                                                                      ),
+                                                                    ),
+                                                                    child:
+                                                                        Center(
+                                                                      child: SvgPicture
+                                                                          .asset(
+                                                                        "${Constants.imagePath}delete.svg",
+                                                                        height:
+                                                                            12.h,
+                                                                        width:
+                                                                            12.h,
+                                                                      ),
+                                                                    ),
+                                                                  ),
+                                                                )
+                                                              ],
+                                                            ),
+                                                            SizedBox(
+                                                              height: 14.h,
+                                                            ),
+                                                          ],
+                                                        ),
                                                       ),
-                                                      Theme(
-                                                        data: Theme.of(context)
-                                                            .copyWith(
-                                                          radioTheme:
-                                                              RadioThemeData(
-                                                            fillColor:
-                                                                WidgetStateProperty
-                                                                    .resolveWith<
-                                                                            Color>(
-                                                                        (states) {
-                                                              if (states.contains(
-                                                                  WidgetState
-                                                                      .selected)) {
-                                                                return AppTheme
-                                                                    .primaryColor; // Selected color
-                                                              }
-                                                              return AppTheme
-                                                                  .strokeColor; // Unselected ring color
-                                                            }),
-                                                          ),
-                                                        ),
-                                                        child: Radio(
-                                                          value:
-                                                              datum[index].id,
-                                                          groupValue:
-                                                              selectedId,
-                                                          onChanged: (value) {
-                                                            print(value);
-                                                            ref
-                                                                .read(selectedAddresId
-                                                                    .notifier)
-                                                                .state = value ?? 0;
-                                                            ref
-                                                                .read(selectedAddresObject
-                                                                    .notifier)
-                                                                .update((_) =>
-                                                                    datum[
-                                                                        index]);
-                                                            ref
-                                                                .read(currentDefaultAddressProvider
-                                                                    .notifier)
-                                                                .update((_) =>
-                                                                    datum[
-                                                                        index]);
-                                                          },
-                                                        ),
-                                                      )
                                                     ],
                                                   ),
                                                 ),
                                               ),
                                             );
+                                            // return Padding(
+                                            //   padding:
+                                            //       EdgeInsets.only(bottom: 16.0),
+                                            //   child: GestureDetector(
+                                            //     onTap: () {
+                                            //       ref
+                                            //           .read(selectedAddresObject
+                                            //               .notifier)
+                                            //           .state = datum[index];
+                                            //     },
+                                            //     child: Container(
+                                            //       width:
+                                            //           ScreenUtil().screenWidth,
+                                            //       padding: EdgeInsets.symmetric(
+                                            //           horizontal: 20.sp,
+                                            //           vertical: 16.sp),
+                                            //       clipBehavior: Clip.antiAlias,
+                                            //       decoration: ShapeDecoration(
+                                            //         color: AppTheme
+                                            //             .appBarAndBottomBarColor,
+                                            //         shape:
+                                            //             RoundedRectangleBorder(
+                                            //           side: BorderSide(
+                                            //               width: 1,
+                                            //               color: AppTheme
+                                            //                   .strokeColor),
+                                            //           borderRadius:
+                                            //               BorderRadius.circular(
+                                            //                   10.sp),
+                                            //         ),
+                                            //       ),
+                                            //       child: Row(
+                                            //         mainAxisAlignment:
+                                            //             MainAxisAlignment
+                                            //                 .spaceBetween,
+                                            //         children: [
+                                            //           Row(
+                                            //             children: [
+                                            //               SvgPicture.asset(
+                                            //                 "${Constants.imagePathCheckOut}map.svg",
+                                            //                 height: 22.sp,
+                                            //               ),
+                                            //               SizedBox(
+                                            //                   width: 14.sp),
+                                            //               SizedBox(
+                                            //                 width: ScreenUtil()
+                                            //                         .screenWidth *
+                                            //                     0.6,
+                                            //                 child: Column(
+                                            //                   crossAxisAlignment:
+                                            //                       CrossAxisAlignment
+                                            //                           .start,
+                                            //                   mainAxisAlignment:
+                                            //                       MainAxisAlignment
+                                            //                           .center,
+                                            //                   children: [
+                                            //                     Text(
+                                            //                       datum[index]
+                                            //                               .firstName ??
+                                            //                           "",
+                                            //                       style: AppTheme
+                                            //                           .lightTheme
+                                            //                           .textTheme
+                                            //                           .headlineLarge
+                                            //                           ?.copyWith(
+                                            //                               fontSize:
+                                            //                                   14.sp),
+                                            //                     ),
+                                            //                     SizedBox(
+                                            //                         height:
+                                            //                             5.sp),
+                                            //                     Text(
+                                            //                       "${datum[index].address1 != null ? '${datum[index].address1}, ' : ''}"
+                                            //                       "${datum[index].address2 != null ? '${datum[index].address2}, ' : ''}"
+                                            //                       "${datum[index].city != null ? '${datum[index].city}, ' : ''}"
+                                            //                       "${datum[index].country ?? "---"}",
+                                            //                       style: AppTheme
+                                            //                           .lightTheme
+                                            //                           .textTheme
+                                            //                           .bodyLarge
+                                            //                           ?.copyWith(
+                                            //                         fontSize:
+                                            //                             14.sp,
+                                            //                         color: AppTheme
+                                            //                             .teritiaryTextColor,
+                                            //                       ),
+                                            //                       maxLines: 1,
+                                            //                       overflow:
+                                            //                           TextOverflow
+                                            //                               .ellipsis,
+                                            //                     ),
+                                            //                   ],
+                                            //                 ),
+                                            //               ),
+                                            //             ],
+                                            //           ),
+                                            //           Theme(
+                                            //             data: Theme.of(context)
+                                            //                 .copyWith(
+                                            //               radioTheme:
+                                            //                   RadioThemeData(
+                                            //                 fillColor:
+                                            //                     WidgetStateProperty
+                                            //                         .resolveWith<
+                                            //                                 Color>(
+                                            //                             (states) {
+                                            //                   if (states.contains(
+                                            //                       WidgetState
+                                            //                           .selected)) {
+                                            //                     return AppTheme
+                                            //                         .primaryColor; // Selected color
+                                            //                   }
+                                            //                   return AppTheme
+                                            //                       .strokeColor; // Unselected ring color
+                                            //                 }),
+                                            //               ),
+                                            //             ),
+                                            //             child: Radio(
+                                            //               value:
+                                            //                   datum[index].id,
+                                            //               groupValue:
+                                            //                   selectedId,
+                                            //               onChanged: (value) {
+                                            //                 print(value);
+                                            //                 ref
+                                            //                     .read(selectedAddresId
+                                            //                         .notifier)
+                                            //                     .state = value ?? 0;
+                                            //                 ref
+                                            //                     .read(selectedAddresObject
+                                            //                         .notifier)
+                                            //                     .update((_) =>
+                                            //                         datum[
+                                            //                             index]);
+                                            //                 ref
+                                            //                     .read(currentDefaultAddressProvider
+                                            //                         .notifier)
+                                            //                     .update((_) =>
+                                            //                         datum[
+                                            //                             index]);
+                                            //               },
+                                            //             ),
+                                            //           )
+                                            //         ],
+                                            //       ),
+                                            //     ),
+                                            //   ),
+                                            // );
                                           },
                                         ),
                                       ],
                                     ),
                                   ),
                                 ),
-                                Padding(
-                                  padding:
-                                      EdgeInsets.symmetric(horizontal: 14.sp),
-                                  child: InkWell(
-                                    onTap: () {
-                                      context.push("/address_widget");
-                                    },
-                                    child: Container(
-                                      width: ScreenUtil().screenWidth,
-                                      height: 38.sp,
-                                      clipBehavior: Clip.antiAlias,
-                                      decoration: ShapeDecoration(
-                                        shape: RoundedRectangleBorder(
-                                          side: BorderSide(
-                                              width: 1,
-                                              color: AppTheme.subTextColor),
-                                          borderRadius:
-                                              BorderRadius.circular(10.sp),
-                                        ),
-                                      ),
-                                      child: Center(
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            SvgPicture.asset(
-                                              "${Constants.imagePathCheckOut}add.svg",
-                                              height: 14.sp,
-                                            ),
-                                            SizedBox(
-                                              width: 8.sp,
-                                            ),
-                                            Text(
-                                              'Add New Address',
-                                              style: AppTheme.lightTheme
-                                                  .textTheme.titleMedium
-                                                  ?.copyWith(
-                                                fontSize: 14.sp,
-                                                color: AppTheme.subTextColor,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
+                                // Padding(
+                                //   padding:
+                                //       EdgeInsets.symmetric(horizontal: 14.sp),
+                                //   child: InkWell(
+                                //     onTap: () {
+                                //       context.push("/address_widget");
+                                //     },
+                                //     child: Container(
+                                //       width: ScreenUtil().screenWidth,
+                                //       height: 38.sp,
+                                //       clipBehavior: Clip.antiAlias,
+                                //       decoration: ShapeDecoration(
+                                //         shape: RoundedRectangleBorder(
+                                //           side: BorderSide(
+                                //               width: 1,
+                                //               color: AppTheme.subTextColor),
+                                //           borderRadius:
+                                //               BorderRadius.circular(10.sp),
+                                //         ),
+                                //       ),
+                                //       child: Center(
+                                //         child: Row(
+                                //           mainAxisAlignment:
+                                //               MainAxisAlignment.center,
+                                //           children: [
+                                //             SvgPicture.asset(
+                                //               "${Constants.imagePathCheckOut}add.svg",
+                                //               height: 14.sp,
+                                //             ),
+                                //             SizedBox(
+                                //               width: 8.sp,
+                                //             ),
+                                //             Text(
+                                //               'Add New Address',
+                                //               style: AppTheme.lightTheme
+                                //                   .textTheme.titleMedium
+                                //                   ?.copyWith(
+                                //                 fontSize: 14.sp,
+                                //                 color: AppTheme.subTextColor,
+                                //               ),
+                                //             ),
+                                //           ],
+                                //         ),
+                                //       ),
+                                //     ),
+                                //   ),
+                                // ),
                                 SizedBox(
                                   height: 80.sp,
                                 )
@@ -304,7 +672,44 @@ class AddressListScreen extends HookConsumerWidget {
                       ),
                     );
                   } else {
-                    return _buildSaveButton(ref, datum, context);
+                    return Stack(
+                      children: [
+                        Align(
+                          alignment: Alignment.center,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              SvgPicture.asset(
+                                  "${Constants.imagePath}no_address.svg"),
+                              SizedBox(
+                                height: 16.h,
+                              ),
+                              Text(
+                                'No addresses added !',
+                                style: AppTheme
+                                    .lightTheme.textTheme.headlineLarge
+                                    ?.copyWith(fontSize: 18.sp),
+                              ),
+                              SizedBox(
+                                height: 14.h,
+                              ),
+                              SizedBox(
+                                width: 260.w,
+                                child: Text(
+                                  'There are no addresses added to this account. Please add an address.',
+                                  textAlign: TextAlign.center,
+                                  style: AppTheme.lightTheme.textTheme.bodySmall
+                                      ?.copyWith(fontSize: 14.sp),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Align(
+                            alignment: Alignment.bottomCenter,
+                            child: _buildSaveButton(ref, datum, context)),
+                      ],
+                    );
                   }
                 case false:
                   if (data.statusCode == 402) {
@@ -377,32 +782,33 @@ class AddressListScreen extends HookConsumerWidget {
       BuildContext context) {
     return InkWell(
       onTap: () {
-        final selectedAddress = data.firstWhere(
-          (element) => element.id == ref.read(selectedAddresId),
-          orElse: () => GetShippingAddressModelData(),
-        );
+        context.push("/address_widget");
+        // final selectedAddress = data.firstWhere(
+        //   (element) => element.id == ref.read(selectedAddresId),
+        //   orElse: () => GetShippingAddressModelData(),
+        // );
 
-        ref
-            .read(putShippingAddressApiProvider(ShippingAddressParam(
-                    firstName: selectedAddress.firstName ?? "",
-                    lastName: selectedAddress.lastName ?? "",
-                    email: "",
-                    isDefault: true,
-                    phone: selectedAddress.phone ?? "",
-                    country: selectedAddress.country ?? "",
-                    id: selectedAddress.id.toString()))
-                .future)
-            .then((onValue) {
-          if (onValue.status!) {
-            ref.read(selectedAddresObject.notifier).state = selectedAddress;
-            print("Selected Address ID: ${ref.read(selectedAddresId)}");
-            print("Saved Address Object: ${ref.read(selectedAddresObject)}");
-          } else {
-            if (context.mounted) {
-              ConstantMethods.showSnackbar(context, onValue.message ?? "");
-            }
-          }
-        });
+        // ref
+        //     .read(putShippingAddressApiProvider(ShippingAddressParam(
+        //             firstName: selectedAddress.firstName ?? "",
+        //             lastName: selectedAddress.lastName ?? "",
+        //             email: "",
+        //             isDefault: true,
+        //             phone: selectedAddress.phone ?? "",
+        //             country: selectedAddress.country ?? "",
+        //             id: selectedAddress.id.toString()))
+        //         .future)
+        //     .then((onValue) {
+        //   if (onValue.status!) {
+        //     ref.read(selectedAddresObject.notifier).state = selectedAddress;
+        //     print("Selected Address ID: ${ref.read(selectedAddresId)}");
+        //     print("Saved Address Object: ${ref.read(selectedAddresObject)}");
+        //   } else {
+        //     if (context.mounted) {
+        //       ConstantMethods.showSnackbar(context, onValue.message ?? "");
+        //     }
+        //   }
+        // });
       },
       child: Container(
         height: 60.sp,
@@ -427,7 +833,7 @@ class AddressListScreen extends HookConsumerWidget {
             ),
             child: Center(
               child: Text(
-                "Save Address",
+                "Add Address",
                 style: AppTheme.lightTheme.textTheme.bodySmall?.copyWith(
                   color: AppTheme.appBarAndBottomBarColor,
                   fontSize: 14.sp,

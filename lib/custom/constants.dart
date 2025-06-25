@@ -1,26 +1,41 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dikla_spirit/custom/api.dart';
 import 'package:dikla_spirit/custom/app_theme.dart';
-import 'package:dikla_spirit/l10n/app_localizations.dart';
+import 'package:dikla_spirit/custom/secure_storage.dart';
+import 'package:dikla_spirit/model/add_to_cart_model.dart';
+// import 'package:dikla_spirit/l10n/app_localizations.dart';
+import 'package:dikla_spirit/model/auth/login_model.dart';
 import 'package:dikla_spirit/model/dashboard_model.dart';
+import 'package:dikla_spirit/model/orders/my_orders_model.dart';
 import 'package:dikla_spirit/model/product_details_model.dart';
 import 'package:dikla_spirit/model/providers.dart';
 import 'package:dikla_spirit/model/wishlist_model.dart';
+import 'package:dikla_spirit/screens/orders/my_orders_screen.dart';
 import 'package:dikla_spirit/screens/product/product_details_screen.dart';
 import 'package:dikla_spirit/screens/wishlist/state/wishlist_state.dart';
+import 'package:dikla_spirit/widgets/auth/google_signin.dart';
+import 'package:dio/dio.dart';
+import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
+import 'package:flutter_rating_stars/flutter_rating_stars.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class Constants {
   static String baseUrl = "https://diklaspirit.bee1.cloud//wp-json/ds/v1/";
   static String loginUrl = "login";
+  static String socialLoginUrl = "social-login";
+  static String fcmTokenUrl = "save-fcm-token";
   static String onboardingUrl = "splash-screen";
   static String signUpUrl = "signup";
   static String forgotPasswordUrl = "forgot-password";
@@ -34,9 +49,11 @@ class Constants {
   static String productListUrl = "products-by-category/";
   static String productFilterOptionsUrl = "filter-by-category/";
   static String productDetailsUrl = "product/";
+  static String notifyMe = "notify-me/";
   static String userAppSettingUrl = "user-app-setting";
   static String setUserAppSettingUrl = "update-basic";
   static String addToWishList = "add-wishlist";
+  static String moveToWishList = "move-to-wishlist";
   static String addToCart = "add-to-cart";
   static String removeFromCart = "remove-from-cart";
   static String updateProfileUrl = "profile";
@@ -44,6 +61,7 @@ class Constants {
   static String helpQuestionsUrl = "help-questions";
   static String shippingAddress = "shipping-addresses";
   static String orderSummay = "checkout-details";
+  static String checkout = "checkout";
   static String myOrdersUrl = "my-orders";
   static String searchUrl = "search?search=";
   static String searcBghUrl = "search-screen";
@@ -51,6 +69,9 @@ class Constants {
   static String profileUrl = "profile";
   static String ordersDetailsUrl = "order-detail-by-item/";
   static String submitRequestUrl = "help";
+  static String horoscopeApiUrl = "get-horoscope";
+  static String zodiacCompApiUrl = "get-zodiac-comp";
+  static String addReviewUrl = "add-review";
 
   // ================= Secure Storage Keys ========================
   static String isAppSettingsDone = "isAppSettingDone";
@@ -76,6 +97,7 @@ class Constants {
   static String imagePathOrders = "assets/images/orders/";
   static String imagePathHelp = "assets/images/help/";
   static String imagePathZodiacSign = "assets/images/zodiac/";
+  static String imagePathHoroscope = "assets/images/horoscope/";
 // ==================================================
 }
 
@@ -112,9 +134,145 @@ class ConstantMethods {
     );
   }
 
-  static void wishlistPopUP(
-      BuildContext context, AsyncValue<WishlistModel> wishlistData) {
-    Currency? currency;
+  static void saveLoginData(LoginModelData response, WidgetRef ref) async {
+    await SecureStorage.save('token', response.token ?? "");
+    await SecureStorage.save('refresh_token', response.refreshToken ?? "");
+    await SecureStorage.save('user_id', response.userId.toString());
+    // if (response.country!.isNotEmpty) {}
+    if (response.currency != null && response.currency!.isNotEmpty) {
+      ref.read(currentCurrencySymbolProvider.notifier).state =
+          CurrencySymbol.fromString(response.currency ?? "").symbol;
+      await SecureStorage.save(Constants.isAppSettingsDone, "true");
+    } else {
+      ref.read(currentCurrencySymbolProvider.notifier).state = "\$";
+    }
+    if (response.language != null && response.language!.isNotEmpty) {
+      ref
+          .read(changeLocaleProvider.notifier)
+          .set(Locale(response.language ?? "en"));
+    } else {
+      ref.read(changeLocaleProvider.notifier).set(Locale("en"));
+    }
+  }
+
+  static void googleSignIn(WidgetRef ref) async {
+    final user = await GoogleSignInService.signIn();
+    if (user != null) {
+      ref
+          .read(socialLoginApiProvider(SocialLoginParams(user.email, user.id))
+              .future)
+          .then((loginModel) {
+        if (loginModel.statusCode == 200) {
+          if (loginModel.data != null) {
+            ConstantMethods.saveLoginData(loginModel.data!, ref);
+            ConstantMethods.showAlertBottomSheet(
+                context: ref.context,
+                title: loginModel.message ?? "",
+                message: "Please wait you will be redirect to \nthe home page.",
+                icon: "${Constants.imagePathAuth}success_new.svg",
+                isLoading: true);
+            Future.delayed(Duration(seconds: 3)).then(
+              (value) async {
+                ///Enable this to Change language
+                String? isAppSettingsDone =
+                    await SecureStorage.get(Constants.isAppSettingsDone);
+
+                if (isAppSettingsDone != null &&
+                    isAppSettingsDone.toLowerCase() == "true") {
+                  ref.context.go("/dashboard");
+                } else {
+                  ref.context.go("/appSettings");
+                }
+              },
+            );
+          }
+          ref.read(isLoadingProvider.notifier).state = false;
+        } else {
+          ConstantMethods.showAlertBottomSheet(
+              context: ref.context,
+              title: "Failed",
+              message: loginModel.message ?? "",
+              isLoading: true,
+              icon: "${Constants.imagePathAuth}failed_new.svg");
+          ref.read(isLoadingProvider.notifier).state = false;
+        }
+      }).catchError((error) {
+        ConstantMethods.showSnackbar(ref.context, error.toString());
+        ref.read(isLoadingProvider.notifier).state = false;
+      });
+      print(user.displayName);
+      print(user.email);
+      print(user.photoUrl);
+    }
+  }
+
+  static Future<void> signInWithFacebook(WidgetRef ref) async {
+    try {
+      final LoginResult result = await FacebookAuth.instance.login();
+
+      if (result.status == LoginStatus.success) {
+        final userData = await FacebookAuth.instance.getUserData();
+        print("🟢 Facebook Login Success:");
+        print("👤 Name: ${userData['name']}");
+        print("📧 Email: ${userData['email']}");
+        print("🆔 ID: ${userData['id']}");
+        print("🖼️ Picture: ${userData['picture']['data']['url']}");
+        ref
+            .read(socialLoginApiProvider(
+                    SocialLoginParams(userData['email'], userData['id']))
+                .future)
+            .then((loginModel) {
+          if (loginModel.statusCode == 200) {
+            if (loginModel.data != null) {
+              ConstantMethods.saveLoginData(loginModel.data!, ref);
+              ConstantMethods.showAlertBottomSheet(
+                  context: ref.context,
+                  title: loginModel.message ?? "",
+                  message:
+                      "Please wait you will be redirect to \nthe home page.",
+                  icon: "${Constants.imagePathAuth}success_new.svg",
+                  isLoading: true);
+              Future.delayed(Duration(seconds: 3)).then(
+                (value) async {
+                  ///Enable this to Change language
+                  String? isAppSettingsDone =
+                      await SecureStorage.get(Constants.isAppSettingsDone);
+
+                  if (isAppSettingsDone != null &&
+                      isAppSettingsDone.toLowerCase() == "true") {
+                    ref.context.go("/dashboard");
+                  } else {
+                    ref.context.go("/appSettings");
+                  }
+                },
+              );
+            }
+            ref.read(isLoadingProvider.notifier).state = false;
+          } else {
+            ConstantMethods.showAlertBottomSheet(
+                context: ref.context,
+                title: "Failed",
+                message: loginModel.message ?? "",
+                isLoading: true,
+                icon: "${Constants.imagePathAuth}failed_new.svg");
+            ref.read(isLoadingProvider.notifier).state = false;
+          }
+        }).catchError((error) {
+          ConstantMethods.showSnackbar(ref.context, error.toString());
+          ref.read(isLoadingProvider.notifier).state = false;
+        });
+      } else {
+        print("🔴 Facebook Login Failed: ${result.message}");
+        ConstantMethods.showSnackbar(ref.context, "Facebook Login Failed");
+      }
+    } catch (e) {
+      ConstantMethods.showSnackbar(ref.context, "Facebook Login Failed");
+      print("❌ Facebook Login Exception: $e");
+    }
+  }
+
+  static void wishlistPopUP(BuildContext context,
+      AsyncValue<WishlistModel> wishlistData, String? currency) {
     showModalBottomSheet(
       isDismissible: false,
       context: context,
@@ -199,8 +357,8 @@ class ConstantMethods {
                                             .read(wishlistProvider.notifier)
                                             .initializeWishList(
                                                 data.data?.wishlist ?? []);
-                                        currency = CurrencySymbol.fromString(
-                                            data.data?.currency ?? "USD");
+                                        // currency = CurrencySymbol.fromString(
+                                        //     data.data?.currency ?? "USD");
                                       },
                                     );
                                     return data.data?.wishlist != null
@@ -274,8 +432,7 @@ class ConstantMethods {
                                                                   height: 4.sp,
                                                                 ),
                                                                 Text(
-                                                                  "${currency?.symbol ?? ""} ${data.data?.wishlist![index].price.toString()}" ??
-                                                                      "",
+                                                                  "$currency ${data.data?.wishlist![index].price.toString() ?? ""}",
                                                                   style: AppTheme
                                                                       .lightTheme
                                                                       .textTheme
@@ -289,6 +446,9 @@ class ConstantMethods {
                                                           ],
                                                         ),
                                                         Row(
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .center,
                                                           children: [
                                                             IconButton(
                                                                 onPressed: () {
@@ -327,12 +487,15 @@ class ConstantMethods {
                                                                           data.data!.wishlist?[index].template ??
                                                                               0,
                                                                           data.data!.wishlist?[index].title ??
+                                                                              "",
+                                                                          currency ??
+                                                                              "",
+                                                                          data.data!.wishlist?[index].id.toString() ??
                                                                               "");
                                                                     }
                                                                   } else {
                                                                     ref
-                                                                        .refresh(addToCartApiProvider(data.data!.wishlist?[index].id.toString() ??
-                                                                                "0")
+                                                                        .refresh(addToCartApiProvider(AddtoCartParam(productId: data.data!.wishlist?[index].id.toString() ?? "0"))
                                                                             .future)
                                                                         .then(
                                                                             (value) {
@@ -636,6 +799,47 @@ class ConstantMethods {
     );
   }
 
+  static Future<void> downloadFileToDevice(
+      String url, String fileName, BuildContext context) async {
+    try {
+      // Request storage permission for Android
+      if (Platform.isAndroid) {
+        final status = await Permission.storage.request();
+        if (!status.isGranted) {
+          print("Storage permission denied");
+          openAppSettings();
+          return;
+        }
+      }
+
+      // Get device directory
+      final dir = Platform.isAndroid
+          ? await getExternalStorageDirectory()
+          : await getApplicationDocumentsDirectory();
+
+      final filePath = "${dir!.path}/$fileName";
+
+      final dio = Dio();
+      await dio.download(
+        url,
+        filePath,
+        onReceiveProgress: (received, total) {
+          if (total != -1) {
+            print(
+                "Downloading: ${(received / total * 100).toStringAsFixed(0)}%");
+          }
+        },
+      );
+      if (context.mounted) {
+        showSnackbar(context, "File Downloaded Successfully: $filePath");
+      }
+    } catch (e) {
+      if (context.mounted) {
+        showSnackbar(context, "Download Failed");
+      }
+    }
+  }
+
   static Widget sidemenuItem(
     String icon,
     String title, {
@@ -855,7 +1059,6 @@ class ConstantMethods {
                                                     .read(wishlistProvider)
                                                     .fastResults[index!];
 
-    // Step 1: Optimistic update
     if (index != null) {
       if (listType == WishListType.wishList) {
         ref.read(wishlistProvider.notifier).removeFromWishlist(index);
@@ -869,7 +1072,6 @@ class ConstantMethods {
     }
 
     try {
-      // Step 2: Call the API
       var encodedParam = '';
       // if (listType == WishListType.productDetail) {
       //   encodedParam = json.encode({
@@ -916,268 +1118,539 @@ class ConstantMethods {
     }
   }
 
-  static void showVariation(BuildContext context, List<Variation> variation,
-      String title, int template, String itemTitle) {
-    final localization = AppLocalizations.of(context);
+  static void showFeedbackPopup(
+      BuildContext context, MyOrdersListModelOrders data) {
     showModalBottomSheet(
-      isDismissible: false,
+      isScrollControlled: true,
       context: context,
-      isScrollControlled: true, // Ensures the sheet can expand properly
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return FeedbackPopup(data: data);
+      },
+    );
+  }
+
+  static void showVariation(
+      BuildContext context,
+      List<Variation> variation,
+      String title,
+      int template,
+      String itemTitle,
+      String currency,
+      String productId) {
+    // final localization = AppLocalizations.of(context);
+    showModalBottomSheet(
+      context: context,
+      isDismissible: false,
+      isScrollControlled: true,
+      backgroundColor: AppTheme.appBarAndBottomBarColor,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16.r)),
+      ),
       builder: (context) {
         return Consumer(
           builder: (context, ref, child) {
             final selectedVariation = ref.watch(selectedVariationOfWishList);
-            return DraggableScrollableSheet(
-              expand: false,
-              initialChildSize: 0.3,
-              minChildSize: 0.3,
-              maxChildSize: 0.9,
-              builder: (context, scrollController) {
-                return Container(
-                  decoration: const BoxDecoration(
-                      color: AppTheme.appBarAndBottomBarColor,
-                      borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(12.0),
-                          topRight: Radius.circular(12.0))),
-                  child: SingleChildScrollView(
-                    controller: scrollController,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+                top: 16,
+                left: 16,
+                right: 16,
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        // Close button & title
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            IconButton(
-                                onPressed: () {},
-                                icon: const Icon(
-                                  Icons.close,
-                                  color: Colors.transparent,
-                                )),
-                            Text(
-                              title,
-                              style: AppTheme.lightTheme.textTheme.labelMedium
-                                  ?.copyWith(
-                                      color: AppTheme.primaryColor,
-                                      fontWeight: FontWeight.w500),
-                            ),
-                            IconButton(
-                                onPressed: () {
-                                  ref
-                                      .read(
-                                          selectedVariationOfWishList.notifier)
-                                      .state = Variation();
-                                  context.pop();
-                                },
-                                icon: SvgPicture.asset(
-                                  "${Constants.imagePath}close_variation.svg",
-                                  height: 11.sp,
-                                ))
-                          ],
-                        ),
-                        Divider(),
-                        SizedBox(height: 28.sp),
-
-                        // Variation Selection
-                        Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 18.sp),
-                          child: Wrap(
-                            spacing: 8.0,
-                            runSpacing: 8.0,
-                            children: variation.map((variation) {
-                              return InkWell(
-                                onTap: () {
-                                  ref
-                                      .watch(
-                                          selectedVariationOfWishList.notifier)
-                                      .state = variation;
-                                },
-                                child: Container(
-                                  padding: EdgeInsets.all(8.0.sp),
-                                  decoration: ShapeDecoration(
-                                      color: AppTheme.appBarAndBottomBarColor,
-                                      shape: RoundedRectangleBorder(
-                                        side: ref
-                                                    .watch(
-                                                        selectedVariationOfWishList)
-                                                    .id ==
-                                                variation.id
-                                            ? BorderSide(
-                                                width: 0.8,
-                                                color: AppTheme.textColor)
-                                            : BorderSide(
-                                                width: 0.8,
-                                                color: AppTheme.strokeColor),
-                                        borderRadius:
-                                            BorderRadius.circular(3.sp),
-                                      ),
-                                      shadows: [
-                                        BoxShadow(
-                                          color: AppTheme.textColor
-                                              .withOpacity(0.1),
-                                        )
-                                      ]),
-                                  child: Text(
-                                    variation.termName ?? "",
-                                    style: AppTheme
-                                        .lightTheme.textTheme.bodySmall
-                                        ?.copyWith(fontSize: 14.sp),
-                                  ),
-                                ),
-                              );
-                            }).toList(),
+                        IconButton(
+                            onPressed: () {},
+                            icon: const Icon(
+                              Icons.close,
+                              color: Colors.transparent,
+                            )),
+                        Text(
+                          title,
+                          style: AppTheme.lightTheme.textTheme.labelMedium
+                              ?.copyWith(
+                            color: AppTheme.primaryColor,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
-                        SizedBox(height: 14.sp),
-
-                        // Price
-                        if (selectedVariation.price != null)
-                          Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 19.sp),
-                            child: Text(
-                              '\$ ${selectedVariation.price}',
-                              style: AppTheme.lightTheme.textTheme.titleSmall,
-                            ),
-                          ),
-
-                        // Expected Day
-                        if (template == 3)
-                          Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 18.sp),
-                            child: Column(
-                              children: [
-                                SizedBox(height: 8.sp),
-                                Text.rich(
-                                  TextSpan(
-                                    children: [
-                                      TextSpan(
-                                        text: 'Expected Day',
-                                        style: AppTheme
-                                            .lightTheme.textTheme.titleSmall
-                                            ?.copyWith(
-                                                color: AppTheme.primaryColor,
-                                                fontWeight: FontWeight.w500,
-                                                fontSize: 12.sp),
-                                      ),
-                                      TextSpan(
-                                        text: ' : 30.12.2024',
-                                        style: AppTheme
-                                            .lightTheme.textTheme.titleSmall
-                                            ?.copyWith(
-                                                color: AppTheme.subTextColor,
-                                                fontWeight: FontWeight.w500,
-                                                fontSize: 12.sp),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                SizedBox(height: 8.sp),
-                              ],
-                            ),
-                          ),
-
-                        SizedBox(height: 20.sp),
-
-                        // Add to Bag Button
-                        Center(
-                          child: InkWell(
-                            onTap: () {
-                              if (selectedVariation.id == null) {
-                                showDialog(
-                                  useSafeArea: true,
-                                  barrierDismissible: true,
-                                  context: context,
-                                  builder: (context) {
-                                    return AlertDialog(
-                                      content: Text(
-                                        "Kindly, Select a Variant To Continue.",
-                                        style: AppTheme
-                                            .lightTheme.textTheme.bodyMedium,
-                                      ),
-                                    );
-                                  },
-                                );
-                              } else {
-                                ref.watch(isLoadingProvider.notifier).state =
-                                    true;
-                                ref
-                                    .refresh(addToCartApiProvider(
-                                            selectedVariation.id.toString())
-                                        .future)
-                                    .then((onValue) {
-                                  if (onValue.status!) {
-                                    ref
-                                        .watch(isLoadingProvider.notifier)
-                                        .state = false;
-                                    context.pop();
-                                    if (context.mounted) {
-                                      ConstantMethods.showSnackbar(
-                                          context, onValue.message ?? "");
-
-                                      ref.refresh(myCartApiProvider);
-                                    }
-                                  } else {
-                                    ref
-                                        .watch(isLoadingProvider.notifier)
-                                        .state = false;
-                                    ConstantMethods.showSnackbar(
-                                        context, onValue.message ?? "");
-                                  }
-                                });
-                              }
+                        IconButton(
+                            onPressed: () {
+                              ref
+                                  .read(selectedVariationOfWishList.notifier)
+                                  .state = Variation();
+                              context.pop();
                             },
-                            child: Container(
-                                width: ScreenUtil().screenWidth * 0.9,
-                                height: 36.sp,
-                                decoration: ShapeDecoration(
-                                  color: AppTheme.subTextColor,
-                                  shape: RoundedRectangleBorder(
-                                    side: BorderSide(
-                                        width: 1, color: AppTheme.subTextColor),
-                                    borderRadius: BorderRadius.circular(8.sp),
-                                  ),
-                                ),
-                                child: Consumer(
-                                  builder: (context, ref, child) {
-                                    final loading =
-                                        ref.watch(isLoadingProvider);
-                                    return loading
-                                        ? Padding(
-                                            padding: EdgeInsets.all(8.0.sp),
-                                            child: Center(
-                                              child: CircularProgressIndicator(
-                                                color: AppTheme
-                                                    .appBarAndBottomBarColor,
-                                              ),
-                                            ),
-                                          )
-                                        : Center(
-                                            child: Text(
-                                              "Add to Bag",
-                                              style: AppTheme.lightTheme
-                                                  .textTheme.bodySmall
-                                                  ?.copyWith(
-                                                      color: AppTheme
-                                                          .appBarAndBottomBarColor,
-                                                      fontSize: 14.sp),
-                                            ),
-                                          );
-                                  },
-                                )),
-                          ),
-                        ),
-                        SizedBox(height: 20.sp),
+                            icon: SvgPicture.asset(
+                              "${Constants.imagePath}close_variation.svg",
+                              height: 11.sp,
+                            )),
                       ],
                     ),
-                  ),
-                );
-              },
+                    const Divider(),
+                    SizedBox(height: 20.sp),
+
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 2.sp),
+                      child: Wrap(
+                        spacing: 8.0,
+                        runSpacing: 8.0,
+                        children: variation.map((variation) {
+                          return InkWell(
+                            onTap: () {
+                              ref
+                                  .watch(selectedVariationOfWishList.notifier)
+                                  .state = variation;
+                            },
+                            child: Container(
+                              padding: EdgeInsets.all(8.0.sp),
+                              decoration: ShapeDecoration(
+                                color: AppTheme.appBarAndBottomBarColor,
+                                shape: RoundedRectangleBorder(
+                                  side: ref
+                                              .watch(
+                                                  selectedVariationOfWishList)
+                                              .id ==
+                                          variation.id
+                                      ? BorderSide(
+                                          width: 0.8, color: AppTheme.textColor)
+                                      : BorderSide(
+                                          width: 0.8,
+                                          color: AppTheme.strokeColor),
+                                  borderRadius: BorderRadius.circular(3.sp),
+                                ),
+                                shadows: [
+                                  BoxShadow(
+                                    color: AppTheme.textColor.withOpacity(0.1),
+                                  )
+                                ],
+                              ),
+                              child: Text(
+                                variation.termName ?? "",
+                                style: AppTheme.lightTheme.textTheme.bodySmall
+                                    ?.copyWith(fontSize: 14.sp),
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                    SizedBox(height: 14.sp),
+
+                    // Price
+                    if (selectedVariation.price != null)
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 2.sp),
+                        child: Text(
+                          '$currency ${selectedVariation.price}',
+                          style: AppTheme.lightTheme.textTheme.titleSmall,
+                        ),
+                      ),
+
+                    // Expected Day
+                    if (template == 2)
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 2.sp),
+                        child: Column(
+                          children: [
+                            SizedBox(height: 8.sp),
+                            Text.rich(
+                              TextSpan(
+                                children: [
+                                  TextSpan(
+                                    text: 'Expected Day',
+                                    style: AppTheme
+                                        .lightTheme.textTheme.titleSmall
+                                        ?.copyWith(
+                                      color: AppTheme.primaryColor,
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 12.sp,
+                                    ),
+                                  ),
+                                  TextSpan(
+                                    text: ' : 30.12.2024',
+                                    style: AppTheme
+                                        .lightTheme.textTheme.titleSmall
+                                        ?.copyWith(
+                                      color: AppTheme.subTextColor,
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 12.sp,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            SizedBox(height: 8.sp),
+                          ],
+                        ),
+                      ),
+
+                    SizedBox(height: 20.sp),
+
+                    // Add to Bag Button
+                    Center(
+                      child: InkWell(
+                        onTap: () {
+                          if (selectedVariation.id == null) {
+                            showDialog(
+                              useSafeArea: true,
+                              barrierDismissible: true,
+                              context: context,
+                              builder: (context) {
+                                return AlertDialog(
+                                  content: Text(
+                                    "Kindly, Select a Variant To Continue.",
+                                    style: AppTheme
+                                        .lightTheme.textTheme.bodyMedium,
+                                  ),
+                                );
+                              },
+                            );
+                          } else {
+                            ref.watch(isLoadingProvider.notifier).state = true;
+                            ref
+                                .refresh(addToCartApiProvider(AddtoCartParam(
+                                        productId: productId,
+                                        variationId:
+                                            selectedVariation.id.toString()))
+                                    .future)
+                                .then((onValue) {
+                              ref.watch(isLoadingProvider.notifier).state =
+                                  false;
+                              if (onValue.status!) {
+                                context.pop();
+                                if (context.mounted) {
+                                  ConstantMethods.showSnackbar(
+                                      context, onValue.message ?? "");
+                                  ref.refresh(myCartApiProvider);
+                                }
+                              } else {
+                                ConstantMethods.showSnackbar(
+                                    context, onValue.message ?? "");
+                              }
+                            });
+                          }
+                        },
+                        child: Container(
+                          width: ScreenUtil().screenWidth * 0.9,
+                          height: 36.sp,
+                          decoration: ShapeDecoration(
+                            color: AppTheme.subTextColor,
+                            shape: RoundedRectangleBorder(
+                              side: BorderSide(
+                                  width: 1, color: AppTheme.subTextColor),
+                              borderRadius: BorderRadius.circular(8.sp),
+                            ),
+                          ),
+                          child: Consumer(
+                            builder: (context, ref, child) {
+                              final loading = ref.watch(isLoadingProvider);
+                              return loading
+                                  ? Padding(
+                                      padding: EdgeInsets.all(8.0.sp),
+                                      child: Center(
+                                        child: CircularProgressIndicator(
+                                          color:
+                                              AppTheme.appBarAndBottomBarColor,
+                                        ),
+                                      ),
+                                    )
+                                  : Center(
+                                      child: Text(
+                                        "Add to Bag",
+                                        style: AppTheme
+                                            .lightTheme.textTheme.bodySmall
+                                            ?.copyWith(
+                                          color:
+                                              AppTheme.appBarAndBottomBarColor,
+                                          fontSize: 14.sp,
+                                        ),
+                                      ),
+                                    );
+                            },
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 20.sp),
+                  ],
+                ),
+              ),
             );
           },
         );
       },
     );
   }
+
+  // static void showVariation(BuildContext context, List<Variation> variation,
+  //     String title, int template, String itemTitle) {
+  //   final localization = AppLocalizations.of(context);
+  //   showModalBottomSheet(
+  //     isDismissible: false,
+  //     context: context,
+  //     isScrollControlled: true,
+  //     builder: (context) {
+  //       return Consumer(
+  //         builder: (context, ref, child) {
+  //           final selectedVariation = ref.watch(selectedVariationOfWishList);
+  //           return DraggableScrollableSheet(
+  //             expand: false,
+  //             initialChildSize: 0.3,
+  //             minChildSize: 0.3,
+  //             maxChildSize: 0.9,
+  //             builder: (context, scrollController) {
+  //               return Container(
+  //                 decoration: const BoxDecoration(
+  //                     color: AppTheme.appBarAndBottomBarColor,
+  //                     borderRadius: BorderRadius.only(
+  //                         topLeft: Radius.circular(12.0),
+  //                         topRight: Radius.circular(12.0))),
+  //                 child: SingleChildScrollView(
+  //                   controller: scrollController,
+  //                   child: Column(
+  //                     crossAxisAlignment: CrossAxisAlignment.start,
+  //                     children: [
+  //                       // Close button & title
+  //                       Row(
+  //                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //                         children: [
+  //                           IconButton(
+  //                               onPressed: () {},
+  //                               icon: const Icon(
+  //                                 Icons.close,
+  //                                 color: Colors.transparent,
+  //                               )),
+  //                           Text(
+  //                             title,
+  //                             style: AppTheme.lightTheme.textTheme.labelMedium
+  //                                 ?.copyWith(
+  //                                     color: AppTheme.primaryColor,
+  //                                     fontWeight: FontWeight.w500),
+  //                           ),
+  //                           IconButton(
+  //                               onPressed: () {
+  //                                 ref
+  //                                     .read(
+  //                                         selectedVariationOfWishList.notifier)
+  //                                     .state = Variation();
+  //                                 context.pop();
+  //                               },
+  //                               icon: SvgPicture.asset(
+  //                                 "${Constants.imagePath}close_variation.svg",
+  //                                 height: 11.sp,
+  //                               ))
+  //                         ],
+  //                       ),
+  //                       Divider(),
+  //                       SizedBox(height: 28.sp),
+
+  //                       // Variation Selection
+  //                       Padding(
+  //                         padding: EdgeInsets.symmetric(horizontal: 18.sp),
+  //                         child: Wrap(
+  //                           spacing: 8.0,
+  //                           runSpacing: 8.0,
+  //                           children: variation.map((variation) {
+  //                             return InkWell(
+  //                               onTap: () {
+  //                                 ref
+  //                                     .watch(
+  //                                         selectedVariationOfWishList.notifier)
+  //                                     .state = variation;
+  //                               },
+  //                               child: Container(
+  //                                 padding: EdgeInsets.all(8.0.sp),
+  //                                 decoration: ShapeDecoration(
+  //                                     color: AppTheme.appBarAndBottomBarColor,
+  //                                     shape: RoundedRectangleBorder(
+  //                                       side: ref
+  //                                                   .watch(
+  //                                                       selectedVariationOfWishList)
+  //                                                   .id ==
+  //                                               variation.id
+  //                                           ? BorderSide(
+  //                                               width: 0.8,
+  //                                               color: AppTheme.textColor)
+  //                                           : BorderSide(
+  //                                               width: 0.8,
+  //                                               color: AppTheme.strokeColor),
+  //                                       borderRadius:
+  //                                           BorderRadius.circular(3.sp),
+  //                                     ),
+  //                                     shadows: [
+  //                                       BoxShadow(
+  //                                         color: AppTheme.textColor
+  //                                             .withOpacity(0.1),
+  //                                       )
+  //                                     ]),
+  //                                 child: Text(
+  //                                   variation.termName ?? "",
+  //                                   style: AppTheme
+  //                                       .lightTheme.textTheme.bodySmall
+  //                                       ?.copyWith(fontSize: 14.sp),
+  //                                 ),
+  //                               ),
+  //                             );
+  //                           }).toList(),
+  //                         ),
+  //                       ),
+  //                       SizedBox(height: 14.sp),
+
+  //                       // Price
+  //                       if (selectedVariation.price != null)
+  //                         Padding(
+  //                           padding: EdgeInsets.symmetric(horizontal: 19.sp),
+  //                           child: Text(
+  //                             '\$ ${selectedVariation.price}',
+  //                             style: AppTheme.lightTheme.textTheme.titleSmall,
+  //                           ),
+  //                         ),
+
+  //                       // Expected Day
+  //                       if (template == 3)
+  //                         Padding(
+  //                           padding: EdgeInsets.symmetric(horizontal: 18.sp),
+  //                           child: Column(
+  //                             children: [
+  //                               SizedBox(height: 8.sp),
+  //                               Text.rich(
+  //                                 TextSpan(
+  //                                   children: [
+  //                                     TextSpan(
+  //                                       text: 'Expected Day',
+  //                                       style: AppTheme
+  //                                           .lightTheme.textTheme.titleSmall
+  //                                           ?.copyWith(
+  //                                               color: AppTheme.primaryColor,
+  //                                               fontWeight: FontWeight.w500,
+  //                                               fontSize: 12.sp),
+  //                                     ),
+  //                                     TextSpan(
+  //                                       text: ' : 30.12.2024',
+  //                                       style: AppTheme
+  //                                           .lightTheme.textTheme.titleSmall
+  //                                           ?.copyWith(
+  //                                               color: AppTheme.subTextColor,
+  //                                               fontWeight: FontWeight.w500,
+  //                                               fontSize: 12.sp),
+  //                                     ),
+  //                                   ],
+  //                                 ),
+  //                               ),
+  //                               SizedBox(height: 8.sp),
+  //                             ],
+  //                           ),
+  //                         ),
+
+  //                       SizedBox(height: 20.sp),
+
+  //                       // Add to Bag Button
+  //                       Center(
+  //                         child: InkWell(
+  //                           onTap: () {
+  //                             if (selectedVariation.id == null) {
+  //                               showDialog(
+  //                                 useSafeArea: true,
+  //                                 barrierDismissible: true,
+  //                                 context: context,
+  //                                 builder: (context) {
+  //                                   return AlertDialog(
+  //                                     content: Text(
+  //                                       "Kindly, Select a Variant To Continue.",
+  //                                       style: AppTheme
+  //                                           .lightTheme.textTheme.bodyMedium,
+  //                                     ),
+  //                                   );
+  //                                 },
+  //                               );
+  //                             } else {
+  //                               ref.watch(isLoadingProvider.notifier).state =
+  //                                   true;
+  //                               ref
+  //                                   .refresh(addToCartApiProvider(
+  //                                           selectedVariation.id.toString())
+  //                                       .future)
+  //                                   .then((onValue) {
+  //                                 if (onValue.status!) {
+  //                                   ref
+  //                                       .watch(isLoadingProvider.notifier)
+  //                                       .state = false;
+  //                                   context.pop();
+  //                                   if (context.mounted) {
+  //                                     ConstantMethods.showSnackbar(
+  //                                         context, onValue.message ?? "");
+
+  //                                     ref.refresh(myCartApiProvider);
+  //                                   }
+  //                                 } else {
+  //                                   ref
+  //                                       .watch(isLoadingProvider.notifier)
+  //                                       .state = false;
+  //                                   ConstantMethods.showSnackbar(
+  //                                       context, onValue.message ?? "");
+  //                                 }
+  //                               });
+  //                             }
+  //                           },
+  //                           child: Container(
+  //                               width: ScreenUtil().screenWidth * 0.9,
+  //                               height: 36.sp,
+  //                               decoration: ShapeDecoration(
+  //                                 color: AppTheme.subTextColor,
+  //                                 shape: RoundedRectangleBorder(
+  //                                   side: BorderSide(
+  //                                       width: 1, color: AppTheme.subTextColor),
+  //                                   borderRadius: BorderRadius.circular(8.sp),
+  //                                 ),
+  //                               ),
+  //                               child: Consumer(
+  //                                 builder: (context, ref, child) {
+  //                                   final loading =
+  //                                       ref.watch(isLoadingProvider);
+  //                                   return loading
+  //                                       ? Padding(
+  //                                           padding: EdgeInsets.all(8.0.sp),
+  //                                           child: Center(
+  //                                             child: CircularProgressIndicator(
+  //                                               color: AppTheme
+  //                                                   .appBarAndBottomBarColor,
+  //                                             ),
+  //                                           ),
+  //                                         )
+  //                                       : Center(
+  //                                           child: Text(
+  //                                             "Add to Bag",
+  //                                             style: AppTheme.lightTheme
+  //                                                 .textTheme.bodySmall
+  //                                                 ?.copyWith(
+  //                                                     color: AppTheme
+  //                                                         .appBarAndBottomBarColor,
+  //                                                     fontSize: 14.sp),
+  //                                           ),
+  //                                         );
+  //                                 },
+  //                               )),
+  //                         ),
+  //                       ),
+  //                       SizedBox(height: 20.sp),
+  //                     ],
+  //                   ),
+  //                 ),
+  //               );
+  //             },
+  //           );
+  //         },
+  //       );
+  //     },
+  //   );
+  // }
 
   // static void showVariation(BuildContext context, List<Variation> variation,
   //     String title, int template, String itemTitle) {
@@ -1517,3 +1990,382 @@ extension CurrencySymbol on Currency {
     }
   }
 }
+
+class FeedbackPopup extends StatefulWidget {
+  final MyOrdersListModelOrders data;
+
+  const FeedbackPopup({super.key, required this.data});
+
+  @override
+  State<FeedbackPopup> createState() => _FeedbackPopupState();
+}
+
+class _FeedbackPopupState extends State<FeedbackPopup> {
+  double rating = 0.0;
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer(builder: (context, ref, child) {
+      return DraggableScrollableSheet(
+        initialChildSize: 0.8,
+        minChildSize: 0.5,
+        maxChildSize: 0.95,
+        expand: false,
+        builder: (context, scrollController) {
+          return GestureDetector(
+            behavior: HitTestBehavior.deferToChild,
+            onTap: () => FocusScope.of(context).unfocus(),
+            child: Container(
+              decoration: const BoxDecoration(
+                color: AppTheme.appBarAndBottomBarColor,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(12.0),
+                  topRight: Radius.circular(12.0),
+                ),
+              ),
+              child: Column(
+                children: [
+                  // Header Row
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      IconButton(
+                        onPressed: () {},
+                        icon:
+                            const Icon(Icons.close, color: Colors.transparent),
+                      ),
+                      Text(
+                        'Feedback & Review',
+                        style: AppTheme.lightTheme.textTheme.bodyLarge
+                            ?.copyWith(fontWeight: FontWeight.w500),
+                      ),
+                      IconButton(
+                        onPressed: () => context.pop(),
+                        icon:
+                            const Icon(Icons.close, color: AppTheme.textColor),
+                      ),
+                    ],
+                  ),
+                  const Divider(),
+
+                  /// Scrollable Content
+                  Expanded(
+                    child: SingleChildScrollView(
+                      controller: scrollController,
+                      padding: EdgeInsets.only(top: 20.0.sp, bottom: 16.sp),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildProductInfo(widget.data),
+                          SizedBox(height: 26.h),
+                          const Divider(),
+                          SizedBox(height: 14.h),
+                          _buildRatingSection(),
+                          SizedBox(height: 26.h),
+                          const Divider(),
+                          SizedBox(height: 14.h),
+                          _buildReviewTitleInput(),
+                          SizedBox(height: 20.h),
+                          const Divider(),
+                          SizedBox(height: 17.h),
+                          _buildImagesInput(),
+                          const Divider(),
+                          SizedBox(height: 17.h),
+                          _buildReviewInput(),
+                          SizedBox(height: 36.h),
+                          Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 26.w),
+                            child: InkWell(
+                              onTap: () {
+                                // ref.read(addReviewApiProvider(AddReviewParams(desc: )));
+                              },
+                              child: Container(
+                                height: 34.h,
+                                decoration: ShapeDecoration(
+                                  color: AppTheme.subTextColor,
+                                  shape: RoundedRectangleBorder(
+                                    side: BorderSide(
+                                      width: 1,
+                                      color: AppTheme.subTextColor,
+                                    ),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    'Submit Review',
+                                    style: AppTheme
+                                        .lightTheme.textTheme.bodySmall
+                                        ?.copyWith(
+                                            fontSize: 12.sp,
+                                            fontWeight: FontWeight.w400,
+                                            color: AppTheme
+                                                .appBarAndBottomBarColor),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          )
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+    });
+  }
+
+  Widget _buildProductInfo(MyOrdersListModelOrders data) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 26.w),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(6.sp),
+            child: CachedNetworkImage(
+              imageUrl: data.image ?? "",
+              height: 72.sp,
+              width: 72.sp,
+            ),
+          ),
+          SizedBox(width: 12.sp),
+          SizedBox(
+            width: ScreenUtil().setWidth(200),
+            child: Text(
+              data.name ?? "",
+              style: AppTheme.lightTheme.textTheme.bodySmall
+                  ?.copyWith(fontSize: 14.sp),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRatingSection() {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 26.w),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'How would you rate this product?',
+            style: AppTheme.lightTheme.textTheme.bodyMedium
+                ?.copyWith(fontSize: 16.sp),
+          ),
+          SizedBox(height: 16.h),
+          RatingStars(
+            value: rating,
+            onValueChanged: (v) => setState(() => rating = v),
+            starBuilder: (index, color) {
+              bool isFilled = index < rating;
+              return isFilled
+                  ? SvgPicture.asset("${Constants.imagePath}star.svg")
+                  : SvgPicture.asset(
+                      "${Constants.imagePathOrders}star_outlined.svg");
+            },
+            starCount: 5,
+            starSize: 18.sp,
+            starSpacing: 2,
+            valueLabelVisibility: false,
+            animationDuration: const Duration(milliseconds: 1000),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReviewTitleInput() {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 26.w),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Review Title',
+            style: AppTheme.lightTheme.textTheme.bodyMedium
+                ?.copyWith(fontSize: 16.sp),
+          ),
+          SizedBox(height: 14.h),
+          TextFormField(
+            autovalidateMode: AutovalidateMode.onUserInteraction,
+            cursorColor: AppTheme.cursorColor,
+            cursorWidth: 1.0,
+            cursorHeight: 18.h,
+            style: AppTheme.lightTheme.textTheme.labelSmall?.copyWith(
+              fontSize: 14.sp,
+              fontWeight: FontWeight.w400,
+            ),
+            decoration: _inputDecoration(),
+            keyboardType: TextInputType.text,
+            onChanged: (value) {},
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReviewInput() {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 26.w),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Write Review',
+            style: AppTheme.lightTheme.textTheme.bodyMedium
+                ?.copyWith(fontSize: 16.sp),
+          ),
+          SizedBox(height: 14.h),
+          TextFormField(
+            autovalidateMode: AutovalidateMode.onUserInteraction,
+            cursorColor: AppTheme.cursorColor,
+            cursorWidth: 1.0,
+            cursorHeight: 18.h,
+            style: AppTheme.lightTheme.textTheme.labelSmall?.copyWith(
+              fontSize: 14.sp,
+              fontWeight: FontWeight.w400,
+            ),
+            decoration: _inputDecoration(
+              label: 'Start Writing Here...',
+              contentPadding: EdgeInsets.symmetric(
+                vertical: 30.h,
+                horizontal: 12.w,
+              ),
+            ),
+            keyboardType: TextInputType.multiline,
+            maxLines: null,
+            onChanged: (value) {},
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildImagesInput() {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 26.w),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Share Photos Now!',
+            style: AppTheme.lightTheme.textTheme.bodyMedium
+                ?.copyWith(fontSize: 16.sp),
+          ),
+          SizedBox(height: 6.h),
+          Text(
+            'Capture and add your product experiences with photos',
+            style: AppTheme.lightTheme.textTheme.labelSmall
+                ?.copyWith(color: AppTheme.teritiaryTextColor),
+          ),
+          SizedBox(height: 14.h),
+          InkWell(
+            onTap: () async {
+              await Permission.camera.onDeniedCallback(() {
+                openAppSettings();
+              }).onGrantedCallback(() {
+                print("granted");
+              }).onPermanentlyDeniedCallback(() {
+                // openAppSettings();
+                print("onPermanentlyDeniedCallback");
+              }).onRestrictedCallback(() {
+                // openAppSettings();
+                print("onRestrictedCallback");
+              }).onLimitedCallback(() {
+                print("onLimitedCallback");
+              }).onProvisionalCallback(() {
+                print("onProvisionalCallback");
+              }).request();
+            },
+            child: DottedBorder(
+              borderType: BorderType.RRect,
+              radius: Radius.circular(6.r),
+              dashPattern: [4, 2],
+              strokeWidth: 1,
+              color: AppTheme.primaryColor,
+              child: Container(
+                width: ScreenUtil().screenWidth,
+                height: 83.h,
+                decoration: BoxDecoration(
+                  color: const Color(0x89FFEFF7),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SvgPicture.asset(
+                      "${Constants.imagePath}upload.svg",
+                      height: 32.h,
+                      width: 32.h,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          SizedBox(
+            height: 25.h,
+          ),
+        ],
+      ),
+    );
+  }
+
+  InputDecoration _inputDecoration({
+    String? label,
+    EdgeInsets? contentPadding,
+  }) {
+    return InputDecoration(
+      label: label != null
+          ? Text(
+              label,
+              style: AppTheme.lightTheme.textTheme.bodySmall
+                  ?.copyWith(color: const Color(0xFF7F7F7F)),
+            )
+          : null,
+      contentPadding: contentPadding ?? EdgeInsets.all(12.sp),
+      border: OutlineInputBorder(
+        borderSide: BorderSide(color: AppTheme.strokeColor),
+        borderRadius: BorderRadius.circular(6.sp),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderSide: BorderSide(color: AppTheme.primaryColor),
+        borderRadius: BorderRadius.circular(6.sp),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderSide: BorderSide(color: AppTheme.strokeColor),
+        borderRadius: BorderRadius.circular(6.sp),
+      ),
+      disabledBorder: OutlineInputBorder(
+        borderSide: BorderSide(color: AppTheme.strokeColor),
+        borderRadius: BorderRadius.circular(6.sp),
+      ),
+      errorStyle: AppTheme.lightTheme.textTheme.bodyLarge?.copyWith(
+        color: AppTheme.errorBorder,
+        fontSize: 11.sp,
+      ),
+      fillColor: AppTheme.appBarAndBottomBarColor,
+      filled: true,
+    );
+  }
+}
+
+class FeedbackRatingNotifier extends StateNotifier<double> {
+  FeedbackRatingNotifier() : super(0.0);
+
+  void updateRating(double newRating) {
+    state = newRating;
+  }
+}
+
+final feedbackRatingProvider =
+    StateNotifierProvider<FeedbackRatingNotifier, double>((ref) {
+  return FeedbackRatingNotifier();
+});

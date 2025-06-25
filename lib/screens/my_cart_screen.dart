@@ -3,6 +3,7 @@ import 'package:dikla_spirit/custom/api.dart';
 import 'package:dikla_spirit/custom/app_theme.dart';
 import 'package:dikla_spirit/custom/constants.dart';
 import 'package:dikla_spirit/l10n/app_localizations.dart';
+import 'package:dikla_spirit/model/auth/common_model.dart';
 import 'package:dikla_spirit/model/cart_list_model.dart';
 import 'package:dikla_spirit/model/providers.dart';
 import 'package:dikla_spirit/screens/wishlist/state/wishlist_state.dart';
@@ -27,7 +28,9 @@ class MyCartScreen extends HookConsumerWidget {
       appBar: AppBar(
         actions: [
           IconButton(
-              onPressed: () {},
+              onPressed: () {
+                context.push("/search_widget");
+              },
               icon: SvgPicture.asset(
                 "assets/images/search.svg",
                 height: 20.sp,
@@ -180,7 +183,7 @@ class MyCartScreen extends HookConsumerWidget {
                                                                         .labelMedium
                                                                         ?.copyWith(
                                                                             fontSize:
-                                                                                16.sp),
+                                                                                14.sp),
                                                                   ),
                                                                   SizedBox(
                                                                     height: 8.h,
@@ -189,14 +192,14 @@ class MyCartScreen extends HookConsumerWidget {
                                                                               null &&
                                                                           cart[index].quantity !=
                                                                               0
-                                                                      ? Text(
-                                                                          "x ${cart[index].quantity.toString()}",
-                                                                          style: AppTheme
-                                                                              .lightTheme
-                                                                              .textTheme
-                                                                              .labelMedium
-                                                                              ?.copyWith(fontSize: 16.sp),
-                                                                        )
+                                                                      ? cart[index].template ==
+                                                                              3
+                                                                          ? Text(
+                                                                              "x ${cart[index].quantity.toString()}",
+                                                                              style: AppTheme.lightTheme.textTheme.labelMedium?.copyWith(fontSize: 16.sp),
+                                                                            )
+                                                                          : SizedBox
+                                                                              .shrink()
                                                                       : Text(
                                                                           'Out of Stock',
                                                                           style: AppTheme
@@ -760,30 +763,32 @@ class MyCartScreen extends HookConsumerWidget {
                         ),
                         InkWell(
                           onTap: () {
-                            // ref
-                            //     .read(addTowishListApiProvider(
-                            //             cart.variationId.toString())
-                            //         .future)
-                            //     .then((onValue) {
-                            //   if (context.mounted) {
-                            //     context.pop();
-                            //     if (onValue != null && onValue.id != null) {
-                            //       ConstantMethods.showSnackbar(context,
-                            //           "Product moved to wishlist successfully");
-
-                            //       return ref.refresh(myCartApiProvider);
-                            //     }
-                            //     // } else {
-                            //     //   if (context.mounted) {
-                            //     //     ConstantMethods.showSnackbar(
-                            //     //         context, onValue.message ?? "",
-                            //     //         isFalse: true);
-                            //     //   }
-                            //   }
-                            // });
-                            context.pop();
-                            ConstantMethods.showSnackbar(
-                                context, "Working On It.");
+                            ref
+                                .read(moveTowishListApiProvider(
+                                        MoveToWishlistParam(
+                                            cart.cartItemKey.toString(),
+                                            cart.variationId.toString()))
+                                    .future)
+                                .then((onValue) {
+                              context.pop();
+                              if (context.mounted) {
+                                if (onValue.status) {
+                                  Future.microtask(
+                                    () {
+                                      ref.invalidate(myCartApiProvider);
+                                    },
+                                  );
+                                  ConstantMethods.showSnackbar(
+                                      context, onValue.message ?? "");
+                                }
+                              } else {
+                                if (context.mounted) {
+                                  ConstantMethods.showSnackbar(
+                                      context, onValue.message ?? "",
+                                      isFalse: true);
+                                }
+                              }
+                            });
                           },
                           child: Container(
                             width: ScreenUtil().screenWidth / 2.3,

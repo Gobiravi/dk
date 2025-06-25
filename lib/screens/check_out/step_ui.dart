@@ -182,16 +182,13 @@ class StepProgressScreen extends ConsumerWidget {
                     alignment: Alignment.bottomCenter,
                     child: InkWell(
                       onTap: () {
-                        if (currentStep < 3) {
-                          ref
-                              .read(stepProvider.notifier)
-                              .updateStep(currentStep + 1);
-                        }
+                        ref.refresh(myCartApiProvider);
+                        context.go("/dashboard");
                       },
                       child: Container(
                         height: ScreenUtil().setHeight(60.sp),
                         decoration: ShapeDecoration(
-                          color: Colors.white,
+                          color: AppTheme.appBarAndBottomBarColor,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.only(
                               topLeft: Radius.circular(12),
@@ -402,12 +399,12 @@ class StepProgressScreen extends ConsumerWidget {
           // Client secret key from payment data
           paymentIntentClientSecret: paymentIntent!['client_secret'],
           style: ThemeMode.system,
-          googlePay: const PaymentSheetGooglePay(
-              //     // Currency and country code
-              //     // is accourding to India
-              testEnv: true,
-              currencyCode: "INR",
-              merchantCountryCode: "IN"),
+          // googlePay: const PaymentSheetGooglePay(
+          //     //     // Currency and country code
+          //     //     // is accourding to India
+          //     testEnv: true,
+          //     currencyCode: "INR",
+          //     merchantCountryCode: "IN"),
           // Merchant Name
           merchantDisplayName: 'Dikla Spirit',
           // return URl if you want to add
@@ -432,18 +429,33 @@ class StepProgressScreen extends ConsumerWidget {
 
   displayPaymentSheet(BuildContext context, WidgetRef ref) async {
     final currentStep = ref.watch(stepProvider);
+    var address = ref.watch(currentDefaultAddressProvider);
     try {
       // "Display payment sheet";
       await Stripe.instance.presentPaymentSheet();
       // Show when payment is done
       // Displaying snackbar for it
       await fetchPaymentDetails(paymentIntent?["id"]);
-      if (context.mounted) {
-        ConstantMethods.showSnackbar(context, "Paid Successfully");
-        // if (currentStep < 3) {
-        //   ref.read(stepProvider.notifier).updateStep(currentStep + 1);
-        // }
-      }
+      ref
+          .read(checkOutApiProvider(CheckoutParams(
+                  paymentIntent: paymentIntent?["id"],
+                  addressId: address.id.toString(),
+                  charge: "0",
+                  paymentMethod: "stripe",
+                  paymentStatus: "pending"))
+              .future)
+          .then(
+        (value) {
+          if (context.mounted) {
+            ConstantMethods.showSnackbar(context, "Paid Successfully");
+            if (currentStep < 3) {
+              ref.read(stepProvider.notifier).updateStep(currentStep + 1);
+            }
+            ref.read(orderId.notifier).state = value.orderId.toString();
+          }
+        },
+      );
+
       paymentIntent = null;
     } on StripeException catch (e) {
       if (context.mounted) {
@@ -935,50 +947,46 @@ Widget orderDetailsWidget(
                   Padding(
                     padding: EdgeInsets.only(
                         left: 12.0.sp, right: 12.sp, top: 12.sp),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(6.sp),
-                              child: CachedNetworkImage(
-                                imageUrl: product[index].image ?? "",
-                                height: 72.sp,
-                                width: 72.sp,
+                    child: SizedBox(
+                      width: ScreenUtil().screenWidth,
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(6.sp),
+                                child: CachedNetworkImage(
+                                  imageUrl: product[index].image ?? "",
+                                  height: 72.sp,
+                                  width: 72.sp,
+                                ),
                               ),
-                            ),
-                            SizedBox(
-                              width: 12.sp,
-                            ),
-                            SizedBox(
-                              width: ScreenUtil().setWidth(200),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    product[index].name ?? "",
-                                    style: AppTheme
-                                        .lightTheme.textTheme.bodySmall
-                                        ?.copyWith(fontSize: 14.sp),
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  Text(
-                                    "$currency ${product[index].price.toString()}",
-                                    style: AppTheme
-                                        .lightTheme.textTheme.labelMedium
-                                        ?.copyWith(fontSize: 16.sp),
-                                  ),
-                                ],
+                              SizedBox(
+                                width: 12.sp,
                               ),
-                            ),
-                          ],
-                        ),
-                      ],
+                              SizedBox(
+                                width: 185.w,
+                                child: Text(
+                                  product[index].name ?? "",
+                                  style: AppTheme.lightTheme.textTheme.bodySmall
+                                      ?.copyWith(fontSize: 14.sp),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              Text(
+                                "$currency ${product[index].price.toString()}",
+                                style: AppTheme.lightTheme.textTheme.labelMedium
+                                    ?.copyWith(fontSize: 14.sp),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                   Visibility(
@@ -1541,8 +1549,10 @@ class AddressWidget extends HookConsumerWidget {
                                       color: Colors.white,
                                       shape: RoundedRectangleBorder(
                                         side: BorderSide(
-                                            width: 1, color: Color(0xFFF0D3E2)),
-                                        borderRadius: BorderRadius.circular(8),
+                                            width: 1,
+                                            color: AppTheme.strokeColor),
+                                        borderRadius:
+                                            BorderRadius.circular(8.r),
                                       ),
                                     ),
                                     child: Padding(
@@ -2496,229 +2506,324 @@ class OrderConfirmedWidget extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final currency = ref.watch(currentCurrencySymbolProvider);
-    final product = ref.read(getOrderSummaryApiProvider);
+    final product = ref.watch(getOrderSummaryApiProvider);
+    final address = ref.watch(currentDefaultAddressProvider);
+    final oid = ref.watch(orderId);
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16.sp),
-      child: Column(
-        children: [
-          Row(
+      child: product.when(
+        data: (data) {
+          return Column(
             children: [
-              SvgPicture.asset(
-                "${Constants.imagePathAuth}success.svg",
-                height: 62.sp,
+              Row(
+                children: [
+                  SvgPicture.asset(
+                    "${Constants.imagePathOrders}order_confirmed.svg",
+                    height: 62.sp,
+                  ),
+                  SizedBox(
+                    width: 22.sp,
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Thank you!',
+                        style: AppTheme.lightTheme.textTheme.titleMedium
+                            ?.copyWith(
+                                fontSize: 18.sp, fontWeight: FontWeight.w600),
+                      ),
+                      SizedBox(
+                        height: 4.sp,
+                      ),
+                      Text(
+                        'Your order #$oid has been placed.',
+                        style: AppTheme.lightTheme.textTheme.bodySmall
+                            ?.copyWith(fontSize: 14.sp),
+                      ),
+                      SizedBox(
+                        height: 8.sp,
+                      ),
+                      SizedBox(
+                        width: ScreenUtil().screenWidth * 0.7,
+                        child: Text(
+                          'I’m here with you, hand in hand, at everystep and on every journey.',
+                          style: AppTheme.lightTheme.textTheme.bodySmall
+                              ?.copyWith(fontSize: 12.sp),
+                        ),
+                      ),
+                    ],
+                  )
+                ],
               ),
               SizedBox(
-                width: 22.sp,
+                height: 24.sp,
               ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Thank you!',
-                    style: AppTheme.lightTheme.textTheme.titleMedium?.copyWith(
-                        fontSize: 18.sp, fontWeight: FontWeight.w600),
-                  ),
-                  SizedBox(
-                    height: 4.sp,
-                  ),
-                  Text(
-                    'Your order #BE12345 has been placed.',
-                    style: AppTheme.lightTheme.textTheme.bodySmall
-                        ?.copyWith(fontSize: 14.sp),
-                  ),
-                  SizedBox(
-                    height: 8.sp,
-                  ),
-                  SizedBox(
-                    width: ScreenUtil().screenWidth * 0.7,
-                    child: Text(
-                      'I’m here with you, hand in hand, at everystep and on every journey.',
-                      style: AppTheme.lightTheme.textTheme.bodySmall
-                          ?.copyWith(fontSize: 12.sp),
+              Container(
+                width: 250.w,
+                height: 32.h,
+                decoration: ShapeDecoration(
+                  shape: RoundedRectangleBorder(
+                    side: BorderSide(
+                      width: 1,
+                      color: AppTheme.subTextColor,
                     ),
+                    borderRadius: BorderRadius.circular(8.r),
                   ),
-                ],
-              )
-            ],
-          ),
-          SizedBox(
-            height: 24.sp,
-          ),
-          Text(
-            'We sent an email to company@website.com with your order confirmation and bill. ',
-            style: AppTheme.lightTheme.textTheme.bodySmall,
-          ),
-          SizedBox(
-            height: 30.sp,
-          ),
-          Container(
-            width: ScreenUtil().screenWidth,
-            // height: 177,
-            padding: EdgeInsets.all(18.sp),
-            decoration: ShapeDecoration(
-              color: AppTheme.appBarAndBottomBarColor,
-              shape: RoundedRectangleBorder(
-                side: BorderSide(width: 1, color: AppTheme.strokeColor),
-                borderRadius: BorderRadius.circular(10.sp),
+                ),
+                child: Center(
+                  child: Text(
+                    'Click here to see your next steps',
+                    style: AppTheme.lightTheme.textTheme.bodySmall?.copyWith(
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w400,
+                        letterSpacing: 0.20),
+                  ),
+                ),
               ),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Shipping',
-                    style: AppTheme.lightTheme.textTheme.titleMedium
-                        ?.copyWith(fontSize: 18.sp)),
-                SizedBox(
-                  height: 14.sp,
-                ),
-                Text('User',
-                    style: AppTheme.lightTheme.textTheme.headlineLarge
-                        ?.copyWith(fontSize: 14.sp)),
-                SizedBox(
-                  height: 12.sp,
-                ),
-                Text('client name',
-                    style: AppTheme.lightTheme.textTheme.labelSmall?.copyWith(
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w400,
-                        color: AppTheme.teritiaryTextColor)),
-                SizedBox(
-                  height: 4.sp,
-                ),
-                Text('Phone',
-                    style: AppTheme.lightTheme.textTheme.labelSmall?.copyWith(
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w400,
-                        color: AppTheme.teritiaryTextColor)),
-                SizedBox(
-                  height: 11.sp,
-                ),
-                Text('address',
-                    style: AppTheme.lightTheme.textTheme.labelSmall?.copyWith(
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w400,
-                        color: AppTheme.teritiaryTextColor)),
-              ],
-            ),
-          ),
-          SizedBox(
-            height: 24.sp,
-          ),
-          product.when(
-            data: (data) {
-              return orderDetailsWidget(
-                  currency: currency, product: data.data?.product ?? []);
-            },
-            error: (_, __) {
-              return SizedBox();
-            },
-            loading: () {
-              return SizedBox();
-            },
-          ),
-          SizedBox(
-            height: 24.sp,
-          ),
-          product.when(
-            data: (data) {
-              return summaryWidget(currency: currency, datum: data.data);
-            },
-            error: (_, __) {
-              return SizedBox();
-            },
-            loading: () {
-              return SizedBox();
-            },
-          ),
-          SizedBox(
-            height: 28.sp,
-          ),
-          Container(
-            width: ScreenUtil().screenWidth,
-            padding: EdgeInsets.only(
-                top: 30.sp, right: 26.sp, left: 26.sp, bottom: 26.sp),
-            decoration: ShapeDecoration(
-              color: AppTheme.appBarAndBottomBarColor,
-              shape: RoundedRectangleBorder(
-                side: BorderSide(width: 1, color: AppTheme.strokeColor),
-                borderRadius: BorderRadius.circular(10),
+              SizedBox(
+                height: 22.sp,
               ),
-            ),
-            child: Column(
-              children: [
-                Text.rich(
-                  TextSpan(
+              Text(
+                'We sent an email to ${data.data?.user?.email ?? ""} with your order confirmation and bill. ',
+                style: AppTheme.lightTheme.textTheme.bodySmall,
+              ),
+              SizedBox(
+                height: 28.sp,
+              ),
+              Container(
+                width: ScreenUtil().screenWidth,
+                height: 182.h,
+                clipBehavior: Clip.antiAlias,
+                decoration: ShapeDecoration(
+                  color: AppTheme.strokeColor,
+                  shape: RoundedRectangleBorder(
+                    side: BorderSide(
+                      width: 1,
+                      color: AppTheme.primaryColor,
+                    ),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                child: Padding(
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 14.w, vertical: 20.h),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      TextSpan(
-                        text:
-                            'To start processing your service, please visit your\n',
-                        style: TextStyle(
-                          color: Color(0xFF393939),
-                          fontSize: 14,
-                          fontFamily: 'Noto Sans Hebrew',
-                          fontWeight: FontWeight.w400,
-                        ),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SvgPicture.asset(
+                            "${Constants.imagePathOrders}exla.svg",
+                            height: 27.h,
+                          ),
+                          SizedBox(
+                            width: 12.w,
+                          ),
+                          SizedBox(
+                            width: ScreenUtil().screenWidth * 0.73,
+                            child: Text(
+                              'To continue processing your services, please complete the requirement form. This will help Dikla Spirit complete your services accurately and efficiently.',
+                              style: AppTheme.lightTheme.textTheme.bodySmall
+                                  ?.copyWith(
+                                      fontSize: 14.sp,
+                                      fontWeight: FontWeight.w400),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 4,
+                            ),
+                          ),
+                        ],
                       ),
-                      TextSpan(
-                        text: 'Order Details',
-                        style: TextStyle(
-                          color: Color(0xFFC1768D),
-                          fontSize: 14,
-                          fontFamily: 'Noto Sans Hebrew',
-                          fontWeight: FontWeight.w400,
-                        ),
+                      SizedBox(
+                        height: 18.h,
                       ),
-                      TextSpan(
-                        text: ' page and complete the required form.',
-                        style: TextStyle(
-                          color: Color(0xFF393939),
-                          fontSize: 14,
-                          fontFamily: 'Noto Sans Hebrew',
-                          fontWeight: FontWeight.w400,
+                      Padding(
+                        padding: EdgeInsets.only(left: 37.w),
+                        child: Container(
+                          width: 101.w,
+                          height: 32.h,
+                          decoration: ShapeDecoration(
+                            shape: RoundedRectangleBorder(
+                              side: BorderSide(
+                                width: 1,
+                                color: AppTheme.subTextColor,
+                              ),
+                              borderRadius: BorderRadius.circular(8.r),
+                            ),
+                          ),
+                          child: Center(
+                            child: Text(
+                              'Continue',
+                              textAlign: TextAlign.center,
+                              style: AppTheme.lightTheme.textTheme.bodySmall
+                                  ?.copyWith(
+                                      fontSize: 12.sp,
+                                      fontWeight: FontWeight.w400,
+                                      letterSpacing: 0.20),
+                            ),
+                          ),
                         ),
                       ),
                     ],
                   ),
-                  textAlign: TextAlign.center,
                 ),
-                SizedBox(
-                  height: 25.sp,
+              ),
+              SizedBox(
+                height: 20.sp,
+              ),
+              Container(
+                width: ScreenUtil().screenWidth,
+                // height: 177,
+                padding: EdgeInsets.all(18.sp),
+                decoration: ShapeDecoration(
+                  color: AppTheme.appBarAndBottomBarColor,
+                  shape: RoundedRectangleBorder(
+                    side: BorderSide(width: 1, color: AppTheme.strokeColor),
+                    borderRadius: BorderRadius.circular(10.sp),
+                  ),
                 ),
-                Center(
-                  child: InkWell(
-                    onTap: () {
-                      ref.read(stepProvider.notifier).updateStep(1);
-                      context.go("/my_orders");
-                    },
-                    child: Container(
-                      width: 133.sp,
-                      height: 32.sp,
-                      decoration: ShapeDecoration(
-                        color: AppTheme.appBarAndBottomBarColor,
-                        shape: RoundedRectangleBorder(
-                          side: BorderSide(
-                              width: 1, color: AppTheme.subTextColor),
-                          borderRadius: BorderRadius.circular(8.sp),
-                        ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Shipping',
+                        style: AppTheme.lightTheme.textTheme.titleMedium
+                            ?.copyWith(fontSize: 18.sp)),
+                    SizedBox(
+                      height: 14.sp,
+                    ),
+                    Text(data.data?.user?.firstName ?? "",
+                        style: AppTheme.lightTheme.textTheme.headlineLarge
+                            ?.copyWith(fontSize: 14.sp)),
+                    SizedBox(
+                      height: 12.sp,
+                    ),
+                    Text(data.data?.user?.email ?? "",
+                        style: AppTheme.lightTheme.textTheme.labelSmall
+                            ?.copyWith(
+                                fontSize: 14.sp,
+                                fontWeight: FontWeight.w400,
+                                color: AppTheme.teritiaryTextColor)),
+                    SizedBox(
+                      height: 4.sp,
+                    ),
+                    Text(data.data?.user?.phone ?? "",
+                        style: AppTheme.lightTheme.textTheme.labelSmall
+                            ?.copyWith(
+                                fontSize: 14.sp,
+                                fontWeight: FontWeight.w400,
+                                color: AppTheme.teritiaryTextColor)),
+                    SizedBox(
+                      height: 11.sp,
+                    ),
+                    Text(address.address1 ?? "",
+                        style: AppTheme.lightTheme.textTheme.labelSmall
+                            ?.copyWith(
+                                fontSize: 14.sp,
+                                fontWeight: FontWeight.w400,
+                                color: AppTheme.teritiaryTextColor)),
+                  ],
+                ),
+              ),
+              SizedBox(
+                height: 24.sp,
+              ),
+              orderDetailsWidget(
+                  currency: currency, product: data.data?.product ?? []),
+              SizedBox(
+                height: 24.sp,
+              ),
+              summaryWidget(currency: currency, datum: data.data),
+              SizedBox(
+                height: 28.sp,
+              ),
+              Container(
+                width: ScreenUtil().screenWidth,
+                padding: EdgeInsets.only(
+                    top: 30.sp, right: 26.sp, left: 26.sp, bottom: 26.sp),
+                decoration: ShapeDecoration(
+                  color: AppTheme.appBarAndBottomBarColor,
+                  shape: RoundedRectangleBorder(
+                    side: BorderSide(width: 1, color: AppTheme.strokeColor),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    Text.rich(
+                      TextSpan(
+                        children: [
+                          TextSpan(
+                            text:
+                                'To start processing your service, please visit your\n',
+                            style: AppTheme.lightTheme.textTheme.titleMedium
+                                ?.copyWith(
+                                    fontSize: 14.sp,
+                                    color: AppTheme.subTextColor),
+                          ),
+                          TextSpan(
+                            text: 'Order Details',
+                            style: AppTheme.lightTheme.textTheme.titleMedium
+                                ?.copyWith(fontSize: 14.sp),
+                          ),
+                          TextSpan(
+                            text: ' page and complete the required form.',
+                            style: AppTheme.lightTheme.textTheme.bodySmall
+                                ?.copyWith(
+                                    fontSize: 14.sp,
+                                    fontWeight: FontWeight.w400),
+                          ),
+                        ],
                       ),
-                      child: Center(
-                        child: Text(
-                          'Visit Order Detail',
-                          style: AppTheme.lightTheme.textTheme.bodySmall
-                              ?.copyWith(
-                                  fontSize: 12.sp, fontWeight: FontWeight.w400),
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(
+                      height: 25.sp,
+                    ),
+                    Center(
+                      child: InkWell(
+                        onTap: () {
+                          ref.read(stepProvider.notifier).updateStep(1);
+                          context.go("/my_orders");
+                        },
+                        child: Container(
+                          width: 133.sp,
+                          height: 32.sp,
+                          decoration: ShapeDecoration(
+                            color: AppTheme.appBarAndBottomBarColor,
+                            shape: RoundedRectangleBorder(
+                              side: BorderSide(
+                                  width: 1, color: AppTheme.subTextColor),
+                              borderRadius: BorderRadius.circular(8.sp),
+                            ),
+                          ),
+                          child: Center(
+                            child: Text(
+                              'Visit Order Detail',
+                              style: AppTheme.lightTheme.textTheme.bodySmall
+                                  ?.copyWith(
+                                      fontSize: 12.sp,
+                                      fontWeight: FontWeight.w400),
+                            ),
+                          ),
                         ),
                       ),
                     ),
-                  ),
+                  ],
                 ),
-              ],
-            ),
-          ),
-          SizedBox(
-            height: 80.sp,
-          )
-        ],
+              ),
+              SizedBox(
+                height: 80.sp,
+              )
+            ],
+          );
+        },
+        error: (_, __) {
+          return SizedBox();
+        },
+        loading: () {
+          return SizedBox();
+        },
       ),
     );
   }

@@ -82,6 +82,12 @@ class LoginParams {
   LoginParams(this.email, this.password);
 }
 
+class SocialLoginParams {
+  String email;
+  String id;
+  SocialLoginParams(this.email, this.id);
+}
+
 class SignupParams {
   String firstName;
   String lastName;

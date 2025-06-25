@@ -15,130 +15,126 @@ final _privateConstructorUsedError = UnsupportedError(
     'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
 
 /// @nodoc
-mixin _$ProductCategoryState {
+mixin _$ProductCategoryListState {
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
     required TResult Function() loading,
-    required TResult Function(ProductCategoryModel item) loaded,
-    required TResult Function(String message) error,
+    required TResult Function(
+            ProductCategoryModelData data, bool status, int statusCode)
+        loaded,
+    required TResult Function(String error) error,
     required TResult Function() noInternet,
-    required TResult Function(List<DashboardModelFastResult> items) paginating,
     required TResult Function(List<DashboardModelFastResult> items) reachedEnd,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? loading,
-    TResult? Function(ProductCategoryModel item)? loaded,
-    TResult? Function(String message)? error,
+    TResult? Function(
+            ProductCategoryModelData data, bool status, int statusCode)?
+        loaded,
+    TResult? Function(String error)? error,
     TResult? Function()? noInternet,
-    TResult? Function(List<DashboardModelFastResult> items)? paginating,
     TResult? Function(List<DashboardModelFastResult> items)? reachedEnd,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? loading,
-    TResult Function(ProductCategoryModel item)? loaded,
-    TResult Function(String message)? error,
+    TResult Function(
+            ProductCategoryModelData data, bool status, int statusCode)?
+        loaded,
+    TResult Function(String error)? error,
     TResult Function()? noInternet,
-    TResult Function(List<DashboardModelFastResult> items)? paginating,
     TResult Function(List<DashboardModelFastResult> items)? reachedEnd,
     required TResult orElse(),
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
-    required TResult Function(ProductCategoryStateLoading value) loading,
-    required TResult Function(ProductCategoryStateLoaded value) loaded,
-    required TResult Function(ProductCategoryStateError value) error,
-    required TResult Function(NoInternetState value) noInternet,
-    required TResult Function(PaginatingState value) paginating,
-    required TResult Function(ReachedEndState value) reachedEnd,
+    required TResult Function(_Loading value) loading,
+    required TResult Function(_Loaded value) loaded,
+    required TResult Function(_Error value) error,
+    required TResult Function(_NoInternet value) noInternet,
+    required TResult Function(_ReachedEnd value) reachedEnd,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(ProductCategoryStateLoading value)? loading,
-    TResult? Function(ProductCategoryStateLoaded value)? loaded,
-    TResult? Function(ProductCategoryStateError value)? error,
-    TResult? Function(NoInternetState value)? noInternet,
-    TResult? Function(PaginatingState value)? paginating,
-    TResult? Function(ReachedEndState value)? reachedEnd,
+    TResult? Function(_Loading value)? loading,
+    TResult? Function(_Loaded value)? loaded,
+    TResult? Function(_Error value)? error,
+    TResult? Function(_NoInternet value)? noInternet,
+    TResult? Function(_ReachedEnd value)? reachedEnd,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
-    TResult Function(ProductCategoryStateLoading value)? loading,
-    TResult Function(ProductCategoryStateLoaded value)? loaded,
-    TResult Function(ProductCategoryStateError value)? error,
-    TResult Function(NoInternetState value)? noInternet,
-    TResult Function(PaginatingState value)? paginating,
-    TResult Function(ReachedEndState value)? reachedEnd,
+    TResult Function(_Loading value)? loading,
+    TResult Function(_Loaded value)? loaded,
+    TResult Function(_Error value)? error,
+    TResult Function(_NoInternet value)? noInternet,
+    TResult Function(_ReachedEnd value)? reachedEnd,
     required TResult orElse(),
   }) =>
       throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class $ProductCategoryStateCopyWith<$Res> {
-  factory $ProductCategoryStateCopyWith(ProductCategoryState value,
-          $Res Function(ProductCategoryState) then) =
-      _$ProductCategoryStateCopyWithImpl<$Res, ProductCategoryState>;
+abstract class $ProductCategoryListStateCopyWith<$Res> {
+  factory $ProductCategoryListStateCopyWith(ProductCategoryListState value,
+          $Res Function(ProductCategoryListState) then) =
+      _$ProductCategoryListStateCopyWithImpl<$Res, ProductCategoryListState>;
 }
 
 /// @nodoc
-class _$ProductCategoryStateCopyWithImpl<$Res,
-        $Val extends ProductCategoryState>
-    implements $ProductCategoryStateCopyWith<$Res> {
-  _$ProductCategoryStateCopyWithImpl(this._value, this._then);
+class _$ProductCategoryListStateCopyWithImpl<$Res,
+        $Val extends ProductCategoryListState>
+    implements $ProductCategoryListStateCopyWith<$Res> {
+  _$ProductCategoryListStateCopyWithImpl(this._value, this._then);
 
   // ignore: unused_field
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of ProductCategoryState
+  /// Create a copy of ProductCategoryListState
   /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
-abstract class _$$ProductCategoryStateLoadingImplCopyWith<$Res> {
-  factory _$$ProductCategoryStateLoadingImplCopyWith(
-          _$ProductCategoryStateLoadingImpl value,
-          $Res Function(_$ProductCategoryStateLoadingImpl) then) =
-      __$$ProductCategoryStateLoadingImplCopyWithImpl<$Res>;
+abstract class _$$LoadingImplCopyWith<$Res> {
+  factory _$$LoadingImplCopyWith(
+          _$LoadingImpl value, $Res Function(_$LoadingImpl) then) =
+      __$$LoadingImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
-class __$$ProductCategoryStateLoadingImplCopyWithImpl<$Res>
-    extends _$ProductCategoryStateCopyWithImpl<$Res,
-        _$ProductCategoryStateLoadingImpl>
-    implements _$$ProductCategoryStateLoadingImplCopyWith<$Res> {
-  __$$ProductCategoryStateLoadingImplCopyWithImpl(
-      _$ProductCategoryStateLoadingImpl _value,
-      $Res Function(_$ProductCategoryStateLoadingImpl) _then)
+class __$$LoadingImplCopyWithImpl<$Res>
+    extends _$ProductCategoryListStateCopyWithImpl<$Res, _$LoadingImpl>
+    implements _$$LoadingImplCopyWith<$Res> {
+  __$$LoadingImplCopyWithImpl(
+      _$LoadingImpl _value, $Res Function(_$LoadingImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of ProductCategoryState
+  /// Create a copy of ProductCategoryListState
   /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
 
-class _$ProductCategoryStateLoadingImpl implements ProductCategoryStateLoading {
-  const _$ProductCategoryStateLoadingImpl();
+class _$LoadingImpl implements _Loading {
+  const _$LoadingImpl();
 
   @override
   String toString() {
-    return 'ProductCategoryState.loading()';
+    return 'ProductCategoryListState.loading()';
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$ProductCategoryStateLoadingImpl);
+        (other.runtimeType == runtimeType && other is _$LoadingImpl);
   }
 
   @override
@@ -148,10 +144,11 @@ class _$ProductCategoryStateLoadingImpl implements ProductCategoryStateLoading {
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
     required TResult Function() loading,
-    required TResult Function(ProductCategoryModel item) loaded,
-    required TResult Function(String message) error,
+    required TResult Function(
+            ProductCategoryModelData data, bool status, int statusCode)
+        loaded,
+    required TResult Function(String error) error,
     required TResult Function() noInternet,
-    required TResult Function(List<DashboardModelFastResult> items) paginating,
     required TResult Function(List<DashboardModelFastResult> items) reachedEnd,
   }) {
     return loading();
@@ -161,10 +158,11 @@ class _$ProductCategoryStateLoadingImpl implements ProductCategoryStateLoading {
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? loading,
-    TResult? Function(ProductCategoryModel item)? loaded,
-    TResult? Function(String message)? error,
+    TResult? Function(
+            ProductCategoryModelData data, bool status, int statusCode)?
+        loaded,
+    TResult? Function(String error)? error,
     TResult? Function()? noInternet,
-    TResult? Function(List<DashboardModelFastResult> items)? paginating,
     TResult? Function(List<DashboardModelFastResult> items)? reachedEnd,
   }) {
     return loading?.call();
@@ -174,10 +172,11 @@ class _$ProductCategoryStateLoadingImpl implements ProductCategoryStateLoading {
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? loading,
-    TResult Function(ProductCategoryModel item)? loaded,
-    TResult Function(String message)? error,
+    TResult Function(
+            ProductCategoryModelData data, bool status, int statusCode)?
+        loaded,
+    TResult Function(String error)? error,
     TResult Function()? noInternet,
-    TResult Function(List<DashboardModelFastResult> items)? paginating,
     TResult Function(List<DashboardModelFastResult> items)? reachedEnd,
     required TResult orElse(),
   }) {
@@ -190,12 +189,11 @@ class _$ProductCategoryStateLoadingImpl implements ProductCategoryStateLoading {
   @override
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
-    required TResult Function(ProductCategoryStateLoading value) loading,
-    required TResult Function(ProductCategoryStateLoaded value) loaded,
-    required TResult Function(ProductCategoryStateError value) error,
-    required TResult Function(NoInternetState value) noInternet,
-    required TResult Function(PaginatingState value) paginating,
-    required TResult Function(ReachedEndState value) reachedEnd,
+    required TResult Function(_Loading value) loading,
+    required TResult Function(_Loaded value) loaded,
+    required TResult Function(_Error value) error,
+    required TResult Function(_NoInternet value) noInternet,
+    required TResult Function(_ReachedEnd value) reachedEnd,
   }) {
     return loading(this);
   }
@@ -203,12 +201,11 @@ class _$ProductCategoryStateLoadingImpl implements ProductCategoryStateLoading {
   @override
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(ProductCategoryStateLoading value)? loading,
-    TResult? Function(ProductCategoryStateLoaded value)? loaded,
-    TResult? Function(ProductCategoryStateError value)? error,
-    TResult? Function(NoInternetState value)? noInternet,
-    TResult? Function(PaginatingState value)? paginating,
-    TResult? Function(ReachedEndState value)? reachedEnd,
+    TResult? Function(_Loading value)? loading,
+    TResult? Function(_Loaded value)? loaded,
+    TResult? Function(_Error value)? error,
+    TResult? Function(_NoInternet value)? noInternet,
+    TResult? Function(_ReachedEnd value)? reachedEnd,
   }) {
     return loading?.call(this);
   }
@@ -216,12 +213,11 @@ class _$ProductCategoryStateLoadingImpl implements ProductCategoryStateLoading {
   @override
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
-    TResult Function(ProductCategoryStateLoading value)? loading,
-    TResult Function(ProductCategoryStateLoaded value)? loaded,
-    TResult Function(ProductCategoryStateError value)? error,
-    TResult Function(NoInternetState value)? noInternet,
-    TResult Function(PaginatingState value)? paginating,
-    TResult Function(ReachedEndState value)? reachedEnd,
+    TResult Function(_Loading value)? loading,
+    TResult Function(_Loaded value)? loaded,
+    TResult Function(_Error value)? error,
+    TResult Function(_NoInternet value)? noInternet,
+    TResult Function(_ReachedEnd value)? reachedEnd,
     required TResult orElse(),
   }) {
     if (loading != null) {
@@ -231,119 +227,135 @@ class _$ProductCategoryStateLoadingImpl implements ProductCategoryStateLoading {
   }
 }
 
-abstract class ProductCategoryStateLoading implements ProductCategoryState {
-  const factory ProductCategoryStateLoading() =
-      _$ProductCategoryStateLoadingImpl;
+abstract class _Loading implements ProductCategoryListState {
+  const factory _Loading() = _$LoadingImpl;
 }
 
 /// @nodoc
-abstract class _$$ProductCategoryStateLoadedImplCopyWith<$Res> {
-  factory _$$ProductCategoryStateLoadedImplCopyWith(
-          _$ProductCategoryStateLoadedImpl value,
-          $Res Function(_$ProductCategoryStateLoadedImpl) then) =
-      __$$ProductCategoryStateLoadedImplCopyWithImpl<$Res>;
+abstract class _$$LoadedImplCopyWith<$Res> {
+  factory _$$LoadedImplCopyWith(
+          _$LoadedImpl value, $Res Function(_$LoadedImpl) then) =
+      __$$LoadedImplCopyWithImpl<$Res>;
   @useResult
-  $Res call({ProductCategoryModel item});
+  $Res call({ProductCategoryModelData data, bool status, int statusCode});
 }
 
 /// @nodoc
-class __$$ProductCategoryStateLoadedImplCopyWithImpl<$Res>
-    extends _$ProductCategoryStateCopyWithImpl<$Res,
-        _$ProductCategoryStateLoadedImpl>
-    implements _$$ProductCategoryStateLoadedImplCopyWith<$Res> {
-  __$$ProductCategoryStateLoadedImplCopyWithImpl(
-      _$ProductCategoryStateLoadedImpl _value,
-      $Res Function(_$ProductCategoryStateLoadedImpl) _then)
+class __$$LoadedImplCopyWithImpl<$Res>
+    extends _$ProductCategoryListStateCopyWithImpl<$Res, _$LoadedImpl>
+    implements _$$LoadedImplCopyWith<$Res> {
+  __$$LoadedImplCopyWithImpl(
+      _$LoadedImpl _value, $Res Function(_$LoadedImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of ProductCategoryState
+  /// Create a copy of ProductCategoryListState
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? item = null,
+    Object? data = null,
+    Object? status = null,
+    Object? statusCode = null,
   }) {
-    return _then(_$ProductCategoryStateLoadedImpl(
-      item: null == item
-          ? _value.item
-          : item // ignore: cast_nullable_to_non_nullable
-              as ProductCategoryModel,
+    return _then(_$LoadedImpl(
+      data: null == data
+          ? _value.data
+          : data // ignore: cast_nullable_to_non_nullable
+              as ProductCategoryModelData,
+      status: null == status
+          ? _value.status
+          : status // ignore: cast_nullable_to_non_nullable
+              as bool,
+      statusCode: null == statusCode
+          ? _value.statusCode
+          : statusCode // ignore: cast_nullable_to_non_nullable
+              as int,
     ));
   }
 }
 
 /// @nodoc
 
-class _$ProductCategoryStateLoadedImpl implements ProductCategoryStateLoaded {
-  const _$ProductCategoryStateLoadedImpl({required this.item});
+class _$LoadedImpl implements _Loaded {
+  const _$LoadedImpl(
+      {required this.data, required this.status, required this.statusCode});
 
   @override
-  final ProductCategoryModel item;
+  final ProductCategoryModelData data;
+  @override
+  final bool status;
+  @override
+  final int statusCode;
 
   @override
   String toString() {
-    return 'ProductCategoryState.loaded(item: $item)';
+    return 'ProductCategoryListState.loaded(data: $data, status: $status, statusCode: $statusCode)';
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$ProductCategoryStateLoadedImpl &&
-            (identical(other.item, item) || other.item == item));
+            other is _$LoadedImpl &&
+            (identical(other.data, data) || other.data == data) &&
+            (identical(other.status, status) || other.status == status) &&
+            (identical(other.statusCode, statusCode) ||
+                other.statusCode == statusCode));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, item);
+  int get hashCode => Object.hash(runtimeType, data, status, statusCode);
 
-  /// Create a copy of ProductCategoryState
+  /// Create a copy of ProductCategoryListState
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
-  _$$ProductCategoryStateLoadedImplCopyWith<_$ProductCategoryStateLoadedImpl>
-      get copyWith => __$$ProductCategoryStateLoadedImplCopyWithImpl<
-          _$ProductCategoryStateLoadedImpl>(this, _$identity);
+  _$$LoadedImplCopyWith<_$LoadedImpl> get copyWith =>
+      __$$LoadedImplCopyWithImpl<_$LoadedImpl>(this, _$identity);
 
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
     required TResult Function() loading,
-    required TResult Function(ProductCategoryModel item) loaded,
-    required TResult Function(String message) error,
+    required TResult Function(
+            ProductCategoryModelData data, bool status, int statusCode)
+        loaded,
+    required TResult Function(String error) error,
     required TResult Function() noInternet,
-    required TResult Function(List<DashboardModelFastResult> items) paginating,
     required TResult Function(List<DashboardModelFastResult> items) reachedEnd,
   }) {
-    return loaded(item);
+    return loaded(data, status, statusCode);
   }
 
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? loading,
-    TResult? Function(ProductCategoryModel item)? loaded,
-    TResult? Function(String message)? error,
+    TResult? Function(
+            ProductCategoryModelData data, bool status, int statusCode)?
+        loaded,
+    TResult? Function(String error)? error,
     TResult? Function()? noInternet,
-    TResult? Function(List<DashboardModelFastResult> items)? paginating,
     TResult? Function(List<DashboardModelFastResult> items)? reachedEnd,
   }) {
-    return loaded?.call(item);
+    return loaded?.call(data, status, statusCode);
   }
 
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? loading,
-    TResult Function(ProductCategoryModel item)? loaded,
-    TResult Function(String message)? error,
+    TResult Function(
+            ProductCategoryModelData data, bool status, int statusCode)?
+        loaded,
+    TResult Function(String error)? error,
     TResult Function()? noInternet,
-    TResult Function(List<DashboardModelFastResult> items)? paginating,
     TResult Function(List<DashboardModelFastResult> items)? reachedEnd,
     required TResult orElse(),
   }) {
     if (loaded != null) {
-      return loaded(item);
+      return loaded(data, status, statusCode);
     }
     return orElse();
   }
@@ -351,12 +363,11 @@ class _$ProductCategoryStateLoadedImpl implements ProductCategoryStateLoaded {
   @override
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
-    required TResult Function(ProductCategoryStateLoading value) loading,
-    required TResult Function(ProductCategoryStateLoaded value) loaded,
-    required TResult Function(ProductCategoryStateError value) error,
-    required TResult Function(NoInternetState value) noInternet,
-    required TResult Function(PaginatingState value) paginating,
-    required TResult Function(ReachedEndState value) reachedEnd,
+    required TResult Function(_Loading value) loading,
+    required TResult Function(_Loaded value) loaded,
+    required TResult Function(_Error value) error,
+    required TResult Function(_NoInternet value) noInternet,
+    required TResult Function(_ReachedEnd value) reachedEnd,
   }) {
     return loaded(this);
   }
@@ -364,12 +375,11 @@ class _$ProductCategoryStateLoadedImpl implements ProductCategoryStateLoaded {
   @override
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(ProductCategoryStateLoading value)? loading,
-    TResult? Function(ProductCategoryStateLoaded value)? loaded,
-    TResult? Function(ProductCategoryStateError value)? error,
-    TResult? Function(NoInternetState value)? noInternet,
-    TResult? Function(PaginatingState value)? paginating,
-    TResult? Function(ReachedEndState value)? reachedEnd,
+    TResult? Function(_Loading value)? loading,
+    TResult? Function(_Loaded value)? loaded,
+    TResult? Function(_Error value)? error,
+    TResult? Function(_NoInternet value)? noInternet,
+    TResult? Function(_ReachedEnd value)? reachedEnd,
   }) {
     return loaded?.call(this);
   }
@@ -377,12 +387,11 @@ class _$ProductCategoryStateLoadedImpl implements ProductCategoryStateLoaded {
   @override
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
-    TResult Function(ProductCategoryStateLoading value)? loading,
-    TResult Function(ProductCategoryStateLoaded value)? loaded,
-    TResult Function(ProductCategoryStateError value)? error,
-    TResult Function(NoInternetState value)? noInternet,
-    TResult Function(PaginatingState value)? paginating,
-    TResult Function(ReachedEndState value)? reachedEnd,
+    TResult Function(_Loading value)? loading,
+    TResult Function(_Loaded value)? loaded,
+    TResult Function(_Error value)? error,
+    TResult Function(_NoInternet value)? noInternet,
+    TResult Function(_ReachedEnd value)? reachedEnd,
     required TResult orElse(),
   }) {
     if (loaded != null) {
@@ -392,51 +401,51 @@ class _$ProductCategoryStateLoadedImpl implements ProductCategoryStateLoaded {
   }
 }
 
-abstract class ProductCategoryStateLoaded implements ProductCategoryState {
-  const factory ProductCategoryStateLoaded(
-          {required final ProductCategoryModel item}) =
-      _$ProductCategoryStateLoadedImpl;
+abstract class _Loaded implements ProductCategoryListState {
+  const factory _Loaded(
+      {required final ProductCategoryModelData data,
+      required final bool status,
+      required final int statusCode}) = _$LoadedImpl;
 
-  ProductCategoryModel get item;
+  ProductCategoryModelData get data;
+  bool get status;
+  int get statusCode;
 
-  /// Create a copy of ProductCategoryState
+  /// Create a copy of ProductCategoryListState
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$ProductCategoryStateLoadedImplCopyWith<_$ProductCategoryStateLoadedImpl>
-      get copyWith => throw _privateConstructorUsedError;
+  _$$LoadedImplCopyWith<_$LoadedImpl> get copyWith =>
+      throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class _$$ProductCategoryStateErrorImplCopyWith<$Res> {
-  factory _$$ProductCategoryStateErrorImplCopyWith(
-          _$ProductCategoryStateErrorImpl value,
-          $Res Function(_$ProductCategoryStateErrorImpl) then) =
-      __$$ProductCategoryStateErrorImplCopyWithImpl<$Res>;
+abstract class _$$ErrorImplCopyWith<$Res> {
+  factory _$$ErrorImplCopyWith(
+          _$ErrorImpl value, $Res Function(_$ErrorImpl) then) =
+      __$$ErrorImplCopyWithImpl<$Res>;
   @useResult
-  $Res call({String message});
+  $Res call({String error});
 }
 
 /// @nodoc
-class __$$ProductCategoryStateErrorImplCopyWithImpl<$Res>
-    extends _$ProductCategoryStateCopyWithImpl<$Res,
-        _$ProductCategoryStateErrorImpl>
-    implements _$$ProductCategoryStateErrorImplCopyWith<$Res> {
-  __$$ProductCategoryStateErrorImplCopyWithImpl(
-      _$ProductCategoryStateErrorImpl _value,
-      $Res Function(_$ProductCategoryStateErrorImpl) _then)
+class __$$ErrorImplCopyWithImpl<$Res>
+    extends _$ProductCategoryListStateCopyWithImpl<$Res, _$ErrorImpl>
+    implements _$$ErrorImplCopyWith<$Res> {
+  __$$ErrorImplCopyWithImpl(
+      _$ErrorImpl _value, $Res Function(_$ErrorImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of ProductCategoryState
+  /// Create a copy of ProductCategoryListState
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? message = null,
+    Object? error = null,
   }) {
-    return _then(_$ProductCategoryStateErrorImpl(
-      null == message
-          ? _value.message
-          : message // ignore: cast_nullable_to_non_nullable
+    return _then(_$ErrorImpl(
+      null == error
+          ? _value.error
+          : error // ignore: cast_nullable_to_non_nullable
               as String,
     ));
   }
@@ -444,76 +453,78 @@ class __$$ProductCategoryStateErrorImplCopyWithImpl<$Res>
 
 /// @nodoc
 
-class _$ProductCategoryStateErrorImpl implements ProductCategoryStateError {
-  const _$ProductCategoryStateErrorImpl(this.message);
+class _$ErrorImpl implements _Error {
+  const _$ErrorImpl(this.error);
 
   @override
-  final String message;
+  final String error;
 
   @override
   String toString() {
-    return 'ProductCategoryState.error(message: $message)';
+    return 'ProductCategoryListState.error(error: $error)';
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$ProductCategoryStateErrorImpl &&
-            (identical(other.message, message) || other.message == message));
+            other is _$ErrorImpl &&
+            (identical(other.error, error) || other.error == error));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, message);
+  int get hashCode => Object.hash(runtimeType, error);
 
-  /// Create a copy of ProductCategoryState
+  /// Create a copy of ProductCategoryListState
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
-  _$$ProductCategoryStateErrorImplCopyWith<_$ProductCategoryStateErrorImpl>
-      get copyWith => __$$ProductCategoryStateErrorImplCopyWithImpl<
-          _$ProductCategoryStateErrorImpl>(this, _$identity);
+  _$$ErrorImplCopyWith<_$ErrorImpl> get copyWith =>
+      __$$ErrorImplCopyWithImpl<_$ErrorImpl>(this, _$identity);
 
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
     required TResult Function() loading,
-    required TResult Function(ProductCategoryModel item) loaded,
-    required TResult Function(String message) error,
+    required TResult Function(
+            ProductCategoryModelData data, bool status, int statusCode)
+        loaded,
+    required TResult Function(String error) error,
     required TResult Function() noInternet,
-    required TResult Function(List<DashboardModelFastResult> items) paginating,
     required TResult Function(List<DashboardModelFastResult> items) reachedEnd,
   }) {
-    return error(message);
+    return error(this.error);
   }
 
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? loading,
-    TResult? Function(ProductCategoryModel item)? loaded,
-    TResult? Function(String message)? error,
+    TResult? Function(
+            ProductCategoryModelData data, bool status, int statusCode)?
+        loaded,
+    TResult? Function(String error)? error,
     TResult? Function()? noInternet,
-    TResult? Function(List<DashboardModelFastResult> items)? paginating,
     TResult? Function(List<DashboardModelFastResult> items)? reachedEnd,
   }) {
-    return error?.call(message);
+    return error?.call(this.error);
   }
 
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? loading,
-    TResult Function(ProductCategoryModel item)? loaded,
-    TResult Function(String message)? error,
+    TResult Function(
+            ProductCategoryModelData data, bool status, int statusCode)?
+        loaded,
+    TResult Function(String error)? error,
     TResult Function()? noInternet,
-    TResult Function(List<DashboardModelFastResult> items)? paginating,
     TResult Function(List<DashboardModelFastResult> items)? reachedEnd,
     required TResult orElse(),
   }) {
     if (error != null) {
-      return error(message);
+      return error(this.error);
     }
     return orElse();
   }
@@ -521,12 +532,11 @@ class _$ProductCategoryStateErrorImpl implements ProductCategoryStateError {
   @override
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
-    required TResult Function(ProductCategoryStateLoading value) loading,
-    required TResult Function(ProductCategoryStateLoaded value) loaded,
-    required TResult Function(ProductCategoryStateError value) error,
-    required TResult Function(NoInternetState value) noInternet,
-    required TResult Function(PaginatingState value) paginating,
-    required TResult Function(ReachedEndState value) reachedEnd,
+    required TResult Function(_Loading value) loading,
+    required TResult Function(_Loaded value) loaded,
+    required TResult Function(_Error value) error,
+    required TResult Function(_NoInternet value) noInternet,
+    required TResult Function(_ReachedEnd value) reachedEnd,
   }) {
     return error(this);
   }
@@ -534,12 +544,11 @@ class _$ProductCategoryStateErrorImpl implements ProductCategoryStateError {
   @override
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(ProductCategoryStateLoading value)? loading,
-    TResult? Function(ProductCategoryStateLoaded value)? loaded,
-    TResult? Function(ProductCategoryStateError value)? error,
-    TResult? Function(NoInternetState value)? noInternet,
-    TResult? Function(PaginatingState value)? paginating,
-    TResult? Function(ReachedEndState value)? reachedEnd,
+    TResult? Function(_Loading value)? loading,
+    TResult? Function(_Loaded value)? loaded,
+    TResult? Function(_Error value)? error,
+    TResult? Function(_NoInternet value)? noInternet,
+    TResult? Function(_ReachedEnd value)? reachedEnd,
   }) {
     return error?.call(this);
   }
@@ -547,12 +556,11 @@ class _$ProductCategoryStateErrorImpl implements ProductCategoryStateError {
   @override
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
-    TResult Function(ProductCategoryStateLoading value)? loading,
-    TResult Function(ProductCategoryStateLoaded value)? loaded,
-    TResult Function(ProductCategoryStateError value)? error,
-    TResult Function(NoInternetState value)? noInternet,
-    TResult Function(PaginatingState value)? paginating,
-    TResult Function(ReachedEndState value)? reachedEnd,
+    TResult Function(_Loading value)? loading,
+    TResult Function(_Loaded value)? loaded,
+    TResult Function(_Error value)? error,
+    TResult Function(_NoInternet value)? noInternet,
+    TResult Function(_ReachedEnd value)? reachedEnd,
     required TResult orElse(),
   }) {
     if (error != null) {
@@ -562,52 +570,51 @@ class _$ProductCategoryStateErrorImpl implements ProductCategoryStateError {
   }
 }
 
-abstract class ProductCategoryStateError implements ProductCategoryState {
-  const factory ProductCategoryStateError(final String message) =
-      _$ProductCategoryStateErrorImpl;
+abstract class _Error implements ProductCategoryListState {
+  const factory _Error(final String error) = _$ErrorImpl;
 
-  String get message;
+  String get error;
 
-  /// Create a copy of ProductCategoryState
+  /// Create a copy of ProductCategoryListState
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$ProductCategoryStateErrorImplCopyWith<_$ProductCategoryStateErrorImpl>
-      get copyWith => throw _privateConstructorUsedError;
+  _$$ErrorImplCopyWith<_$ErrorImpl> get copyWith =>
+      throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class _$$NoInternetStateImplCopyWith<$Res> {
-  factory _$$NoInternetStateImplCopyWith(_$NoInternetStateImpl value,
-          $Res Function(_$NoInternetStateImpl) then) =
-      __$$NoInternetStateImplCopyWithImpl<$Res>;
+abstract class _$$NoInternetImplCopyWith<$Res> {
+  factory _$$NoInternetImplCopyWith(
+          _$NoInternetImpl value, $Res Function(_$NoInternetImpl) then) =
+      __$$NoInternetImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
-class __$$NoInternetStateImplCopyWithImpl<$Res>
-    extends _$ProductCategoryStateCopyWithImpl<$Res, _$NoInternetStateImpl>
-    implements _$$NoInternetStateImplCopyWith<$Res> {
-  __$$NoInternetStateImplCopyWithImpl(
-      _$NoInternetStateImpl _value, $Res Function(_$NoInternetStateImpl) _then)
+class __$$NoInternetImplCopyWithImpl<$Res>
+    extends _$ProductCategoryListStateCopyWithImpl<$Res, _$NoInternetImpl>
+    implements _$$NoInternetImplCopyWith<$Res> {
+  __$$NoInternetImplCopyWithImpl(
+      _$NoInternetImpl _value, $Res Function(_$NoInternetImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of ProductCategoryState
+  /// Create a copy of ProductCategoryListState
   /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
 
-class _$NoInternetStateImpl implements NoInternetState {
-  const _$NoInternetStateImpl();
+class _$NoInternetImpl implements _NoInternet {
+  const _$NoInternetImpl();
 
   @override
   String toString() {
-    return 'ProductCategoryState.noInternet()';
+    return 'ProductCategoryListState.noInternet()';
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other.runtimeType == runtimeType && other is _$NoInternetStateImpl);
+        (other.runtimeType == runtimeType && other is _$NoInternetImpl);
   }
 
   @override
@@ -617,10 +624,11 @@ class _$NoInternetStateImpl implements NoInternetState {
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
     required TResult Function() loading,
-    required TResult Function(ProductCategoryModel item) loaded,
-    required TResult Function(String message) error,
+    required TResult Function(
+            ProductCategoryModelData data, bool status, int statusCode)
+        loaded,
+    required TResult Function(String error) error,
     required TResult Function() noInternet,
-    required TResult Function(List<DashboardModelFastResult> items) paginating,
     required TResult Function(List<DashboardModelFastResult> items) reachedEnd,
   }) {
     return noInternet();
@@ -630,10 +638,11 @@ class _$NoInternetStateImpl implements NoInternetState {
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? loading,
-    TResult? Function(ProductCategoryModel item)? loaded,
-    TResult? Function(String message)? error,
+    TResult? Function(
+            ProductCategoryModelData data, bool status, int statusCode)?
+        loaded,
+    TResult? Function(String error)? error,
     TResult? Function()? noInternet,
-    TResult? Function(List<DashboardModelFastResult> items)? paginating,
     TResult? Function(List<DashboardModelFastResult> items)? reachedEnd,
   }) {
     return noInternet?.call();
@@ -643,10 +652,11 @@ class _$NoInternetStateImpl implements NoInternetState {
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? loading,
-    TResult Function(ProductCategoryModel item)? loaded,
-    TResult Function(String message)? error,
+    TResult Function(
+            ProductCategoryModelData data, bool status, int statusCode)?
+        loaded,
+    TResult Function(String error)? error,
     TResult Function()? noInternet,
-    TResult Function(List<DashboardModelFastResult> items)? paginating,
     TResult Function(List<DashboardModelFastResult> items)? reachedEnd,
     required TResult orElse(),
   }) {
@@ -659,12 +669,11 @@ class _$NoInternetStateImpl implements NoInternetState {
   @override
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
-    required TResult Function(ProductCategoryStateLoading value) loading,
-    required TResult Function(ProductCategoryStateLoaded value) loaded,
-    required TResult Function(ProductCategoryStateError value) error,
-    required TResult Function(NoInternetState value) noInternet,
-    required TResult Function(PaginatingState value) paginating,
-    required TResult Function(ReachedEndState value) reachedEnd,
+    required TResult Function(_Loading value) loading,
+    required TResult Function(_Loaded value) loaded,
+    required TResult Function(_Error value) error,
+    required TResult Function(_NoInternet value) noInternet,
+    required TResult Function(_ReachedEnd value) reachedEnd,
   }) {
     return noInternet(this);
   }
@@ -672,12 +681,11 @@ class _$NoInternetStateImpl implements NoInternetState {
   @override
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(ProductCategoryStateLoading value)? loading,
-    TResult? Function(ProductCategoryStateLoaded value)? loaded,
-    TResult? Function(ProductCategoryStateError value)? error,
-    TResult? Function(NoInternetState value)? noInternet,
-    TResult? Function(PaginatingState value)? paginating,
-    TResult? Function(ReachedEndState value)? reachedEnd,
+    TResult? Function(_Loading value)? loading,
+    TResult? Function(_Loaded value)? loaded,
+    TResult? Function(_Error value)? error,
+    TResult? Function(_NoInternet value)? noInternet,
+    TResult? Function(_ReachedEnd value)? reachedEnd,
   }) {
     return noInternet?.call(this);
   }
@@ -685,12 +693,11 @@ class _$NoInternetStateImpl implements NoInternetState {
   @override
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
-    TResult Function(ProductCategoryStateLoading value)? loading,
-    TResult Function(ProductCategoryStateLoaded value)? loaded,
-    TResult Function(ProductCategoryStateError value)? error,
-    TResult Function(NoInternetState value)? noInternet,
-    TResult Function(PaginatingState value)? paginating,
-    TResult Function(ReachedEndState value)? reachedEnd,
+    TResult Function(_Loading value)? loading,
+    TResult Function(_Loaded value)? loaded,
+    TResult Function(_Error value)? error,
+    TResult Function(_NoInternet value)? noInternet,
+    TResult Function(_ReachedEnd value)? reachedEnd,
     required TResult orElse(),
   }) {
     if (noInternet != null) {
@@ -700,36 +707,36 @@ class _$NoInternetStateImpl implements NoInternetState {
   }
 }
 
-abstract class NoInternetState implements ProductCategoryState {
-  const factory NoInternetState() = _$NoInternetStateImpl;
+abstract class _NoInternet implements ProductCategoryListState {
+  const factory _NoInternet() = _$NoInternetImpl;
 }
 
 /// @nodoc
-abstract class _$$PaginatingStateImplCopyWith<$Res> {
-  factory _$$PaginatingStateImplCopyWith(_$PaginatingStateImpl value,
-          $Res Function(_$PaginatingStateImpl) then) =
-      __$$PaginatingStateImplCopyWithImpl<$Res>;
+abstract class _$$ReachedEndImplCopyWith<$Res> {
+  factory _$$ReachedEndImplCopyWith(
+          _$ReachedEndImpl value, $Res Function(_$ReachedEndImpl) then) =
+      __$$ReachedEndImplCopyWithImpl<$Res>;
   @useResult
   $Res call({List<DashboardModelFastResult> items});
 }
 
 /// @nodoc
-class __$$PaginatingStateImplCopyWithImpl<$Res>
-    extends _$ProductCategoryStateCopyWithImpl<$Res, _$PaginatingStateImpl>
-    implements _$$PaginatingStateImplCopyWith<$Res> {
-  __$$PaginatingStateImplCopyWithImpl(
-      _$PaginatingStateImpl _value, $Res Function(_$PaginatingStateImpl) _then)
+class __$$ReachedEndImplCopyWithImpl<$Res>
+    extends _$ProductCategoryListStateCopyWithImpl<$Res, _$ReachedEndImpl>
+    implements _$$ReachedEndImplCopyWith<$Res> {
+  __$$ReachedEndImplCopyWithImpl(
+      _$ReachedEndImpl _value, $Res Function(_$ReachedEndImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of ProductCategoryState
+  /// Create a copy of ProductCategoryListState
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
     Object? items = null,
   }) {
-    return _then(_$PaginatingStateImpl(
-      items: null == items
+    return _then(_$ReachedEndImpl(
+      null == items
           ? _value._items
           : items // ignore: cast_nullable_to_non_nullable
               as List<DashboardModelFastResult>,
@@ -739,9 +746,8 @@ class __$$PaginatingStateImplCopyWithImpl<$Res>
 
 /// @nodoc
 
-class _$PaginatingStateImpl implements PaginatingState {
-  const _$PaginatingStateImpl(
-      {required final List<DashboardModelFastResult> items})
+class _$ReachedEndImpl implements _ReachedEnd {
+  const _$ReachedEndImpl(final List<DashboardModelFastResult> items)
       : _items = items;
 
   final List<DashboardModelFastResult> _items;
@@ -754,14 +760,14 @@ class _$PaginatingStateImpl implements PaginatingState {
 
   @override
   String toString() {
-    return 'ProductCategoryState.paginating(items: $items)';
+    return 'ProductCategoryListState.reachedEnd(items: $items)';
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$PaginatingStateImpl &&
+            other is _$ReachedEndImpl &&
             const DeepCollectionEquality().equals(other._items, _items));
   }
 
@@ -769,198 +775,23 @@ class _$PaginatingStateImpl implements PaginatingState {
   int get hashCode =>
       Object.hash(runtimeType, const DeepCollectionEquality().hash(_items));
 
-  /// Create a copy of ProductCategoryState
+  /// Create a copy of ProductCategoryListState
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
-  _$$PaginatingStateImplCopyWith<_$PaginatingStateImpl> get copyWith =>
-      __$$PaginatingStateImplCopyWithImpl<_$PaginatingStateImpl>(
-          this, _$identity);
+  _$$ReachedEndImplCopyWith<_$ReachedEndImpl> get copyWith =>
+      __$$ReachedEndImplCopyWithImpl<_$ReachedEndImpl>(this, _$identity);
 
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
     required TResult Function() loading,
-    required TResult Function(ProductCategoryModel item) loaded,
-    required TResult Function(String message) error,
+    required TResult Function(
+            ProductCategoryModelData data, bool status, int statusCode)
+        loaded,
+    required TResult Function(String error) error,
     required TResult Function() noInternet,
-    required TResult Function(List<DashboardModelFastResult> items) paginating,
-    required TResult Function(List<DashboardModelFastResult> items) reachedEnd,
-  }) {
-    return paginating(items);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? loading,
-    TResult? Function(ProductCategoryModel item)? loaded,
-    TResult? Function(String message)? error,
-    TResult? Function()? noInternet,
-    TResult? Function(List<DashboardModelFastResult> items)? paginating,
-    TResult? Function(List<DashboardModelFastResult> items)? reachedEnd,
-  }) {
-    return paginating?.call(items);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? loading,
-    TResult Function(ProductCategoryModel item)? loaded,
-    TResult Function(String message)? error,
-    TResult Function()? noInternet,
-    TResult Function(List<DashboardModelFastResult> items)? paginating,
-    TResult Function(List<DashboardModelFastResult> items)? reachedEnd,
-    required TResult orElse(),
-  }) {
-    if (paginating != null) {
-      return paginating(items);
-    }
-    return orElse();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(ProductCategoryStateLoading value) loading,
-    required TResult Function(ProductCategoryStateLoaded value) loaded,
-    required TResult Function(ProductCategoryStateError value) error,
-    required TResult Function(NoInternetState value) noInternet,
-    required TResult Function(PaginatingState value) paginating,
-    required TResult Function(ReachedEndState value) reachedEnd,
-  }) {
-    return paginating(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(ProductCategoryStateLoading value)? loading,
-    TResult? Function(ProductCategoryStateLoaded value)? loaded,
-    TResult? Function(ProductCategoryStateError value)? error,
-    TResult? Function(NoInternetState value)? noInternet,
-    TResult? Function(PaginatingState value)? paginating,
-    TResult? Function(ReachedEndState value)? reachedEnd,
-  }) {
-    return paginating?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(ProductCategoryStateLoading value)? loading,
-    TResult Function(ProductCategoryStateLoaded value)? loaded,
-    TResult Function(ProductCategoryStateError value)? error,
-    TResult Function(NoInternetState value)? noInternet,
-    TResult Function(PaginatingState value)? paginating,
-    TResult Function(ReachedEndState value)? reachedEnd,
-    required TResult orElse(),
-  }) {
-    if (paginating != null) {
-      return paginating(this);
-    }
-    return orElse();
-  }
-}
-
-abstract class PaginatingState implements ProductCategoryState {
-  const factory PaginatingState(
-          {required final List<DashboardModelFastResult> items}) =
-      _$PaginatingStateImpl;
-
-  List<DashboardModelFastResult> get items;
-
-  /// Create a copy of ProductCategoryState
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$PaginatingStateImplCopyWith<_$PaginatingStateImpl> get copyWith =>
-      throw _privateConstructorUsedError;
-}
-
-/// @nodoc
-abstract class _$$ReachedEndStateImplCopyWith<$Res> {
-  factory _$$ReachedEndStateImplCopyWith(_$ReachedEndStateImpl value,
-          $Res Function(_$ReachedEndStateImpl) then) =
-      __$$ReachedEndStateImplCopyWithImpl<$Res>;
-  @useResult
-  $Res call({List<DashboardModelFastResult> items});
-}
-
-/// @nodoc
-class __$$ReachedEndStateImplCopyWithImpl<$Res>
-    extends _$ProductCategoryStateCopyWithImpl<$Res, _$ReachedEndStateImpl>
-    implements _$$ReachedEndStateImplCopyWith<$Res> {
-  __$$ReachedEndStateImplCopyWithImpl(
-      _$ReachedEndStateImpl _value, $Res Function(_$ReachedEndStateImpl) _then)
-      : super(_value, _then);
-
-  /// Create a copy of ProductCategoryState
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? items = null,
-  }) {
-    return _then(_$ReachedEndStateImpl(
-      items: null == items
-          ? _value._items
-          : items // ignore: cast_nullable_to_non_nullable
-              as List<DashboardModelFastResult>,
-    ));
-  }
-}
-
-/// @nodoc
-
-class _$ReachedEndStateImpl implements ReachedEndState {
-  const _$ReachedEndStateImpl(
-      {required final List<DashboardModelFastResult> items})
-      : _items = items;
-
-  final List<DashboardModelFastResult> _items;
-  @override
-  List<DashboardModelFastResult> get items {
-    if (_items is EqualUnmodifiableListView) return _items;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_items);
-  }
-
-  @override
-  String toString() {
-    return 'ProductCategoryState.reachedEnd(items: $items)';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$ReachedEndStateImpl &&
-            const DeepCollectionEquality().equals(other._items, _items));
-  }
-
-  @override
-  int get hashCode =>
-      Object.hash(runtimeType, const DeepCollectionEquality().hash(_items));
-
-  /// Create a copy of ProductCategoryState
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$ReachedEndStateImplCopyWith<_$ReachedEndStateImpl> get copyWith =>
-      __$$ReachedEndStateImplCopyWithImpl<_$ReachedEndStateImpl>(
-          this, _$identity);
-
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function() loading,
-    required TResult Function(ProductCategoryModel item) loaded,
-    required TResult Function(String message) error,
-    required TResult Function() noInternet,
-    required TResult Function(List<DashboardModelFastResult> items) paginating,
     required TResult Function(List<DashboardModelFastResult> items) reachedEnd,
   }) {
     return reachedEnd(items);
@@ -970,10 +801,11 @@ class _$ReachedEndStateImpl implements ReachedEndState {
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? loading,
-    TResult? Function(ProductCategoryModel item)? loaded,
-    TResult? Function(String message)? error,
+    TResult? Function(
+            ProductCategoryModelData data, bool status, int statusCode)?
+        loaded,
+    TResult? Function(String error)? error,
     TResult? Function()? noInternet,
-    TResult? Function(List<DashboardModelFastResult> items)? paginating,
     TResult? Function(List<DashboardModelFastResult> items)? reachedEnd,
   }) {
     return reachedEnd?.call(items);
@@ -983,10 +815,11 @@ class _$ReachedEndStateImpl implements ReachedEndState {
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? loading,
-    TResult Function(ProductCategoryModel item)? loaded,
-    TResult Function(String message)? error,
+    TResult Function(
+            ProductCategoryModelData data, bool status, int statusCode)?
+        loaded,
+    TResult Function(String error)? error,
     TResult Function()? noInternet,
-    TResult Function(List<DashboardModelFastResult> items)? paginating,
     TResult Function(List<DashboardModelFastResult> items)? reachedEnd,
     required TResult orElse(),
   }) {
@@ -999,12 +832,11 @@ class _$ReachedEndStateImpl implements ReachedEndState {
   @override
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
-    required TResult Function(ProductCategoryStateLoading value) loading,
-    required TResult Function(ProductCategoryStateLoaded value) loaded,
-    required TResult Function(ProductCategoryStateError value) error,
-    required TResult Function(NoInternetState value) noInternet,
-    required TResult Function(PaginatingState value) paginating,
-    required TResult Function(ReachedEndState value) reachedEnd,
+    required TResult Function(_Loading value) loading,
+    required TResult Function(_Loaded value) loaded,
+    required TResult Function(_Error value) error,
+    required TResult Function(_NoInternet value) noInternet,
+    required TResult Function(_ReachedEnd value) reachedEnd,
   }) {
     return reachedEnd(this);
   }
@@ -1012,12 +844,11 @@ class _$ReachedEndStateImpl implements ReachedEndState {
   @override
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(ProductCategoryStateLoading value)? loading,
-    TResult? Function(ProductCategoryStateLoaded value)? loaded,
-    TResult? Function(ProductCategoryStateError value)? error,
-    TResult? Function(NoInternetState value)? noInternet,
-    TResult? Function(PaginatingState value)? paginating,
-    TResult? Function(ReachedEndState value)? reachedEnd,
+    TResult? Function(_Loading value)? loading,
+    TResult? Function(_Loaded value)? loaded,
+    TResult? Function(_Error value)? error,
+    TResult? Function(_NoInternet value)? noInternet,
+    TResult? Function(_ReachedEnd value)? reachedEnd,
   }) {
     return reachedEnd?.call(this);
   }
@@ -1025,12 +856,11 @@ class _$ReachedEndStateImpl implements ReachedEndState {
   @override
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
-    TResult Function(ProductCategoryStateLoading value)? loading,
-    TResult Function(ProductCategoryStateLoaded value)? loaded,
-    TResult Function(ProductCategoryStateError value)? error,
-    TResult Function(NoInternetState value)? noInternet,
-    TResult Function(PaginatingState value)? paginating,
-    TResult Function(ReachedEndState value)? reachedEnd,
+    TResult Function(_Loading value)? loading,
+    TResult Function(_Loaded value)? loaded,
+    TResult Function(_Error value)? error,
+    TResult Function(_NoInternet value)? noInternet,
+    TResult Function(_ReachedEnd value)? reachedEnd,
     required TResult orElse(),
   }) {
     if (reachedEnd != null) {
@@ -1040,16 +870,15 @@ class _$ReachedEndStateImpl implements ReachedEndState {
   }
 }
 
-abstract class ReachedEndState implements ProductCategoryState {
-  const factory ReachedEndState(
-          {required final List<DashboardModelFastResult> items}) =
-      _$ReachedEndStateImpl;
+abstract class _ReachedEnd implements ProductCategoryListState {
+  const factory _ReachedEnd(final List<DashboardModelFastResult> items) =
+      _$ReachedEndImpl;
 
   List<DashboardModelFastResult> get items;
 
-  /// Create a copy of ProductCategoryState
+  /// Create a copy of ProductCategoryListState
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$ReachedEndStateImplCopyWith<_$ReachedEndStateImpl> get copyWith =>
+  _$$ReachedEndImplCopyWith<_$ReachedEndImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

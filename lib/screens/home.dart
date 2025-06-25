@@ -13,7 +13,9 @@ class HomeWidget extends ConsumerWidget {
     final scaffoldKey = ref.read(scaffoldKeyProvider);
     return Scaffold(
       key: scaffoldKey,
-      drawer: SideMenuScreen(),
+      drawer: SideMenuScreen(
+        context1: context,
+      ),
       body: child,
       bottomNavigationBar: const CustomBottomBar(),
     );

@@ -13,7 +13,8 @@ import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class SideMenuScreen extends StatefulHookConsumerWidget {
-  const SideMenuScreen({super.key});
+  final BuildContext context1;
+  const SideMenuScreen({super.key, required this.context1});
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() => _SideMenuScreenState();
@@ -47,7 +48,7 @@ class _SideMenuScreenState extends ConsumerState<SideMenuScreen> {
     final profile = ref.watch(getUserProfileApiProvider);
     final indexOfCurrency = ref.watch(indexOfSelectedCurrency);
     final selectedCurency = ref.watch(currentCurrencySymbolProvider);
-    final selectedLang = ref.watch(indexOfSelectedLanguage);
+    // final selectedLang = ref.watch(indexOfSelectedLanguage);
     final appSetting = ref.watch(getAppSettingsApiProvider);
     final localization = AppLocalizations.of(context);
     var userId = "";
@@ -79,6 +80,12 @@ class _SideMenuScreenState extends ConsumerState<SideMenuScreen> {
               if (newCountry.name != currentCountry.name) {
                 ref.read(selectedCountryProvider.notifier).state = newCountry;
               }
+              ref.read(indexOfSelectedCurrency.notifier).state =
+                  data.data?.currency == "INR"
+                      ? 2
+                      : data.data?.currency == "USD"
+                          ? 0
+                          : 1;
             });
 
             userId = await SecureStorage.get("user_id") ?? "";
@@ -274,141 +281,141 @@ class _SideMenuScreenState extends ConsumerState<SideMenuScreen> {
                 SizedBox(
                   height: 15.sp,
                 ),
-                ConstantMethods.sidemenuItem(
-                    "${Constants.imagePathMenu}globe.svg",
-                    selectedLang == 0
-                        ? "עִברִית"
-                        : selectedLang == 1
-                            ? "English (United State)"
-                            : "Español",
-                    subtitle: localization.language,
-                    subItems: [
-                      ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        dense: false,
-                        trailing: selectedLang == 0
-                            ? Icon(
-                                Icons.check,
-                                color: AppTheme.primaryColor,
-                              )
-                            : SizedBox(),
-                        title: Text(
-                          'עִברִית',
-                          style: AppTheme.lightTheme.textTheme.bodySmall
-                              ?.copyWith(
-                                  fontSize: 12.sp, fontWeight: FontWeight.w400),
-                        ),
-                        subtitle: Text(
-                          'Hebrew',
-                          style: AppTheme.lightTheme.textTheme.bodySmall
-                              ?.copyWith(
-                                  fontSize: 11.sp,
-                                  fontWeight: FontWeight.w300,
-                                  color: AppTheme.teritiaryTextColor),
-                        ),
-                        onTap: () {
-                          ref.read(indexOfSelectedLanguage.notifier).state = 0;
-                          ref
-                              .read(changeLocaleProvider.notifier)
-                              .set(Locale("he"));
-                          ref
-                              .read(setAppSettingsApiProvider(
-                                      SetAppSettingParams(
-                                          lang: "he", userId: userId))
-                                  .future)
-                              .then((onValue) {
-                            if (context.mounted) {
-                              ConstantMethods.showSnackbar(
-                                  context, onValue.message ?? "");
-                            }
-                          });
-                        },
-                      ),
-                      ConstantMethods.customDivider(),
-                      ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        dense: false,
-                        trailing: selectedLang == 1
-                            ? Icon(
-                                Icons.check,
-                                color: AppTheme.primaryColor,
-                              )
-                            : SizedBox(),
-                        title: Text(
-                          "English (United State)",
-                          style: AppTheme.lightTheme.textTheme.bodySmall
-                              ?.copyWith(
-                                  fontSize: 12.sp, fontWeight: FontWeight.w400),
-                        ),
-                        subtitle: Text(
-                          'English (United State)',
-                          style: AppTheme.lightTheme.textTheme.bodySmall
-                              ?.copyWith(
-                                  fontSize: 11.sp,
-                                  fontWeight: FontWeight.w300,
-                                  color: AppTheme.teritiaryTextColor),
-                        ),
-                        onTap: () {
-                          ref.read(indexOfSelectedLanguage.notifier).state = 1;
-                          ref
-                              .read(changeLocaleProvider.notifier)
-                              .set(Locale("en"));
-                          ref
-                              .read(setAppSettingsApiProvider(
-                                      SetAppSettingParams(
-                                          lang: "en", userId: userId))
-                                  .future)
-                              .then((onValue) {
-                            if (context.mounted) {
-                              ConstantMethods.showSnackbar(
-                                  context, onValue.message ?? "");
-                            }
-                          });
-                        },
-                      ),
-                      ConstantMethods.customDivider(),
-                      ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        dense: false,
-                        trailing: selectedLang == 2
-                            ? Icon(
-                                Icons.check,
-                                color: AppTheme.primaryColor,
-                              )
-                            : SizedBox(),
-                        title: Text(
-                          'Español',
-                          style: AppTheme.lightTheme.textTheme.bodySmall
-                              ?.copyWith(
-                                  fontSize: 12.sp, fontWeight: FontWeight.w400),
-                        ),
-                        subtitle: Text(
-                          'Spanish',
-                          style: AppTheme.lightTheme.textTheme.bodySmall
-                              ?.copyWith(
-                                  fontSize: 11.sp,
-                                  fontWeight: FontWeight.w300,
-                                  color: AppTheme.teritiaryTextColor),
-                        ),
-                        onTap: () {
-                          ref.read(indexOfSelectedLanguage.notifier).state = 2;
-                          ref
-                              .read(changeLocaleProvider.notifier)
-                              .set(Locale("es"));
-                          ref
-                              .read(setAppSettingsApiProvider(
-                                      SetAppSettingParams(
-                                          lang: "es", userId: userId))
-                                  .future)
-                              .then((onValue) {
-                            if (context.mounted) {
-                              ConstantMethods.showSnackbar(
-                                  context, onValue.message ?? "");
-                            }
-                          });
-                        },
-                      ),
-                    ]),
+                // ConstantMethods.sidemenuItem(
+                //     "${Constants.imagePathMenu}globe.svg",
+                //     selectedLang == 0
+                //         ? "עִברִית"
+                //         : selectedLang == 1
+                //             ? "English (United State)"
+                //             : "Español",
+                //     subtitle: localization.language,
+                //     subItems: [
+                //       ListTile(
+                //         contentPadding: EdgeInsets.zero,
+                //         dense: false,
+                //         trailing: selectedLang == 0
+                //             ? Icon(
+                //                 Icons.check,
+                //                 color: AppTheme.primaryColor,
+                //               )
+                //             : SizedBox(),
+                //         title: Text(
+                //           'עִברִית',
+                //           style: AppTheme.lightTheme.textTheme.bodySmall
+                //               ?.copyWith(
+                //                   fontSize: 12.sp, fontWeight: FontWeight.w400),
+                //         ),
+                //         subtitle: Text(
+                //           'Hebrew',
+                //           style: AppTheme.lightTheme.textTheme.bodySmall
+                //               ?.copyWith(
+                //                   fontSize: 11.sp,
+                //                   fontWeight: FontWeight.w300,
+                //                   color: AppTheme.teritiaryTextColor),
+                //         ),
+                //         onTap: () {
+                //           ref.read(indexOfSelectedLanguage.notifier).state = 0;
+                //           ref
+                //               .read(changeLocaleProvider.notifier)
+                //               .set(Locale("he"));
+                //           ref
+                //               .read(setAppSettingsApiProvider(
+                //                       SetAppSettingParams(
+                //                           lang: "he", userId: userId))
+                //                   .future)
+                //               .then((onValue) {
+                //             if (context.mounted) {
+                //               ConstantMethods.showSnackbar(
+                //                   context, onValue.message ?? "");
+                //             }
+                //           });
+                //         },
+                //       ),
+                //       ConstantMethods.customDivider(),
+                //       ListTile(
+                //         contentPadding: EdgeInsets.zero,
+                //         dense: false,
+                //         trailing: selectedLang == 1
+                //             ? Icon(
+                //                 Icons.check,
+                //                 color: AppTheme.primaryColor,
+                //               )
+                //             : SizedBox(),
+                //         title: Text(
+                //           "English (United State)",
+                //           style: AppTheme.lightTheme.textTheme.bodySmall
+                //               ?.copyWith(
+                //                   fontSize: 12.sp, fontWeight: FontWeight.w400),
+                //         ),
+                //         subtitle: Text(
+                //           'English (United State)',
+                //           style: AppTheme.lightTheme.textTheme.bodySmall
+                //               ?.copyWith(
+                //                   fontSize: 11.sp,
+                //                   fontWeight: FontWeight.w300,
+                //                   color: AppTheme.teritiaryTextColor),
+                //         ),
+                //         onTap: () {
+                //           ref.read(indexOfSelectedLanguage.notifier).state = 1;
+                //           ref
+                //               .read(changeLocaleProvider.notifier)
+                //               .set(Locale("en"));
+                //           ref
+                //               .read(setAppSettingsApiProvider(
+                //                       SetAppSettingParams(
+                //                           lang: "en", userId: userId))
+                //                   .future)
+                //               .then((onValue) {
+                //             if (context.mounted) {
+                //               ConstantMethods.showSnackbar(
+                //                   context, onValue.message ?? "");
+                //             }
+                //           });
+                //         },
+                //       ),
+                //       ConstantMethods.customDivider(),
+                //       ListTile(
+                //         contentPadding: EdgeInsets.zero,
+                //         dense: false,
+                //         trailing: selectedLang == 2
+                //             ? Icon(
+                //                 Icons.check,
+                //                 color: AppTheme.primaryColor,
+                //               )
+                //             : SizedBox(),
+                //         title: Text(
+                //           'Español',
+                //           style: AppTheme.lightTheme.textTheme.bodySmall
+                //               ?.copyWith(
+                //                   fontSize: 12.sp, fontWeight: FontWeight.w400),
+                //         ),
+                //         subtitle: Text(
+                //           'Spanish',
+                //           style: AppTheme.lightTheme.textTheme.bodySmall
+                //               ?.copyWith(
+                //                   fontSize: 11.sp,
+                //                   fontWeight: FontWeight.w300,
+                //                   color: AppTheme.teritiaryTextColor),
+                //         ),
+                //         onTap: () {
+                //           ref.read(indexOfSelectedLanguage.notifier).state = 2;
+                //           ref
+                //               .read(changeLocaleProvider.notifier)
+                //               .set(Locale("es"));
+                //           ref
+                //               .read(setAppSettingsApiProvider(
+                //                       SetAppSettingParams(
+                //                           lang: "es", userId: userId))
+                //                   .future)
+                //               .then((onValue) {
+                //             if (context.mounted) {
+                //               ConstantMethods.showSnackbar(
+                //                   context, onValue.message ?? "");
+                //             }
+                //           });
+                //         },
+                //       ),
+                //     ]),
                 ConstantMethods.customDivider(),
                 ConstantMethods.sidemenuItem(
                     "${Constants.imagePathMenu}currency.svg",
@@ -538,7 +545,7 @@ class _SideMenuScreenState extends ConsumerState<SideMenuScreen> {
                               .then((onValue) {
                             if (context.mounted) {
                               ConstantMethods.showSnackbar(
-                                  context, onValue.message ?? "");
+                                  widget.context1, onValue.message ?? "");
                             }
                             return ref.refresh(getAppSettingsApiProvider);
                           });
@@ -619,7 +626,7 @@ class _SideMenuScreenState extends ConsumerState<SideMenuScreen> {
                         fontWeight: FontWeight.w400),
                   ),
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: 12.h),
                 Center(
                   child: Text(
                     "${localization.version} 1.0",
@@ -643,7 +650,7 @@ class _SideMenuScreenState extends ConsumerState<SideMenuScreen> {
     ProviderContainer container = ProviderContainer();
     print('All data cleared.');
     ref.read(changeLocaleProvider.notifier).set(Locale("en"));
-    container.dispose(); // Disposes all providers
+    container.dispose();
     container = ProviderContainer();
     if (mounted) {
       context.go("/login");

@@ -22,3 +22,9 @@ class CommonModel {
     return data;
   }
 }
+
+class MoveToWishlistParam {
+  String productId;
+  String cartItemId;
+  MoveToWishlistParam(this.cartItemId, this.productId);
+}

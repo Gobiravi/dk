@@ -14,6 +14,7 @@ import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
+import 'package:html/parser.dart' as html_parser;
 
 class ProductDetailsWidgetQA extends HookConsumerWidget {
   const ProductDetailsWidgetQA({super.key});
@@ -467,8 +468,14 @@ class ProductDetailsVariationWidget extends HookConsumerWidget {
                     style: AppTheme.lightTheme.textTheme.labelMedium,
                   ),
                   TextSpan(
-                    text:
-                        "${productDetailsModelData.productDetail?.type != "simple" ? productDetailsModelData.productDetail?.variations![indexOfVariation].stockQuantity : productDetailsModelData.productDetail?.stockQuantity ?? 0} in stock",
+                    text: productDetailsModelData
+                                    .productDetail?.stockQuantity !=
+                                null &&
+                            productDetailsModelData
+                                    .productDetail!.stockQuantity! >
+                                0
+                        ? "${productDetailsModelData.productDetail?.type != "simple" ? productDetailsModelData.productDetail?.variations![indexOfVariation].stockQuantity : productDetailsModelData.productDetail?.stockQuantity ?? 0} in stock"
+                        : "Out of Stock",
                     style: AppTheme.lightTheme.textTheme.bodySmall
                         ?.copyWith(fontSize: 16.sp),
                   ),
@@ -485,8 +492,8 @@ class ProductDetailsVariationWidget extends HookConsumerWidget {
           ),
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 16.0.sp),
-            child: HtmlWidget(
-                productDetailsModelData.productDetail?.sizeToFit ?? ""),
+            child: HtmlWidget(convertHtmlToHeartList(
+                productDetailsModelData.productDetail?.sizeToFit ?? "")),
           ),
           SizedBox(
             height: 24.sp,
@@ -495,6 +502,21 @@ class ProductDetailsVariationWidget extends HookConsumerWidget {
       ),
     );
   }
+}
+
+String convertHtmlToHeartList(String html) {
+  final document = html_parser.parse(html);
+  final listItems = document.querySelectorAll('li');
+
+  final buffer = StringBuffer();
+  for (var item in listItems) {
+    final text = item.text.trim();
+    if (text.isNotEmpty) {
+      buffer.writeln('<p>🩷 $text</p>');
+    }
+  }
+
+  return buffer.toString();
 }
 //======================================================================
 

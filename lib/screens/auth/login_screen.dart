@@ -375,7 +375,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                               BorderRadius.circular(12.sp),
                                           side: BorderSide(
                                               color: AppTheme.subTextColor))),
-                                  onPressed: () {},
+                                  onPressed: () {
+                                    ConstantMethods.signInWithFacebook(ref);
+                                  },
                                   child: Row(
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
@@ -455,7 +457,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                     borderRadius: BorderRadius.circular(12.sp),
                                     side: BorderSide(
                                         color: AppTheme.subTextColor))),
-                            onPressed: () {},
+                            onPressed: () {
+                              ConstantMethods.googleSignIn(ref);
+                            },
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
@@ -641,7 +645,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         .then((loginModel) {
       if (loginModel.statusCode == 200) {
         if (loginModel.data != null) {
-          saveLoginData(loginModel.data!);
+          ConstantMethods.saveLoginData(loginModel.data!, ref);
           ConstantMethods.showAlertBottomSheet(
               context: context,
               title: loginModel.message ?? "",
@@ -650,6 +654,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               isLoading: true);
           Future.delayed(Duration(seconds: 3)).then(
             (value) async {
+              ///Enable this to Change language
               String? isAppSettingsDone =
                   await SecureStorage.get(Constants.isAppSettingsDone);
               resetProviders();
@@ -688,22 +693,5 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     ref.read(loginEmailValidProvider.notifier).state = false;
     ref.read(loginPasswordProvider.notifier).state = '';
     ref.read(loginPasswordValidProvider.notifier).state = false;
-  }
-
-  void saveLoginData(LoginModelData response) async {
-    await SecureStorage.save('token', response.token ?? "");
-    await SecureStorage.save('refresh_token', response.refreshToken ?? "");
-    await SecureStorage.save('user_id', response.userId.toString());
-    if (response.country!.isNotEmpty) {}
-    if (response.currency!.isNotEmpty) {
-      ref.read(currentCurrencySymbolProvider.notifier).state =
-          CurrencySymbol.fromString(response.currency ?? "").symbol;
-      await SecureStorage.save(Constants.isAppSettingsDone, "true");
-    }
-    if (response.language!.isNotEmpty) {
-      ref
-          .read(changeLocaleProvider.notifier)
-          .set(Locale(response.language ?? "en"));
-    }
   }
 }

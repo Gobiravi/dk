@@ -2,8 +2,14 @@ import 'dart:io';
 
 import 'package:dikla_spirit/custom/app_theme.dart';
 import 'package:dikla_spirit/custom/constants.dart';
+import 'package:dikla_spirit/custom/secure_storage.dart';
+import 'package:dikla_spirit/l10n/app_localizations.dart';
+import 'package:dikla_spirit/model/auth/login_model.dart';
+import 'package:dikla_spirit/model/providers.dart';
+import 'package:dikla_spirit/widgets/auth/google_signin.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
@@ -13,6 +19,7 @@ class LoginOptionsScreen extends HookConsumerWidget {
   const LoginOptionsScreen({super.key});
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final loc = AppLocalizations.of(context);
     return Scaffold(
       body: SafeArea(
           child: SizedBox(
@@ -32,11 +39,232 @@ class LoginOptionsScreen extends HookConsumerWidget {
                   letterSpacing: -0.70),
             ),
             Spacer(),
+            // Text(
+            //   "Merinda",
+            //   style: TextStyle(
+            //       color: AppTheme.primaryColor,
+            //       fontFamily: "Merinda",
+            //       fontWeight: FontWeight.w500,
+            //       fontSize: 18.sp),
+            //   //  AppTheme.lightTheme.textTheme.bodyLarge
+            //   //     ?.copyWith(fontWeight: FontWeight.w500, fontSize: 20.sp),
+            // ),
+            // SizedBox(
+            //   height: 8.sp,
+            // ),
+            // Text(
+            //   loc.checkMoreReviews,
+            //   style: TextStyle(
+            //       color: AppTheme.primaryColor,
+            //       fontFamily: "Merinda",
+            //       fontWeight: FontWeight.w500,
+            //       fontSize: 18.sp),
+            //   //  AppTheme.lightTheme.textTheme.bodyLarge
+            //   //     ?.copyWith(fontWeight: FontWeight.w500, fontSize: 20.sp),
+            // ),
+            SizedBox(
+              height: 8.sp,
+            ),
             Text(
-              'Create an Account',
+              "Create an Account",
               style: AppTheme.lightTheme.textTheme.bodyLarge
                   ?.copyWith(fontWeight: FontWeight.w500, fontSize: 20.sp),
             ),
+            // SizedBox(
+            //   height: 22.sp,
+            // ),
+            // Text(
+            //   "Cosmic Neue",
+            //   style: TextStyle(
+            //       color: AppTheme.primaryColor,
+            //       fontFamily: "ComicNeue",
+            //       fontWeight: FontWeight.w500,
+            //       fontSize: 18.sp),
+            //   //  AppTheme.lightTheme.textTheme.bodyLarge
+            //   //     ?.copyWith(fontWeight: FontWeight.w500, fontSize: 20.sp),
+            // ),
+            // SizedBox(
+            //   height: 8.sp,
+            // ),
+            // Text(
+            //   loc.checkMoreReviews,
+            //   style: TextStyle(
+            //       color: AppTheme.primaryColor,
+            //       fontFamily: "ComicNeue",
+            //       fontWeight: FontWeight.w500,
+            //       fontSize: 18.sp),
+            //   //  AppTheme.lightTheme.textTheme.bodyLarge
+            //   //     ?.copyWith(fontWeight: FontWeight.w500, fontSize: 20.sp),
+            // ),
+            // SizedBox(
+            //   height: 8.sp,
+            // ),
+            // Text(
+            //   "Create an Account",
+            //   style: TextStyle(
+            //       color: AppTheme.primaryColor,
+            //       fontFamily: "ComicNeue",
+            //       fontWeight: FontWeight.w500,
+            //       fontSize: 18.sp),
+            //   //  AppTheme.lightTheme.textTheme.bodyLarge
+            //   //     ?.copyWith(fontWeight: FontWeight.w500, fontSize: 20.sp),
+            // ),
+            // SizedBox(
+            //   height: 22.sp,
+            // ),
+            // Text(
+            //   "AveriaSansLibre",
+            //   style: TextStyle(
+            //       color: AppTheme.primaryColor,
+            //       fontFamily: "AveriaSansLibre",
+            //       fontWeight: FontWeight.w500,
+            //       fontSize: 18.sp),
+            //   //  AppTheme.lightTheme.textTheme.bodyLarge
+            //   //     ?.copyWith(fontWeight: FontWeight.w500, fontSize: 20.sp),
+            // ),
+            // SizedBox(
+            //   height: 8.sp,
+            // ),
+            // Text(
+            //   loc.checkMoreReviews,
+            //   style: TextStyle(
+            //       color: AppTheme.primaryColor,
+            //       fontFamily: "AveriaSansLibre",
+            //       fontWeight: FontWeight.w500,
+            //       fontSize: 18.sp),
+            //   //  AppTheme.lightTheme.textTheme.bodyLarge
+            //   //     ?.copyWith(fontWeight: FontWeight.w500, fontSize: 20.sp),
+            // ),
+            // SizedBox(
+            //   height: 8.sp,
+            // ),
+            // Text(
+            //   "Create an Account",
+            //   style: TextStyle(
+            //       color: AppTheme.primaryColor,
+            //       fontFamily: "AveriaSansLibre",
+            //       fontWeight: FontWeight.w500,
+            //       fontSize: 18.sp),
+            //   //  AppTheme.lightTheme.textTheme.bodyLarge
+            //   //     ?.copyWith(fontWeight: FontWeight.w500, fontSize: 20.sp),
+            // ),
+            // SizedBox(
+            //   height: 22.sp,
+            // ),
+            // Text(
+            //   "Nunito",
+            //   style: TextStyle(
+            //       color: AppTheme.primaryColor,
+            //       fontFamily: "Nunito",
+            //       fontWeight: FontWeight.w500,
+            //       fontSize: 18.sp),
+            //   //  AppTheme.lightTheme.textTheme.bodyLarge
+            //   //     ?.copyWith(fontWeight: FontWeight.w500, fontSize: 20.sp),
+            // ),
+            // SizedBox(
+            //   height: 8.sp,
+            // ),
+            // Text(
+            //   loc.checkMoreReviews,
+            //   style: TextStyle(
+            //       color: AppTheme.primaryColor,
+            //       fontFamily: "Nunito",
+            //       fontWeight: FontWeight.w500,
+            //       fontSize: 18.sp),
+            //   //  AppTheme.lightTheme.textTheme.bodyLarge
+            //   //     ?.copyWith(fontWeight: FontWeight.w500, fontSize: 20.sp),
+            // ),
+            // SizedBox(
+            //   height: 8.sp,
+            // ),
+            // Text(
+            //   "Create an Account",
+            //   style: TextStyle(
+            //       color: AppTheme.primaryColor,
+            //       fontFamily: "Nunito",
+            //       fontWeight: FontWeight.w500,
+            //       fontSize: 18.sp),
+            //   //  AppTheme.lightTheme.textTheme.bodyLarge
+            //   //     ?.copyWith(fontWeight: FontWeight.w500, fontSize: 20.sp),
+            // ),
+            // SizedBox(
+            //   height: 22.sp,
+            // ),
+            // Text(
+            //   "Quicksand",
+            //   style: TextStyle(
+            //       color: AppTheme.primaryColor,
+            //       fontFamily: "Quicksand",
+            //       fontWeight: FontWeight.w500,
+            //       fontSize: 18.sp),
+            //   //  AppTheme.lightTheme.textTheme.bodyLarge
+            //   //     ?.copyWith(fontWeight: FontWeight.w500, fontSize: 20.sp),
+            // ),
+            // SizedBox(
+            //   height: 8.sp,
+            // ),
+            // Text(
+            //   loc.checkMoreReviews,
+            //   style: TextStyle(
+            //       color: AppTheme.primaryColor,
+            //       fontFamily: "Quicksand",
+            //       fontWeight: FontWeight.w500,
+            //       fontSize: 18.sp),
+            //   //  AppTheme.lightTheme.textTheme.bodyLarge
+            //   //     ?.copyWith(fontWeight: FontWeight.w500, fontSize: 20.sp),
+            // ),
+            // SizedBox(
+            //   height: 8.sp,
+            // ),
+            // Text(
+            //   "Create an Account",
+            //   style: TextStyle(
+            //       color: AppTheme.primaryColor,
+            //       fontFamily: "Quicksand",
+            //       fontWeight: FontWeight.w500,
+            //       fontSize: 18.sp),
+            //   //  AppTheme.lightTheme.textTheme.bodyLarge
+            //   //     ?.copyWith(fontWeight: FontWeight.w500, fontSize: 20.sp),
+            // ),
+            // SizedBox(
+            //   height: 22.sp,
+            // ),
+            // Text(
+            //   "PlaypenSans",
+            //   style: TextStyle(
+            //       color: AppTheme.primaryColor,
+            //       fontFamily: "PlaypenSans",
+            //       fontWeight: FontWeight.w500,
+            //       fontSize: 18.sp),
+            //   //  AppTheme.lightTheme.textTheme.bodyLarge
+            //   //     ?.copyWith(fontWeight: FontWeight.w500, fontSize: 20.sp),
+            // ),
+            // SizedBox(
+            //   height: 8.sp,
+            // ),
+            // Text(
+            //   loc.checkMoreReviews,
+            //   style: TextStyle(
+            //       color: AppTheme.primaryColor,
+            //       fontFamily: "PlaypenSans",
+            //       fontWeight: FontWeight.w500,
+            //       fontSize: 18.sp),
+            //   //  AppTheme.lightTheme.textTheme.bodyLarge
+            //   //     ?.copyWith(fontWeight: FontWeight.w500, fontSize: 20.sp),
+            // ),
+            // SizedBox(
+            //   height: 8.sp,
+            // ),
+            // Text(
+            //   "Create an Account",
+            //   style: TextStyle(
+            //       color: AppTheme.primaryColor,
+            //       fontFamily: "PlaypenSans",
+            //       fontWeight: FontWeight.w500,
+            //       fontSize: 18.sp),
+            //   //  AppTheme.lightTheme.textTheme.bodyLarge
+            //   //     ?.copyWith(fontWeight: FontWeight.w500, fontSize: 20.sp),
+            // ),
             SizedBox(
               height: 8.sp,
             ),
@@ -101,7 +329,9 @@ class LoginOptionsScreen extends HookConsumerWidget {
                                   borderRadius: BorderRadius.circular(12.sp),
                                   side: BorderSide(
                                       color: AppTheme.subTextColor))),
-                          onPressed: () {},
+                          onPressed: () {
+                            ConstantMethods.signInWithFacebook(ref);
+                          },
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
@@ -175,7 +405,9 @@ class LoginOptionsScreen extends HookConsumerWidget {
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12.sp),
                             side: BorderSide(color: AppTheme.subTextColor))),
-                    onPressed: () {},
+                    onPressed: () {
+                      ConstantMethods.googleSignIn(ref);
+                    },
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -287,4 +519,11 @@ class LoginOptionsScreen extends HookConsumerWidget {
       )),
     );
   }
+
+  // void handleSignOut() async {
+  //   await GoogleSignInService.signOut();
+  //   setState(() {
+  //     name = email = avatarUrl = null;
+  //   });
+  // }
 }

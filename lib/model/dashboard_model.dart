@@ -151,6 +151,7 @@ class DashboardModelFastResult {
       this.isWishlist,
       this.template,
       this.type,
+      this.shortDesc,
       this.variation});
 
   final dynamic id;
@@ -162,6 +163,7 @@ class DashboardModelFastResult {
   final dynamic price;
   final dynamic template;
   final String? type;
+  final String? shortDesc;
   bool? isWishlist;
   List<Variation>? variation;
 
@@ -177,6 +179,7 @@ class DashboardModelFastResult {
       template: json["template"],
       price: json["price"],
       isWishlist: json["is_wishlist"],
+      shortDesc: json["short_description"],
       variation: json["variations"] == null
           ? []
           : List<Variation>.from(
@@ -195,12 +198,13 @@ class DashboardModelFastResult {
         "template": template,
         "price": price,
         "is_wishlist": isWishlist,
+        "short_description": shortDesc,
         "variations": variation?.map((x) => x.toJson()).toList(),
       };
 
   /// The `copyWith` method for creating a copy of the object with updated fields
   DashboardModelFastResult copyWith({
-    int? id,
+    dynamic id,
     String? title,
     String? image,
     String? rating,

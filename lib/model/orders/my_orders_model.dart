@@ -12,7 +12,7 @@ class MyOrdersListModel {
 
   MyOrdersListModel.fromJson(Map<String, dynamic> json) {
     status = json['status'];
-    data = json['data'] != null
+    data = json['data'] != null && json["data"] != []
         ? MyOrdersListModelData.fromJson(json['data'])
         : null;
     pagination = json['pagination'] != null

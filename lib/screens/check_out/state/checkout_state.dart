@@ -55,3 +55,4 @@ final combinedFormsValidProvider = Provider<bool>((ref) {
 //Provider for total
 
 final checkoutTotal = StateProvider<String>((ref) => "");
+final orderId = StateProvider<String>((ref) => "");

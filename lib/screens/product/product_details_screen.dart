@@ -3,6 +3,7 @@ import 'package:dikla_spirit/custom/api.dart';
 import 'package:dikla_spirit/custom/app_theme.dart';
 import 'package:dikla_spirit/custom/constants.dart';
 import 'package:dikla_spirit/l10n/app_localizations.dart';
+import 'package:dikla_spirit/model/add_to_cart_model.dart';
 import 'package:dikla_spirit/model/product_details_model.dart';
 import 'package:dikla_spirit/model/providers.dart';
 import 'package:dikla_spirit/screens/wishlist/state/wishlist_state.dart';
@@ -45,6 +46,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
         ref.watch(indexOfJewelleryVariationInProductDetail);
     final choosedVariation = ref.watch(selectedVariation);
     final suggestedPriceValid = ref.watch(suggestedPriceProviderValid);
+    final suggestedPrice = ref.watch(suggestedPriceProvider);
     useEffect(() {
       productDetails.when(
         data: (data) {
@@ -97,7 +99,11 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                 icon: IconButton(
                     onPressed: () {
                       ref.watch(selectedVariation.notifier).state = Variation();
-                      context.goNamed("dashboard");
+                      if (context.canPop()) {
+                        context.pop();
+                      } else {
+                        context.goNamed("dashboard");
+                      }
                     },
                     icon: SvgPicture.asset(
                         "${Constants.imagePathAppBar}back.svg")),
@@ -376,6 +382,8 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                                                       .length *
                                                   50.sp),
                                               child: ListView.builder(
+                                                physics:
+                                                    NeverScrollableScrollPhysics(),
                                                 itemCount: datum.productDetail
                                                     ?.descriptionQa!.length,
                                                 itemBuilder: (context, index) {
@@ -588,37 +596,34 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                                                       // );
 
                                                       showModalBottomSheet(
-                                                        isDismissible:
-                                                            true, // Allow user to swipe down to dismiss
+                                                        isDismissible: true,
                                                         context: context,
                                                         isScrollControlled:
-                                                            true, // Allow full-screen expansion
+                                                            true,
                                                         shape:
-                                                            const RoundedRectangleBorder(
+                                                            RoundedRectangleBorder(
                                                           borderRadius:
                                                               BorderRadius.only(
                                                             topLeft:
                                                                 Radius.circular(
-                                                                    12.0),
+                                                                    12.0.r),
                                                             topRight:
                                                                 Radius.circular(
-                                                                    12.0),
+                                                                    12.0.r),
                                                           ),
                                                         ),
                                                         builder: (context) {
                                                           return DraggableScrollableSheet(
                                                             initialChildSize:
-                                                                0.5, // Starts at 50% of screen height
-                                                            minChildSize:
-                                                                0.3, // Can collapse to 30% of screen height
-                                                            maxChildSize:
-                                                                0.9, // Can expand up to 90% of screen height
+                                                                0.5,
+                                                            minChildSize: 0.3,
+                                                            maxChildSize: 0.9,
                                                             expand: false,
                                                             builder: (context,
                                                                 scrollController) {
                                                               return Container(
                                                                 decoration:
-                                                                    const BoxDecoration(
+                                                                    BoxDecoration(
                                                                   color: AppTheme
                                                                       .appBarAndBottomBarColor,
                                                                   borderRadius:
@@ -626,19 +631,23 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                                                                           .only(
                                                                     topLeft: Radius
                                                                         .circular(
-                                                                            12.0),
+                                                                            12.0.r),
                                                                     topRight: Radius
                                                                         .circular(
-                                                                            12.0),
+                                                                            12.0.r),
                                                                   ),
                                                                 ),
-                                                                child: Column(
+                                                                child: ListView(
+                                                                  controller:
+                                                                      scrollController,
+                                                                  padding:
+                                                                      EdgeInsets
+                                                                          .only(
+                                                                    top: 12.sp,
+                                                                    bottom:
+                                                                        24.sp,
+                                                                  ),
                                                                   children: [
-                                                                    SizedBox(
-                                                                        height:
-                                                                            12.sp),
-
-                                                                    // HEADER
                                                                     Row(
                                                                       mainAxisAlignment:
                                                                           MainAxisAlignment
@@ -652,7 +661,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                                                                               color: Colors.transparent),
                                                                         ),
                                                                         Text(
-                                                                          datum.productDetail!.descriptionQa?[index].question ??
+                                                                          datum.productDetail?.descriptionQa?[index].question ??
                                                                               "",
                                                                           style: ThemeData.light()
                                                                               .textTheme
@@ -668,48 +677,30 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                                                                         ),
                                                                       ],
                                                                     ),
+
                                                                     const Divider(),
-                                                                    SizedBox(
-                                                                        height:
-                                                                            14.sp),
 
-                                                                    // TITLE (If Available)
-                                                                    if (content.title !=
-                                                                            null &&
-                                                                        content
-                                                                            .title
-                                                                            .isNotEmpty)
-                                                                      Padding(
-                                                                        padding:
-                                                                            EdgeInsets.symmetric(horizontal: 20.sp),
-                                                                        child:
-                                                                            Text(
-                                                                          content
-                                                                              .title,
-                                                                          style: AppTheme
-                                                                              .lightTheme
-                                                                              .textTheme
-                                                                              .bodySmall
-                                                                              ?.copyWith(fontSize: 14.sp),
-                                                                        ),
-                                                                      ),
-                                                                    SizedBox(
-                                                                        height:
-                                                                            20.sp),
-
-                                                                    // SCROLLABLE CONTENT
-                                                                    Expanded(
+                                                                    // Everything after this will have horizontal padding
+                                                                    Padding(
+                                                                      padding: EdgeInsets.symmetric(
+                                                                          horizontal:
+                                                                              32.sp),
                                                                       child:
-                                                                          SingleChildScrollView(
-                                                                        controller:
-                                                                            scrollController,
-                                                                        padding:
-                                                                            EdgeInsets.symmetric(horizontal: 32.sp),
-                                                                        child:
-                                                                            Column(
-                                                                          crossAxisAlignment:
-                                                                              CrossAxisAlignment.start,
-                                                                          children: content
+                                                                          Column(
+                                                                        crossAxisAlignment:
+                                                                            CrossAxisAlignment.start,
+                                                                        children: [
+                                                                          if (content.title != null &&
+                                                                              content.title.isNotEmpty)
+                                                                            Text(
+                                                                              content.title,
+                                                                              style: AppTheme.lightTheme.textTheme.bodySmall?.copyWith(fontSize: 14.sp),
+                                                                            ),
+                                                                          SizedBox(
+                                                                              height: 20.sp),
+
+                                                                          // List items
+                                                                          ...content
                                                                               .items
                                                                               .map((item) {
                                                                             return Padding(
@@ -721,7 +712,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                                                                                     "${Constants.imagePath}heart_filled.svg",
                                                                                     height: 16.sp,
                                                                                     width: 16.sp,
-                                                                                    placeholderBuilder: (context) => CircularProgressIndicator(),
+                                                                                    placeholderBuilder: (context) => const CircularProgressIndicator(),
                                                                                   ),
                                                                                   SizedBox(width: 10.w),
                                                                                   Expanded(
@@ -736,7 +727,10 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                                                                                             ),
                                                                                           TextSpan(
                                                                                             text: item.description,
-                                                                                            style: AppTheme.lightTheme.textTheme.headlineLarge?.copyWith(fontSize: 14.sp, fontWeight: FontWeight.w300),
+                                                                                            style: AppTheme.lightTheme.textTheme.headlineLarge?.copyWith(
+                                                                                              fontSize: 14.sp,
+                                                                                              fontWeight: FontWeight.w300,
+                                                                                            ),
                                                                                           ),
                                                                                         ],
                                                                                       ),
@@ -746,17 +740,163 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                                                                               ),
                                                                             );
                                                                           }).toList(),
-                                                                        ),
+                                                                        ],
                                                                       ),
                                                                     ),
-                                                                    SizedBox(
-                                                                        height:
-                                                                            4.sp),
                                                                   ],
                                                                 ),
                                                               );
                                                             },
                                                           );
+
+                                                          // DraggableScrollableSheet(
+                                                          //   initialChildSize:
+                                                          //       0.5,
+                                                          //   minChildSize: 0.3,
+                                                          //   maxChildSize: 0.9,
+                                                          //   expand: false,
+                                                          //   builder: (context,
+                                                          //       scrollController) {
+                                                          //     return Container(
+                                                          //       decoration:
+                                                          //           BoxDecoration(
+                                                          //         color: AppTheme
+                                                          //             .appBarAndBottomBarColor,
+                                                          //         borderRadius:
+                                                          //             BorderRadius
+                                                          //                 .only(
+                                                          //           topLeft: Radius
+                                                          //               .circular(
+                                                          //                   12.0.r),
+                                                          //           topRight: Radius
+                                                          //               .circular(
+                                                          //                   12.0.r),
+                                                          //         ),
+                                                          //       ),
+                                                          //       child: Column(
+                                                          //         children: [
+                                                          //           SizedBox(
+                                                          //               height:
+                                                          //                   12.sp),
+
+                                                          //           // HEADER
+                                                          //           Row(
+                                                          //             mainAxisAlignment:
+                                                          //                 MainAxisAlignment
+                                                          //                     .spaceBetween,
+                                                          //             children: [
+                                                          //               IconButton(
+                                                          //                 onPressed: () =>
+                                                          //                     context.pop(),
+                                                          //                 icon: const Icon(
+                                                          //                     Icons.close,
+                                                          //                     color: Colors.transparent),
+                                                          //               ),
+                                                          //               Text(
+                                                          //                 datum.productDetail!.descriptionQa?[index].question ??
+                                                          //                     "",
+                                                          //                 style: ThemeData.light()
+                                                          //                     .textTheme
+                                                          //                     .labelMedium!
+                                                          //                     .copyWith(color: AppTheme.primaryColor),
+                                                          //               ),
+                                                          //               IconButton(
+                                                          //                 onPressed: () =>
+                                                          //                     Navigator.of(context).pop(),
+                                                          //                 icon: const Icon(
+                                                          //                     Icons.close,
+                                                          //                     color: AppTheme.textColor),
+                                                          //               ),
+                                                          //             ],
+                                                          //           ),
+                                                          //           const Divider(),
+                                                          //           SizedBox(
+                                                          //               height:
+                                                          //                   14.sp),
+
+                                                          //           if (content.title !=
+                                                          //                   null &&
+                                                          //               content
+                                                          //                   .title
+                                                          //                   .isNotEmpty)
+                                                          //             Padding(
+                                                          //               padding:
+                                                          //                   EdgeInsets.symmetric(horizontal: 20.sp),
+                                                          //               child:
+                                                          //                   Text(
+                                                          //                 content
+                                                          //                     .title,
+                                                          //                 style: AppTheme
+                                                          //                     .lightTheme
+                                                          //                     .textTheme
+                                                          //                     .bodySmall
+                                                          //                     ?.copyWith(fontSize: 14.sp),
+                                                          //               ),
+                                                          //             ),
+                                                          //           SizedBox(
+                                                          //               height:
+                                                          //                   20.sp),
+
+                                                          //           // SCROLLABLE CONTENT
+                                                          //           Expanded(
+                                                          //             child:
+                                                          //                 SingleChildScrollView(
+                                                          //               controller:
+                                                          //                   scrollController,
+                                                          //               padding:
+                                                          //                   EdgeInsets.symmetric(horizontal: 32.sp),
+                                                          //               child:
+                                                          //                   Column(
+                                                          //                 crossAxisAlignment:
+                                                          //                     CrossAxisAlignment.start,
+                                                          //                 children: content
+                                                          //                     .items
+                                                          //                     .map((item) {
+                                                          //                   return Padding(
+                                                          //                     padding: EdgeInsets.only(bottom: 14.sp),
+                                                          //                     child: Row(
+                                                          //                       crossAxisAlignment: CrossAxisAlignment.start,
+                                                          //                       children: [
+                                                          //                         SvgPicture.asset(
+                                                          //                           "${Constants.imagePath}heart_filled.svg",
+                                                          //                           height: 16.sp,
+                                                          //                           width: 16.sp,
+                                                          //                           placeholderBuilder: (context) => CircularProgressIndicator(),
+                                                          //                         ),
+                                                          //                         SizedBox(width: 10.w),
+                                                          //                         Expanded(
+                                                          //                           child: RichText(
+                                                          //                             textAlign: TextAlign.start,
+                                                          //                             text: TextSpan(
+                                                          //                               children: [
+                                                          //                                 if (item.headerIsBold)
+                                                          //                                   TextSpan(
+                                                          //                                     text: item.header ?? '',
+                                                          //                                     style: AppTheme.lightTheme.textTheme.headlineLarge?.copyWith(fontSize: 14.sp),
+                                                          //                                   ),
+                                                          //                                 TextSpan(
+                                                          //                                   text: item.description,
+                                                          //                                   style: AppTheme.lightTheme.textTheme.headlineLarge?.copyWith(fontSize: 14.sp, fontWeight: FontWeight.w300),
+                                                          //                                 ),
+                                                          //                               ],
+                                                          //                             ),
+                                                          //                           ),
+                                                          //                         ),
+                                                          //                       ],
+                                                          //                     ),
+                                                          //                   );
+                                                          //                 }).toList(),
+                                                          //               ),
+                                                          //             ),
+                                                          //           ),
+                                                          //           SizedBox(
+                                                          //               height:
+                                                          //                   4.sp),
+                                                          //         ],
+                                                          //       ),
+                                                          //     );
+                                                          //   },
+                                                          // );
                                                         },
                                                       );
                                                     },
@@ -1220,6 +1360,8 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                                                             .length *
                                                         50.sp),
                                                     child: ListView.builder(
+                                                      physics:
+                                                          NeverScrollableScrollPhysics(),
                                                       itemCount: datum
                                                           .productDetail
                                                           ?.descriptionQa!
@@ -1436,6 +1578,8 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                                                 datum.questionAnswer!.length *
                                                     50.sp),
                                             child: ListView.builder(
+                                              physics:
+                                                  NeverScrollableScrollPhysics(),
                                               itemCount:
                                                   datum.questionAnswer!.length,
                                               itemBuilder: (context, index) {
@@ -2137,17 +2281,31 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                         alignment: Alignment.bottomCenter,
                         child: InkWell(
                           onTap: () {
-                            if (datum.productDetail?.stockStatus != "instock") {
-                              if (datum.productDetail?.template == 3) {
-                                if (datum.productDetail?.type == "variabl") {
+                            if (datum.productDetail?.template == 3) {
+                              var id =
+                                  datum.productDetail?.type == "variable" &&
+                                          datum.productDetail?.template == "3"
+                                      ? datum
+                                          .productDetail!
+                                          .variations![indexOfSelectedJewellery]
+                                          .id
+                                          .toString()
+                                      : datum.productDetail?.type == "variable"
+                                          ? choosedVariation.id.toString()
+                                          : datum.productDetail?.id.toString();
+                              if (datum.productDetail?.type == "variable") {
+                                if (datum.productDetail?.stockStatus != null &&
+                                    datum.productDetail?.stockStatus ==
+                                        "instock") {
                                   ref
-                                      .refresh(addToCartApiProvider(datum
-                                                  .productDetail!
-                                                  .variations?[
-                                                      indexOfSelectedJewellery]
-                                                  .id
-                                                  .toString() ??
-                                              "")
+                                      .refresh(addToCartApiProvider(AddtoCartParam(
+                                              productId: datum
+                                                      .productDetail!
+                                                      .variations?[
+                                                          indexOfSelectedJewellery]
+                                                      .id
+                                                      .toString() ??
+                                                  ""))
                                           .future)
                                       .then((value) {
                                     if (context.mounted) {
@@ -2162,29 +2320,33 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                                   });
                                 } else {
                                   ref
-                                      .refresh(addToCartApiProvider(datum
-                                                  .productDetail?.id
-                                                  .toString() ??
-                                              "")
+                                      .read(productNotifyMeApiProvider(
+                                              id.toString())
                                           .future)
-                                      .then((value) {
+                                      .then((onValue) {
                                     if (context.mounted) {
-                                      if (value.status!) {
-                                        ConstantMethods.showSnackbar(context,
-                                            "${datum.productDetail?.title ?? ""} Added To Bag");
+                                      if (onValue.status) {
+                                        ConstantMethods.showSnackbar(
+                                            context, onValue.message ?? "");
                                       } else {
                                         ConstantMethods.showSnackbar(
-                                            context, value.message ?? "");
+                                            context, onValue.message ?? "",
+                                            isFalse: true);
                                       }
                                     }
                                   });
                                 }
                               } else {
-                                if (datum.productDetail?.type == "variable") {
+                                if (datum.productDetail?.stockStatus != null &&
+                                    datum.productDetail?.stockStatus ==
+                                        "instock") {
                                   ref
                                       .refresh(addToCartApiProvider(
-                                              choosedVariation.id.toString() ??
-                                                  "")
+                                              AddtoCartParam(
+                                                  productId: datum
+                                                          .productDetail?.id
+                                                          .toString() ??
+                                                      ""))
                                           .future)
                                       .then((value) {
                                     if (context.mounted) {
@@ -2199,10 +2361,77 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                                   });
                                 } else {
                                   ref
-                                      .refresh(addToCartApiProvider(datum
-                                                  .productDetail?.id
-                                                  .toString() ??
-                                              "")
+                                      .read(productNotifyMeApiProvider(
+                                              id.toString())
+                                          .future)
+                                      .then((onValue) {
+                                    if (context.mounted) {
+                                      if (onValue.status) {
+                                        ConstantMethods.showSnackbar(
+                                            context, onValue.message ?? "");
+                                      } else {
+                                        ConstantMethods.showSnackbar(
+                                            context, onValue.message ?? "",
+                                            isFalse: true);
+                                      }
+                                    }
+                                  });
+                                }
+                              }
+                            } else {
+                              if (datum.productDetail?.type == "variable") {
+                                ref
+                                    .refresh(addToCartApiProvider(
+                                            AddtoCartParam(
+                                                productId: choosedVariation.id
+                                                        .toString() ??
+                                                    ""))
+                                        .future)
+                                    .then((value) {
+                                  if (context.mounted) {
+                                    if (value.status!) {
+                                      ConstantMethods.showSnackbar(context,
+                                          "${datum.productDetail?.title ?? ""} Added To Bag");
+                                    } else {
+                                      ConstantMethods.showSnackbar(
+                                          context, value.message ?? "");
+                                    }
+                                  }
+                                });
+                              } else {
+                                if (datum.productDetail!.template.toString() ==
+                                    "4") {
+                                  if (suggestedPriceValid) {
+                                    ref
+                                        .refresh(addToCartApiProvider(
+                                                AddtoCartParam(
+                                                    productId: datum
+                                                            .productDetail?.id
+                                                            .toString() ??
+                                                        "",
+                                                    suggestedPrice:
+                                                        suggestedPrice))
+                                            .future)
+                                        .then((value) {
+                                      if (context.mounted) {
+                                        if (value.status!) {
+                                          ConstantMethods.showSnackbar(context,
+                                              "${datum.productDetail?.title ?? ""} Added To Bag");
+                                        } else {
+                                          ConstantMethods.showSnackbar(
+                                              context, value.message ?? "");
+                                        }
+                                      }
+                                    });
+                                  }
+                                } else {
+                                  ref
+                                      .refresh(addToCartApiProvider(
+                                              AddtoCartParam(
+                                                  productId: datum
+                                                          .productDetail?.id
+                                                          .toString() ??
+                                                      ""))
                                           .future)
                                       .then((value) {
                                     if (context.mounted) {
@@ -2244,10 +2473,15 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                                 ),
                                 child: Center(
                                   child: Text(
-                                    datum.productDetail?.stockStatus ==
-                                            "instock"
-                                        ? localization.with_a_click_its_yours
-                                        : localization.out_of_stock,
+                                    datum.productDetail?.stockStatus != null &&
+                                            datum.productDetail?.stockStatus !=
+                                                "instock" &&
+                                            datum.productDetail?.template
+                                                    .toString() ==
+                                                "3"
+                                        ? "Notify Me"
+                                        : localization
+                                            .with_a_click_its_yours, //localization.out_of_stock,
                                     style: AppTheme
                                         .lightTheme.textTheme.bodySmall
                                         ?.copyWith(

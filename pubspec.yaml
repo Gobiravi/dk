@@ -59,6 +59,14 @@ dependencies:
   flutter_stripe: ^11.4.0
   share_plus: ^10.1.4
   dotted_border: ^2.1.0
+  path_provider: ^2.1.5
+  permission_handler: ^12.0.0
+  firebase_messaging: ^15.2.5
+  firebase_core: ^3.13.0
+  flutter_local_notifications: ^19.1.0
+  google_sign_in: ^6.2.2
+  flutter_facebook_auth: ^7.1.1
+  image_picker: ^1.1.2
 
 dev_dependencies:
   flutter_test:
@@ -99,6 +107,7 @@ flutter:
     - assets/images/orders/
     - assets/images/help/
     - assets/images/zodiac/
+    - assets/images/horoscope/
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see
@@ -116,6 +125,24 @@ flutter:
     - family: NotoSansHebrew
       fonts:
         - asset: assets/fonts/NotoSansHebrew.ttf
+    - family: Merinda
+      fonts:
+        - asset: assets/fonts/Merienda_VariableFont_wght.ttf
+    - family: ComicNeue
+      fonts:
+        - asset: assets/fonts/ComicNeue-Regular.ttf
+    - family: AveriaSansLibre
+      fonts:
+        - asset: assets/fonts/AveriaSansLibre-Regular.ttf
+    - family: Nunito
+      fonts:
+        - asset: assets/fonts/Nunito-VariableFont_wght.ttf
+    - family: Quicksand
+      fonts:
+        - asset: assets/fonts/Quicksand-VariableFont_wght.ttf
+    - family: PlaypenSans
+      fonts:
+        - asset: assets/fonts/PlaypenSans-VariableFont_wght.ttf
   #       - asset: fonts/Schyler-Italic.ttf
   #         style: italic
     - family: OpenSansHebrewCondensed

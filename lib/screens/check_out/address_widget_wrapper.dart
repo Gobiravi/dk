@@ -41,21 +41,21 @@ class AddressWidgetWrapper extends HookConsumerWidget {
                 child: InkWell(
                   onTap: () {
                     final isVirtualFormValid =
-                        ref.read(virtualFormValidProvider);
+                        ref.watch(virtualFormValidProvider);
                     final isPhysicalFormValid =
-                        ref.read(physicalFormValidProvider);
+                        ref.watch(physicalFormValidProvider);
 
                     if (isVirtualFormValid && isPhysicalFormValid) {
-                      final fName = ref.read(firstNameProviderAddress);
-                      final lName = ref.read(lastNameProviderAddress);
-                      final email = ref.read(emailProviderAddress);
-                      final phone = ref.read(phoneProviderAddress);
+                      final fName = ref.watch(firstNameProviderAddress);
+                      final lName = ref.watch(lastNameProviderAddress);
+                      final email = ref.watch(emailProviderAddress);
+                      final phone = ref.watch(phoneProviderAddress);
                       // final country = ref.read(selectedCountryProvider);
-                      final countryRegion = ref.read(countryRegionProvider);
-                      final streetAddress = ref.read(streetAddressProvider);
-                      final appartmentData = ref.read(appartmentProvider);
-                      final zipCode = ref.read(postalCodeProvider);
-                      final city = ref.read(townCityProvider);
+                      final countryRegion = ref.watch(countryRegionProvider);
+                      final streetAddress = ref.watch(streetAddressProvider);
+                      final appartmentData = ref.watch(appartmentProvider);
+                      final zipCode = ref.watch(postalCodeProvider);
+                      final city = ref.watch(townCityProvider);
                       ref
                           .read(addShippingAddressApiProvider(
                                   ShippingAddressParam(
